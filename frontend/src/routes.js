@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import { AnimatePresence } from "framer-motion";
 import Intro from "./pages/Intro";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
 
 export default function AppRoutes() {
   return (
@@ -20,6 +21,7 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Intro />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </AnimatePresence>
   );
