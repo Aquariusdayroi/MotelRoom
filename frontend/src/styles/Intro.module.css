@@ -1,6 +1,5 @@
 /* styles/Intro.module.css */
 
-
 .container {
     text-align: left;
     padding: 0px;
@@ -9,16 +8,13 @@
     flex-direction: column;
     justify-content: center;
     align-items: left;
-    background-image: url('../assets/background.png'); 
+    background-image: url("../assets/img/background.png");
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     color: white;
     padding: 136px;
-  
 }
-
-
 
 h1 {
     font-size: 46px;

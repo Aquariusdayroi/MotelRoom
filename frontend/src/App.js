@@ -1,7 +1,6 @@
-import logo from './logo.svg';
-import './App.css';
-import AppRoutes  from './routes';
-
+import logo from "./logo.svg";
+import "./App.css";
+import AppRoutes from "./routes";
 
 // import { useState } from "react";
 // import Intro from "../Intro";
@@ -19,29 +18,26 @@ import AppRoutes  from './routes';
 
 // export default App;
 
-
 function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-    return (
-        <AppRoutes />
-    )
+    //   return (
+    //     <div className="App">
+    //       <header className="App-header">
+    //         <img src={logo} className="App-logo" alt="logo" />
+    //         <p>
+    //           Edit <code>src/App.js</code> and save to reload.
+    //         </p>
+    //         <a
+    //           className="App-link"
+    //           href="https://reactjs.org"
+    //           target="_blank"
+    //           rel="noopener noreferrer"
+    //         >
+    //           Learn React
+    //         </a>
+    //       </header>
+    //     </div>
+    //   );
+    return <AppRoutes />;
 }
 
 export default App;

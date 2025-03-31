@@ -1,0 +1,47 @@
+.search {
+    padding: 0 10vw;
+    position: relative;
+    margin-top: -30px; /* Adjust this value to control how much it moves up */
+    z-index: 10; /* Ensures it stays above other elements */
+}
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.groupBtn {
+    background-color: var(--text-color);
+    border: 1px solid var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 74%;
+    padding: 1rem;
+    border-radius: 40px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15); /* Enhanced shadow for floating effect */
+}
+.groupBtn input {
+    padding: 10px 15px;
+    border-radius: 12px;
+    border: 1px solid #b4b4b4;
+    font-size: 16px;
+    outline: none;
+    height: 50px;
+}
+.groupBtn div {
+    margin: 4px;
+}
+.groupBtn .title {
+    font-size: 18px;
+    height: 16px;
+    margin-bottom: 20px;
+}
+.searchButton {
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 30px;
+}
