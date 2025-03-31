@@ -1,6 +1,6 @@
-
 import styles from "../styles/Intro.module.css"; // CSS
 import background from "../assets/background.png"; // background
+import logo from "../assets/logo.png";
 
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -50,7 +50,3 @@ function Intro({ onStart }) {
 }
 
 export default Intro;
-
-
-
-
