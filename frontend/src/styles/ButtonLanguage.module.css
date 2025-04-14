@@ -1,0 +1,22 @@
+.icon {
+    width: 28px;
+    height: 28px;
+    margin-right: 8px;
+}
+.buttonStyle {
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--text-color);
+    background-color: transparent;
+    color: var(--text-color);
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    height: 48px;
+    margin-right: 20px;
+}
+.buttonStyle:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
