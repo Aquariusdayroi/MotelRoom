@@ -8,6 +8,8 @@ import { AnimatePresence } from "framer-motion";
 import Intro from "./pages/Intro";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
+import Login from "./pages/Login";
+import Layout from "./layout/Layout";
 
 export default function AppRoutes() {
     return (
@@ -25,8 +27,15 @@ function AnimatedRoutes() {
         <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
                 <Route path="/" element={<Intro />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route
+                    path="/home"
+                    element={
+                        <Layout>
+                            <Home />
+                        </Layout>
+                    }
+                />
+                <Route path="/login" element={<Login />} />
             </Routes>
         </AnimatePresence>
     );

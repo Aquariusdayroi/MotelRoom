@@ -1,47 +1,152 @@
 .search {
     padding: 0 10vw;
     position: relative;
-    margin-top: -30px; /* Adjust this value to control how much it moves up */
-    z-index: 10; /* Ensures it stays above other elements */
+    margin-top: -30px;
+    z-index: 10;
+    transition: all 0.3s ease;
 }
 .container {
     display: flex;
     align-items: center;
     justify-content: center;
 }
-
 .groupBtn {
     background-color: var(--text-color);
     border: 1px solid var(--text-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 74%;
-    padding: 1rem;
-    border-radius: 40px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15); /* Enhanced shadow for floating effect */
+    width: 1000px;
+    padding-left: 0.8rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    border-radius: 32px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
 }
 .groupBtn input {
-    padding: 10px 15px;
-    border-radius: 12px;
+    padding: 8px 12px;
+    border-radius: 10px;
     border: 1px solid #b4b4b4;
-    font-size: 16px;
+    font-size: 14px;
     outline: none;
-    height: 50px;
+    height: 40px;
+    transition: all 0.3s ease;
+}
+.groupBtn input:hover {
+    background-color: #dbdbdb61;
 }
 .groupBtn div {
     margin: 4px;
 }
 .groupBtn .title {
-    font-size: 18px;
-    height: 16px;
-    margin-bottom: 20px;
+    font-size: 16px;
+    height: 13px;
+    margin-bottom: 16px;
 }
 .searchButton {
-    height: 60px;
-    border-radius: 16px;
+    height: 40px;
+    border-radius: 13px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 30px;
+    margin-left: 24px;
+}
+.searchInHeader {
+    position: absolute;
+    left: 50%;
+    top: 86%;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+    width: 100%;
+}
+
+.searchInHeader.expanded {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    transform: translateY(0);
+    margin: 0;
+    padding: 20px 10vw;
+    background-color: white;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.searchInHeader .groupBtn {
+    width: 560px;
+    height: 46px;
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.searchInHeader .groupBtn input {
+    border: none;
+    padding: 0;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.searchInHeader .groupBtn button {
+    width: 40px;
+    border-radius: 93px;
+    padding: 0px;
+    margin: 0;
+}
+.searchInHeader .groupBtn svg {
+    width: 18px;
+}
+
+.searchInHeader .title {
+    display: none;
+}
+.itemSearchHeader {
+    border-right: 1px solid #e8e8e8;
+    padding-right: 0;
+    transition: ease-out 1s ease;
+}
+
+.itemSearchHeader:nth-last-child(2) {
+    border-right: none;
+}
+
+.itemSearchHeader input {
+    width: 112px;
+}
+
+.itemSearchHeader:last-child {
+    border-right: none;
+}
+
+.searchInHeader .groupBtn .itemSearchHeader {
+    display: flex;
+    align-items: center;
+}
+
+.searchInHeader.expanded .groupBtn {
+    width: 1000px;
+    height: auto;
+    margin-top: 0;
+    padding: 1rem;
+    margin: 0 auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.searchInHeader.expanded .groupBtn input {
+    width: 200px;
+    padding: 8px 12px;
+    border: 1px solid #b4b4b4;
+}
+
+.searchInHeader.expanded .title {
+    display: block;
+}
+
+.searchInHeader.expanded .itemSearchHeader {
+    border-right: 1px solid #e8e8e8;
+    padding-right: 1rem;
 }

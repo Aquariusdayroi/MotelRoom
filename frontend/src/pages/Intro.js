@@ -8,7 +8,7 @@ function Intro({ onStart }) {
     const navigate = useNavigate();
 
     const handleStart = () => {
-        navigate("/home"); // Điều hướng sang trang Home
+        navigate("/home");
     };
     return (
         <div>
