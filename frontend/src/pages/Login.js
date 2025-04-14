@@ -5,10 +5,11 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min";
 import LoginForm from "../components/LoginForm";
 import SignInForm from "../components/SignInForm";
+import Footer from "../layout/components/Footer";
 
 function Login() {
     const { register, handleSubmit } = useForm();
@@ -32,17 +33,20 @@ function Login() {
                     )}
                 </div>
                 <div className={styles.sectionLogo}>
-                    <img src={backgroundLogin} alt="backgroundLogin" className={styles.backgroundImage} />
-                    <div className={styles.darkOverlay}></div> {/* Lớp phủ màu đen */}
+                    <img
+                        src={backgroundLogin}
+                        alt="backgroundLogin"
+                        className={styles.backgroundImage}
+                    />
+                    <div className={styles.darkOverlay}></div>{" "}
+                    {/* Lớp phủ màu đen */}
                     <div className={styles.logoOverlay}>
                         <img src={logo} alt="Logo" />
                         <p>Lựa chọn theo cách của bạn</p>
                     </div>
                 </div>
             </div>
-            <footer>
-                <img src={logo} alt="Logo" />
-            </footer>
+            <Footer />
         </div>
     );
 }

@@ -11,7 +11,7 @@
     justify-content: center;
     height: 100%;
     width: 50%;
-    background-color: #37C5E5;
+    background-color: #37c5e5;
 }
 
 .sectionLogo {
@@ -98,7 +98,6 @@
     line-height: 24px;
     width: 15%;
     height: 100%;
-
 }
 
 .containerAccount input {
@@ -124,7 +123,7 @@
 }
 
 .btnLogin {
-    background-color: #37C5E5;
+    background-color: #37c5e5;
     color: #ffffff;
     border: none;
     width: 100%;
@@ -147,9 +146,10 @@
 }
 
 .header {
-    padding-left: 100px;
-    height: 11vh;
-    padding-top: 12px;
+    padding: 0 10vw;
+    height: 120px;
+    display: flex;
+    align-items: center;
 }
 
 .btnGoogle img {
