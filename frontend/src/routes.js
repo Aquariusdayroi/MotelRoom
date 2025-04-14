@@ -8,6 +8,7 @@ import { AnimatePresence } from "framer-motion";
 import Intro from "./pages/Intro";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
+import Login from "./pages/Login";
 
 export default function AppRoutes() {
     return (
@@ -20,7 +21,6 @@ export default function AppRoutes() {
 // Component để quản lý các route với hiệu ứng chuyển đổi
 function AnimatedRoutes() {
     const location = useLocation();
-
     return (
         <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
