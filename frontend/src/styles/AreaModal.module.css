@@ -1,0 +1,104 @@
+.modal {
+    position: fixed;
+    width: 350px;
+    max-height: 400px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 9999;
+}
+
+.modalHeader {
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(109, 109, 109, 0.12);
+    font-weight: 500;
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: #666;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.closeButton:hover {
+    color: #333;
+}
+
+.list {
+    padding: 0;
+    margin: 0;
+}
+
+.listItem {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.listItem:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.listItemIcon {
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.listItemContent {
+    flex: 1;
+}
+
+.listItemTitle {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.listItemDescription {
+    font-size: 12px;
+    color: #666;
+    margin: 4px 0 0 0;
+}
+
+/* Custom scrollbar */
+.modal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.modal::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
