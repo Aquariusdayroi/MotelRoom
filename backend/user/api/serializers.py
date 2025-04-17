@@ -6,6 +6,41 @@ from django.contrib.auth.models import update_last_login
 #JWT token
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.tokens import RefreshToken
+
+#Google
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+
+
+#Token Gmail
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+
+#Send Gmail
+from django.core.mail import send_mail
+from django.urls import reverse
+from django.conf import settings
+
+#Xác thực mail 
+def send_verification_email(user, request):
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+    verify_url = request.build_absolute_uri(
+        reverse('verify-email', kwargs={'uidb64': uid, 'token': token})
+    )
+
+    send_mail(
+        subject='Xác minh email tài khoản của bạn',
+        message=f'Vui lòng nhấn vào liên kết sau để xác minh email:\n{verify_url}',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )
+
 
 #Serializer Đăng nhập
 class UserSerializer(serializers.ModelSerializer):
@@ -40,11 +75,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 "role": user.role
             }
         }
-
+    
 
 #---------------------------------------------------------------------------------------------------#
 #Serializer Đăng Ký
-
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
@@ -67,5 +101,69 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password2')
         user = User.objects.create_user(**validated_data)
+        user.is_active = False  # Chưa active cho đến khi xác minh
+        user.save()
+
+        request = self.context.get('request')
+        send_verification_email(user, request)
         return user
+
 #---------------------------------------------------------------------------------------------------#
+#Serializer Đăng nhập bằng google
+class GoogleLoginSerializer(serializers.Serializer):
+    token = serializers.CharField()
+
+    def validate(self, attrs):
+        idinfo = None
+        try:
+            # Verify the token with Google
+            idinfo = id_token.verify_oauth2_token(
+                attrs['token'], 
+                requests.Request(), 
+                audience=None  # có thể truyền client_id nếu cần kiểm tra cụ thể
+            )
+        except ValueError:
+            raise serializers.ValidationError("Token Google không hợp lệ.")
+
+        # Extract user info from token
+        email = idinfo.get("email")
+        first_name = idinfo.get("given_name", "")
+        last_name = idinfo.get("family_name", "")
+        google_id = idinfo.get("sub")  # Unique Google User ID
+
+        if not email:
+            raise serializers.ValidationError("Không thể lấy thông tin email từ token.")
+
+        # Tìm hoặc tạo user
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                "first_name": first_name,
+                "last_name": last_name,
+                "google_id": google_id,
+                "registration_type": "google",
+                "is_active": True
+            }
+        )
+
+        # Nếu user tồn tại nhưng chưa có google_id, thì cập nhật
+        if not user.google_id:
+            user.google_id = google_id
+            user.save()
+
+        # Tạo token đăng nhập
+        refresh = RefreshToken.for_user(user)
+
+        return {
+            "success": True,
+            "message": "Đăng nhập bằng Google thành công.",
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "user": {
+                "user_id": user.id,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "role": user.role
+            }
+        }
