@@ -6,19 +6,29 @@ import ButtonLanguage from "../../components/buttonUI/ButtonLanguage";
 import ButtonPrimary from "../../components/buttonUI/ButtonPrimary";
 import Search from "../../components/Search";
 
-const Header = () => {
+const Header = ({ enableScroll = true, showBigSearch = true }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [showContent, setShowContent] = useState(true);
 
     useEffect(() => {
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
-            setShowContent(window.scrollY <= 20);
+            if (!enableScroll) {
+                setIsScrolled(true);
+                setShowContent(false);
+                return;
+            }
+            setIsScrolled(window.scrollY > 50);
+            setShowContent(window.scrollY <= 50);
         };
+
+        if (!enableScroll) {
+            setIsScrolled(true);
+            setShowContent(false);
+        }
 
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
+    }, [enableScroll]);
 
     return (
         <div
@@ -33,7 +43,9 @@ const Header = () => {
             >
                 <div className={styles.headerContent}>
                     <div>
-                        <img src={images.logo} className={styles.logo} />
+                        <Link to="/home">
+                            <img src={images.logo} className={styles.logo} />
+                        </Link>
                     </div>
                     {isScrolled && (
                         <Search inHeader={true} isHeaderSearch={true} />
@@ -49,7 +61,7 @@ const Header = () => {
                     </div>
                 </div>
             </header>
-            {showContent && (
+            {showContent && showBigSearch && (
                 <div className={`${styles.content} ${styles.fadeContent}`}>
                     <div className={styles.title}>
                         Easy Way To Find <br /> Your Perfect Property{" "}

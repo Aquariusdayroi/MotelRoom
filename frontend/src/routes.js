@@ -10,6 +10,7 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Layout from "./layout/Layout";
+import DetailSearch from "./pages/DetailSearch";
 
 export default function AppRoutes() {
     return (
@@ -30,8 +31,16 @@ function AnimatedRoutes() {
                 <Route
                     path="/home"
                     element={
-                        <Layout>
+                        <Layout enableScroll={true}>
                             <Home />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/detailSearch"
+                    element={
+                        <Layout enableScroll={false}>
+                            <DetailSearch />
                         </Layout>
                     }
                 />

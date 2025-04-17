@@ -8,15 +8,18 @@
     opacity: 1;
     visibility: visible;
     transition: all 0.3s ease;
-    height: 580px; /* Default height when content is visible */
+    height: 580px;
 }
 .container.headerOnly {
-    height: 100px; /* Same as header height */
-    border-radius: 0; /* Remove border radius when collapsed */
+    height: 80px;
+    border-radius: 0;
 }
 .logo {
     width: 142px;
     height: auto;
+    cursor: pointer;
+    position: relative;
+    z-index: 10005;
 }
 .buttonGroup {
     display: flex;
@@ -25,17 +28,6 @@
 .buttonGroup a {
     text-decoration: none;
 }
-/* .header {
-    padding: 0 10vw;
-    display: flex;
-    height: 120px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: relative;
-    z-index: 20;
-} */
 .header {
     position: fixed;
     top: 0;
