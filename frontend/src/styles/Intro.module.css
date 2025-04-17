@@ -1,29 +1,43 @@
 /* styles/Intro.module.css */
+
 .container {
-    text-align: center;
-    
+    text-align: left;
     padding: 0px;
     height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    background-image: url('../assets/background.png'); 
+    align-items: left;
+    background-image: url("../assets/img/background.png");
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     color: white;
+    padding: 136px;
 }
 
+h1 {
+    font-size: 46px;
+    font-family: "Noto Sans TC", sans-serif;
+}
 
-
-
+p {
+    margin-top: 21px;
+    font-size: 16px;
+    font-family: "Noto Sans TC", sans-serif;
+    font-weight: 100; /* Hoặc font-weight: 400; */
+    width: 510px;
+    height: 95px;
+    text-align: justify;
+}
 
 .button {
-    padding: 12px 24px;
+    width: 156px;
+    height: 50px;
+    padding: 12px 21px;
     font-size: 18px;
-    margin-top: 20px;
-    border: none;
+    margin-top: 21px;
+    border: 3px solid white;
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
     cursor: pointer;
@@ -33,4 +47,54 @@
 
 .button:hover {
     background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Media Queries for Responsive Design */
+
+/* Màn hình nhỏ (dưới 768px) */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px; /* Giảm padding để phù hợp với màn hình nhỏ */
+    }
+
+    h1 {
+        font-size: 32px; /* Giảm kích thước chữ h1 */
+    }
+
+    p {
+        font-size: 14px; /* Giảm kích thước chữ p */
+        width: 100%; /* Làm cho paragraph chiếm 100% chiều rộng */
+        height: auto; /* Tự động điều chỉnh chiều cao */
+    }
+
+    .button {
+        width: 140px; /* Giảm chiều rộng của button */
+        height: 45px; /* Giảm chiều cao của button */
+        padding: 10px 18px; /* Điều chỉnh padding của button */
+        font-size: 16px; /* Giảm kích thước chữ button */
+    }
+}
+
+/* Màn hình rất nhỏ (dưới 480px) */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px; /* Giảm thêm padding cho màn hình nhỏ hơn */
+    }
+
+    h1 {
+        font-size: 28px; /* Giảm kích thước chữ h1 */
+    }
+
+    p {
+        font-size: 12px; /* Giảm kích thước chữ p */
+        width: 100%; /* Chiếm 100% chiều rộng */
+        height: auto; /* Tự động điều chỉnh chiều cao */
+    }
+
+    .button {
+        width: 120px; /* Giảm chiều rộng của button */
+        height: 40px; /* Giảm chiều cao của button */
+        padding: 8px 15px; /* Điều chỉnh padding */
+        font-size: 14px; /* Giảm kích thước chữ button */
+    }
 }

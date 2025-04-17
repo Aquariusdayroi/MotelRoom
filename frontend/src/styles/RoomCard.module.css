@@ -1,0 +1,192 @@
+.card {
+    background: var(--text-color);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    margin: 10px;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+}
+
+.imageContainer {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.imageSlider {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease;
+}
+
+.imageWrapper {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.favoriteButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--text-color);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #666;
+    z-index: 2;
+    transition: transform 0.2s;
+}
+
+.favoriteButton:hover {
+    transform: scale(1.1);
+}
+
+.slideButton {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    transition: all 0.2s;
+    opacity: 0;
+}
+
+.imageContainer:hover .slideButton {
+    opacity: 1;
+}
+
+.slideButton:hover {
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.prevButton {
+    left: 10px;
+}
+
+.nextButton {
+    right: 10px;
+}
+
+.dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 2;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dot:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.activeDot {
+    background: white;
+}
+
+.newBadge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: black;
+    color: var(--text-color);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 2;
+}
+
+.content {
+    padding: 15px;
+}
+
+.address {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.location {
+    margin: 8px 0;
+    color: #666;
+    font-size: 14px;
+    height: 70px;
+}
+
+.owner {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    gap: 8px;
+    font-size: 14px;
+    color: #666;
+    border: 1px solid #eaeaea;
+    padding: 3px;
+    width: 70%;
+    border-radius: 20px;
+}
+.owner img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 4px;
+    margin-left: 8px;
+}
+.ownerAvatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.details {
+    margin-top: 10px;
+}
+
+.price {
+    font-weight: 600;
+    color: #333;
+    font-size: 18px;
+}
+
+.info {
+    color: #666;
+    font-size: 14px;
+    margin-top: 4px;
+}

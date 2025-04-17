@@ -11,16 +11,19 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+MEDIA_URL = '/media/'  # URL để truy cập file qua browser
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Đường dẫn tuyệt đối đến thư mục media
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^is3n4mfbz@smz4i%+^512l60u2q5esw_9ha@2kwpcpu7#j&j7'
+SECRET_KEY = 'django-insecure-u7qa_pj66o6xvg+_-j3j@p!39pu%9(ec(#udo&!siz&4y3mn3u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -30,6 +33,8 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+SITE_ID = 2 
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,7 +42,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'user',
+    'city',
+    'district',
+    'rental_post',
+    'review',
+    'image',
+    'rest_framework',
+    'corsheaders',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -47,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -68,7 +83,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
-
+AUTH_USER_MODEL = 'user.User'
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -99,6 +115,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# khanhvn3103
+# 123Khanh
+# iobj pnjl wovw ppgv
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -121,3 +149,27 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'khanhvn3103@gmail.com'                # Thay bằng Gmail của bạn
+EMAIL_HOST_PASSWORD = 'iobj pnjl wovw ppgv'          # Dán App Password (16 ký tự)
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# from django.core.mail import send_mail
+# send_mail(
+#     'Test Email Khanh',
+#     'Đây là email test từ Phuong iu dau cua Manh',
+#     'khanhvn3103@gmail.com',
+#     ['pmanhh19@gmail.com'],  # Email người nhận
+# )
+
+# Frontend URL để click link xác thực → có thể là React route
+FRONTEND_URL = "http://localhost:3000"
