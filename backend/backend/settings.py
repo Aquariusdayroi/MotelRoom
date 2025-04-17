@@ -49,24 +49,9 @@ INSTALLED_APPS = [
     'review',
     'image',
     'rest_framework',
-    'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
+    'corsheaders',
 ]
 
-SOCIAL_ACCOUNT__PROVIDERS = {
-    "google" : {
-        "SCOPE" : [
-            "email",
-            "profile",
-        ],
-        "AUTH_PARAMS" : {"access_type" : "online"}
-    }
-}
-
-SOCIALACCOUNT_LOGIN_ON_GET = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -76,7 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -99,7 +84,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 AUTH_USER_MODEL = 'user.User'
-
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -132,7 +117,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # khanhvn3103
 # 123Khanh
-
+# iobj pnjl wovw ppgv
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -165,10 +150,26 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-)
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'khanhvn3103@gmail.com'                # Thay bằng Gmail của bạn
+EMAIL_HOST_PASSWORD = 'iobj pnjl wovw ppgv'          # Dán App Password (16 ký tự)
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# from django.core.mail import send_mail
+# send_mail(
+#     'Test Email Khanh',
+#     'Đây là email test từ Phuong iu dau cua Manh',
+#     'khanhvn3103@gmail.com',
+#     ['pmanhh19@gmail.com'],  # Email người nhận
+# )
+
+# Frontend URL để click link xác thực → có thể là React route
+FRONTEND_URL = "http://localhost:3000"
