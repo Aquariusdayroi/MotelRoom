@@ -1,71 +1,79 @@
 import React, { useState } from "react";
-import styles from "../styles/SignIn.module.css";
+import styles from "../styles/modal.module.css";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { motion } from "framer-motion";
+import { emailRegex, passwordRegex, nameRegex } from "../components/validationRegex";
 
-function SignInForm({ onSwitch }) {
-    const [useEmail, setUseEmail] = useState(true);
+function SignUpForm({ onSwitch }) {
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [preShowPassword, setPreShowPassword] = useState(false);
     const [agree, setAgree] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Xử lý logic đăng ký ở đây
-        console.log({
-            email,
-            phone,
-            password,
-            confirmPassword,
-            agree,
-        });
+
+        if (!nameRegex.test(name)) {
+            setErrorMsg("Tên người dùng phải có 2 từ trở lên và viết hoa chữ cái đầu, không chứa chữ số!");
+            return;
+        }
+        if (!emailRegex.test(email)) {
+            setErrorMsg("Email phải được nhập theo định dạng XXX@gmail.com");
+            return;
+        }
+        if (!passwordRegex.test(password)) {
+            setErrorMsg("Mật khẩu phải bắt đầu bằng chữ in hoa và có độ dài ít nhất là 8 ký tự!");
+            return;
+        }
+        if (password !== confirmPassword) {
+            setErrorMsg("Mật khẩu nhập lại không khớp!");
+            return;
+        }
+        if (!agree) {
+            setErrorMsg("Bạn cần đồng ý với điều khoản!");
+            return;
+        }
+
+        setErrorMsg("");
     };
 
     return (
-        <form className={styles.register_box} onSubmit={handleSubmit}>
-            <h2 className={styles.title}>Đăng ký</h2>
+        <motion.form
+            className={`${styles.register_box} animate-fade`}
+            onSubmit={handleSubmit}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+        >
+            <h2 className={styles.title_re}>Đăng ký</h2>
 
-            <div className={styles.tab_header}>
-                <div
-                    className={`${styles.tab} ${useEmail ? styles.active : ""}`}
-                    onClick={() => setUseEmail(true)}
-                >
-                    Sử dụng địa chỉ email
-                </div>
-                <div
-                    className={`${styles.tab} ${!useEmail ? styles.active : ""}`}
-                    onClick={() => setUseEmail(false)}
-                >
-                    Sử dụng số điện thoại
-                </div>
+            <div style={{ minHeight: "24px" }}>
+                {errorMsg && <div style={{ color: "red", fontSize: "0.9rem" }}>{errorMsg}</div>}
             </div>
 
-            {useEmail ? (
-                <div className={styles.input_group}>
-                    <span className="material-symbols-outlined">account_circle</span>
-                    <input
-                        type="email"
-                        placeholder="Email của bạn"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                </div>
-            ) : (
-                <div className={styles.input_group}>
-                    <span className="material-symbols-outlined">account_circle</span>
-                    <input
-                        type="tel"
-                        placeholder="Số điện thoại của bạn"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        required
-                    />
-                </div>
-            )}
+            <div className={styles.input_group}>
+                <span className="material-symbols-outlined">badge</span>
+                <input
+                    type="text"
+                    placeholder="Họ tên"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
+            </div>
+
+            <div className={styles.input_group}>
+                <span className="material-symbols-outlined">mail</span>
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+            </div>
 
             <div className={styles.input_group}>
                 <span className="material-symbols-outlined">lock</span>
@@ -74,13 +82,8 @@ function SignInForm({ onSwitch }) {
                     placeholder="Mật khẩu"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    required
                 />
-                <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className={styles.btnShowPassword}
-                >
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className={styles.btnShowPassword}>
                     {showPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
                 </button>
             </div>
@@ -92,35 +95,25 @@ function SignInForm({ onSwitch }) {
                     placeholder="Nhập lại mật khẩu"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
                 />
-                <button
-                    type="button"
-                    onClick={() => setPreShowPassword(!preShowPassword)}
-                    className={styles.btnShowPassword}
-                >
+                <button type="button" onClick={() => setPreShowPassword(!preShowPassword)} className={styles.btnShowPassword}>
                     {preShowPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
                 </button>
             </div>
 
             <label className={styles.checkbox}>
-                <input
-                    type="checkbox"
-                    checked={agree}
-                    onChange={() => setAgree(!agree)}
-                />
-                Tôi đồng ý với điều khoản và chính sách của Simi
+                <input type="checkbox" checked={agree} onChange={() => setAgree(!agree)} /> Tôi đồng ý với điều khoản và chính sách của Simi
             </label>
 
-            <button type="submit" className={styles.btn_submit}>
-                ĐĂNG KÝ
-            </button>
+            <button type="submit" className={styles.btn_submit}>ĐĂNG KÝ</button>
 
-            <p className={styles.login_link}>
-                Đã có tài khoản? trở về <a href="#" onClick={onSwitch}>Đăng nhập</a>
-            </p>
-        </form>
+            <div className="d-flex justify-content-center mt-3">
+                <p className={styles.login_link}>
+                    Đã có tài khoản? trở về <a href="#" onClick={onSwitch}>Đăng nhập</a>
+                </p>
+            </div>
+        </motion.form>
     );
 }
 
-export default SignInForm;
+export default SignUpForm;

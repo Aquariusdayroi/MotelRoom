@@ -4,6 +4,7 @@
     border-radius: 12px;
     width: 100%;
     max-width: 400px;
+    height: 560px;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -12,6 +13,12 @@
     font-size: 28px;
     font-weight: bold;
     margin-bottom: 20px;
+}
+
+.title_re {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
 }
 
 .tab_header {
@@ -33,7 +40,7 @@
 }
 
 .tab.active {
-    border-color: #00bcd4;
+    border-color: #00bcd4;  
     font-size: 14px;
 }
 
@@ -189,4 +196,63 @@
     cursor: pointer;
     border: none;
     background-color: #ffffff;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade {
+    animation: fadeIn 0.5s ease-in-out;
+    animation-fill-mode: both;
+}
+
+.input_group input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+    transition: 0.3s ease-in-out;
+}
+
+.btn_submit:hover,
+.btnLogin:hover {
+    background-color: #0056b3;
+    box-shadow: 0 0 10px #007bff;
+    transition: all 0.3s ease-in-out;
+}
+
+.btnGoogle {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #000000;
+    width: 100%;
+    height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.btnGoogle:hover {
+    background-color: #f2f2f2;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.error {
+    color: red;
+    font-size: 0.85rem;
+    margin-top: 4px;
+    line-height: 1.4;
 }
