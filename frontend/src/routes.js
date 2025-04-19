@@ -1,15 +1,11 @@
-import {
-    BrowserRouter as Router,
-    Routes,
-    Route,
-    useLocation,
-} from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
-import Intro from "./pages/Intro";
-import Home from "./pages/Home";
-import Profile from "./pages/Profile";
-import Login from "./pages/Login";
-import Layout from "./layout/Layout";
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import Intro from './pages/Intro';
+import Home from './pages/Home';
+import Profile from './pages/Profile';
+import Login from './pages/Login';
+import Layout from './layout/Layout';
+import Detail from './pages/Detail';
 
 export default function AppRoutes() {
     return (
@@ -36,6 +32,14 @@ function AnimatedRoutes() {
                     }
                 />
                 <Route path="/login" element={<Login />} />
+                <Route
+                    path="/detail/:roomId"
+                    element={
+                        <Layout>
+                            <Detail />
+                        </Layout>
+                    }
+                />
             </Routes>
         </AnimatePresence>
     );
