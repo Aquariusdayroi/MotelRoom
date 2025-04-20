@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout, get_user_model
 
-from rest_framework import generics, serializers, status
+from rest_framework import generics, serializers, status, permissions
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 from user.models import User
-from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer
+from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer, LogoutSerializer 
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 from datetime import datetime
@@ -105,4 +105,34 @@ class GoogleLoginView(APIView):
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
+#---------------------------------------------------------------------------------------------------#
+#Api Đăng xuất
+class LogoutView(APIView):
+    permission_classes = [AllowAny]
 
+    def post(self, request):
+        serializer = LogoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Đăng xuất thành công"}, status=status.HTTP_205_RESET_CONTENT)
+
+#---------------------------------------------------------------------------------------------------#
+#Api lấy thông tin user
+class GetUserAPIView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated] 
+
+    def get_object(self):
+        return self.request.user  # Trả về thông tin của user hiện tại
+
+#---------------------------------------------------------------------------------------------------#
+#Api cập nhật user
+class UpdateUserAPIView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated] 
+
+    def get_object(self):
+        return self.request.user 
+    

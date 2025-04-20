@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserListCreateAPIView, UserRetrieveUpdateDestroyAPIView, RegisterAPIView, GoogleLoginView, VerifyEmailView
+from .views import UserListCreateAPIView, UserRetrieveUpdateDestroyAPIView, RegisterAPIView, GoogleLoginView, VerifyEmailView, LogoutView
 
 
 from .views import CustomTokenObtainPairView
@@ -11,5 +11,8 @@ urlpatterns = [
     path('register', RegisterAPIView.as_view(), name = 'register' ), # api đăng ký 
     path('login/google', GoogleLoginView.as_view(), name='google-login'), # api đăng nhập bằng google
     path('verify-email/<uidb64>/<token>/', VerifyEmailView.as_view(), name='verify-email'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path("get_user/<int:pk>/", UserRetrieveUpdateDestroyAPIView.as_view(), name="get_user"),
+    path('updateUser/<int:pk>/', UserRetrieveUpdateDestroyAPIView.as_view(), name='update-user'),
 ]
 

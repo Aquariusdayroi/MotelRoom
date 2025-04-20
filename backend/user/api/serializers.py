@@ -6,7 +6,7 @@ from django.contrib.auth.models import update_last_login
 #JWT token
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 #Google
 from google.oauth2 import id_token
@@ -167,3 +167,51 @@ class GoogleLoginSerializer(serializers.Serializer):
                 "role": user.role
             }
         }
+
+#---------------------------------------------------------------------------------------------------#
+#Serializer Đăng xuất
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+        return attrs
+
+    def save(self, **kwargs):
+        print(f"[DEBUG] Received token: {self.token}")
+        try:
+            token = RefreshToken(self.token)
+            token.blacklist()
+        except TokenError as e:
+            print(f"[DEBUG] TokenError: {str(e)}")
+            self.fail('invalid_token')
+
+#---------------------------------------------------------------------------------------------------#
+#Serializer Lấy thông tin người dùng
+class UserDetailSerializer(serializers.ModelSerializer):
+    city_name = serializers.CharField(source='city.name_city', read_only=True, default=None)
+    district_name = serializers.CharField(source='district.name_district', read_only=True, default=None)
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'email', 'first_name', 'last_name', 'phone_number',
+            'detail_address', 'city_name', 'district_name',
+            'avatar', 'image_front_ccd', 'image_after_cccd', 'birthday',
+            'created', 'updated_at'
+        ]
+        read_only_fields = ['created', 'updated_at']
+
+
+#---------------------------------------------------------------------------------------------------#
+#Serializer Cập nhật thông tin người dùng
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'first_name', 'last_name', 'phone_number',
+            'detail_address', 'city', 'district',
+            'avatar', 'image_front_ccd', 'image_after_cccd', 'birthday'
+        ]
+        read_only_fields = ['email']  # Không cho phép cập nhật email   
