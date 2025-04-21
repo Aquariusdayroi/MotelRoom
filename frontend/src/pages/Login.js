@@ -1,5 +1,5 @@
 import styles from "../styles/Login.module.css"; // CSS
-import logo from "../assets/Logo.png"; // background
+import logo from "../assets/img/logo.png";
 import backgroundLogin from "../assets/BackgroundLogin.png";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";

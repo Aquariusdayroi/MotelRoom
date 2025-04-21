@@ -36,6 +36,7 @@ function AnimatedRoutes() {
                     }
                 />
                 <Route path="/login" element={<Login />} />
+                <Route path="/profile" element={<Profile />} />
             </Routes>
         </AnimatePresence>
     );
