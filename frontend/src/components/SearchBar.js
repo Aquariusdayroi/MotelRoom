@@ -2,11 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import styles from "../styles/Search.module.css";
 import ButtonPrimary from "./buttonUI/ButtonPrimary";
 import ItemSearch from "./buttonUI/ItemSearch";
-import AreaModal, { destinations } from "./model/AreaModal";
-import RoomTypeModal from "./model/RoomTypeModal";
-import PriceModal from "./model/PriceModal";
+import AreaModal, { destinations } from "./modal/AreaModal";
+import RoomTypeModal from "./modal/RoomTypeModal";
+import PriceModal from "./modal/PriceModal";
+import { Search } from "lucide-react";
 
-const Search = ({
+const SearchBar = ({
     inHeader = false,
     onExpandChange,
     isHeaderSearch = false,
@@ -15,7 +16,6 @@ const Search = ({
     const [anchorEl, setAnchorEl] = useState(null);
     const [isExpanded, setIsExpanded] = useState(false);
     const [filteredDestinations, setFilteredDestinations] = useState([]);
-    const [isAnimating, setIsAnimating] = useState(false);
     const inputRef = useRef(null);
     const [isRoomTypeModalOpen, setIsRoomTypeModalOpen] = useState(false);
     const [roomTypeAnchorEl, setRoomTypeAnchorEl] = useState(null);
@@ -69,7 +69,6 @@ const Search = ({
     const handleAreaChange = (e) => {
         const value = e.target.value;
         setArea(value);
-        // Filter destinations based on input
         const filtered = destinations.filter((dest) =>
             dest.name.toLowerCase().includes(value.toLowerCase())
         );
@@ -78,7 +77,6 @@ const Search = ({
 
     const handleAreaFocus = (event) => {
         handleOpenModal(event);
-        // Show all destinations when first focused
         setFilteredDestinations(destinations);
     };
     const handleOpenRoomTypeModal = (event) => {
@@ -128,12 +126,12 @@ const Search = ({
         }
     };
     const handlePriceFromChange = (e) => {
-        const value = e.target.value.replace(/[^0-9]/g, ""); // Chỉ cho phép nhập số
+        const value = e.target.value.replace(/[^0-9]/g, "");
         setPriceFrom(value);
     };
 
     const handlePriceToChange = (e) => {
-        const value = e.target.value.replace(/[^0-9]/g, ""); // Chỉ cho phép nhập số
+        const value = e.target.value.replace(/[^0-9]/g, "");
         setPriceTo(value);
     };
 
@@ -166,7 +164,6 @@ const Search = ({
                 searchRef.current &&
                 !searchRef.current.contains(event.target)
             ) {
-                // Nếu click ra ngoài Search
                 closeAllModals();
                 setIsExpanded(false);
                 setIsAnyModalOpen(false);
@@ -220,7 +217,7 @@ const Search = ({
                         placeholder="Chọn giá từ"
                         inHeader={inHeader && !isExpanded}
                         onClick={handleOpenPriceFromModal}
-                        onChange={handlePriceFromChange} // Thêm onChange handler
+                        onChange={handlePriceFromChange}
                         value={
                             priceFrom
                                 ? new Intl.NumberFormat("vi-VN", {
@@ -239,7 +236,7 @@ const Search = ({
                         placeholder="Chọn giá đến"
                         inHeader={inHeader && !isExpanded}
                         onClick={handleOpenPriceToModal}
-                        onChange={handlePriceToChange} // Thêm onChange handler
+                        onChange={handlePriceToChange}
                         value={
                             priceTo
                                 ? new Intl.NumberFormat("vi-VN", {
@@ -253,7 +250,7 @@ const Search = ({
                     />
                     <div>
                         <ButtonPrimary
-                            icon={true}
+                            icon={<Search size={30} />}
                             className={styles.searchButton}
                         />
                     </div>
@@ -266,14 +263,14 @@ const Search = ({
                 anchorEl={anchorEl}
                 filteredDestinations={filteredDestinations}
                 isHeaderSearch={isHeaderSearch}
-                onSelect={(value) => setArea(value)} // Thêm prop onSelect
+                onSelect={(value) => setArea(value)}
             />
             <RoomTypeModal
                 open={isRoomTypeModalOpen}
                 onClose={handleCloseRoomTypeModal}
                 anchorEl={roomTypeAnchorEl}
                 isHeaderSearch={isHeaderSearch}
-                onSelect={(value) => setRoomType(value)} // Thêm prop onSelect
+                onSelect={(value) => setRoomType(value)}
             />
             <PriceModal
                 open={isPriceFromModalOpen}
@@ -296,4 +293,4 @@ const Search = ({
     );
 };
 
-export default Search;
+export default SearchBar;

@@ -11,6 +11,7 @@ const RoomCard = ({
     type,
     area,
     isNew,
+    onClick,
 }) => {
     const [isFavorite, setIsFavorite] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -42,7 +43,7 @@ const RoomCard = ({
     };
 
     return (
-        <div className={styles.card}>
+        <div className={styles.card} onClick={onClick}>
             <div className={styles.imageContainer}>
                 <div
                     className={styles.imageSlider}
