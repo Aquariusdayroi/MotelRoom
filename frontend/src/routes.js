@@ -54,6 +54,11 @@ function AnimatedRoutes() {
                         </Layout>
                     }
                 />
+                <Route
+                    path="/profile"
+                    enableScroll={false}
+                    element={<Profile />}
+                />
             </Routes>
         </AnimatePresence>
     );
