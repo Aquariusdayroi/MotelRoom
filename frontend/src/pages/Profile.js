@@ -3,7 +3,7 @@ function Profile() {
     const navigate = useNavigate();
 
     const handleStart = () => {
-        navigate("/profile"); // Điều hướng sang trang Home
+        navigate("/profile");
     };
     return <div>cc</div>;
 }

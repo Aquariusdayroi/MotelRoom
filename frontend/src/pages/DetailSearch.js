@@ -1,11 +1,11 @@
 import styles from "../styles/DetailSearch.module.css";
-import RoomCard from "../components/RoomCard";
+import RoomCard from "../components/RoomCard"; // Đảm bảo đã import RoomCard đúng cách
 import { images } from "../assets/images";
-
+import { useState } from "react";
 const DetailSearch = () => {
-    // Dữ liệu mẫu cho các phòng
     const roomData = [
         {
+            id: 1,
             images: [images.background, images.background],
             address: "Phòng trọ Quận 1",
             location:
@@ -17,6 +17,7 @@ const DetailSearch = () => {
             isNew: true,
         },
         {
+            id: 2,
             images: [images.background],
             address: "Phòng trọ Quận 2",
             location:
@@ -28,6 +29,7 @@ const DetailSearch = () => {
             isNew: false,
         },
         {
+            id: 3,
             images: [images.background],
             address: "Phòng trọ Quận 3",
             location:
@@ -40,6 +42,15 @@ const DetailSearch = () => {
         },
     ];
 
+    const [selectedRoomId, setSelectedRoomId] = useState(null);
+    const [selectedLocation, setSelectedLocation] = useState(null);
+
+    const handleRoomClick = (id) => {
+        setSelectedRoomId(id);
+        const selectedRoom = roomData.find((room) => room.id === id);
+        setSelectedLocation(selectedRoom.location);
+    };
+
     return (
         <div className={styles.container}>
             <div className="row">
@@ -48,17 +59,17 @@ const DetailSearch = () => {
                         Hơn 1.000 chỗ ở
                     </div>
                     <div className="row g-4">
-                        {roomData.map((room, index) => (
-                            <div key={index} className="col-md-4">
-                                <RoomCard {...room} />
+                        {roomData.map((room) => (
+                            <div key={room.id} className="col-md-4">
+                                <RoomCard
+                                    {...room}
+                                    onClick={() => handleRoomClick(room.id)}
+                                />
                             </div>
                         ))}
                     </div>
                 </div>
-                <div className="col-md-3">
-                    <div>map</div>
-                    <div>cc</div>
-                </div>
+                <div className="col-md-3">cc</div>
             </div>
         </div>
     );

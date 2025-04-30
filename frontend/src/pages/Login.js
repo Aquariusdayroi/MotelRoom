@@ -2,7 +2,7 @@ import styles from "../styles/Login.module.css"; // CSS
 import logo from "../assets/Logo.png"; // background
 import backgroundLogin from "../assets/BackgroundLogin.png";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -10,6 +10,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import LoginForm from "../components/LoginForm";
 import SignInForm from "../components/SignInForm";
 import Footer from "../layout/components/Footer";
+import { images } from "../assets/images";
 
 function Login() {
     const { register, handleSubmit } = useForm();
@@ -19,18 +20,61 @@ function Login() {
         console.log("Đăng nhập với:", data);
     };
     const [isLogin, setIsLogin] = useState(true);
+
+    const pageVariants = {
+        initial: {
+            opacity: 0,
+            x: -100,
+        },
+        animate: {
+            opacity: 1,
+            x: 0,
+        },
+        exit: {
+            opacity: 0,
+            x: 100,
+        },
+    };
+
+    const pageTransition = {
+        type: "tween",
+        ease: "easeInOut",
+        duration: 0.3,
+    };
     return (
         <div>
             <header className={styles.header}>
-                <img src={logo} alt="Logo" />
+                <Link to="/home">
+                    <img src={images.logo} className={styles.logo} />
+                </Link>
             </header>
             <div className={styles.container}>
                 <div className={styles.sectionForm}>
-                    {isLogin ? (
-                        <LoginForm onSwitch={() => setIsLogin(false)} /> // Hiển thị LoginForm
-                    ) : (
-                        <SignInForm onSwitch={() => setIsLogin(true)} /> // Hiển thị SignInForm
-                    )}
+                    <AnimatePresence mode="wait">
+                        {isLogin ? (
+                            <motion.div
+                                key="login"
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                                variants={pageVariants}
+                                transition={pageTransition}
+                            >
+                                <LoginForm onSwitch={() => setIsLogin(false)} />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="register"
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                                variants={pageVariants}
+                                transition={pageTransition}
+                            >
+                                <SignInForm onSwitch={() => setIsLogin(true)} />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
                 <div className={styles.sectionLogo}>
                     <img

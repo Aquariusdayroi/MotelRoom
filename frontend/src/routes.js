@@ -37,7 +37,7 @@ function AnimatedRoutes() {
                     }
                 />
                 <Route
-                    path="/detailSearch"
+                    path="/detail-search"
                     element={
                         <Layout enableScroll={false}>
                             <DetailSearch />

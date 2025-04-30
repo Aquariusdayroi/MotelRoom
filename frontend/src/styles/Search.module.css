@@ -18,7 +18,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    /* width: 1000px; */
+    width: 1000px;
     padding-left: 0.8rem;
     padding-top: 0.4rem;
     padding-bottom: 0.4rem;
@@ -82,7 +82,7 @@
     display: flex;
     justify-content: space-between;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    max-width: 50rem;
+    max-width: 40rem;
     margin: 0 auto;
 }
 

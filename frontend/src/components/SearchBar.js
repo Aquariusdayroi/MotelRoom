@@ -2,11 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import styles from "../styles/Search.module.css";
 import ButtonPrimary from "./buttonUI/ButtonPrimary";
 import ItemSearch from "./buttonUI/ItemSearch";
-import AreaModal, { destinations } from "./model/AreaModal";
-import RoomTypeModal from "./model/RoomTypeModal";
-import PriceModal from "./model/PriceModal";
+import AreaModal, { destinations } from "./modal/AreaModal";
+import RoomTypeModal from "./modal/RoomTypeModal";
+import PriceModal from "./modal/PriceModal";
+import { Search } from "lucide-react";
 
-const Search = ({
+const SearchBar = ({
     inHeader = false,
     onExpandChange,
     isHeaderSearch = false,
@@ -249,7 +250,7 @@ const Search = ({
                     />
                     <div>
                         <ButtonPrimary
-                            icon={true}
+                            icon={<Search size={30} />}
                             className={styles.searchButton}
                         />
                     </div>
@@ -292,4 +293,4 @@ const Search = ({
     );
 };
 
-export default Search;
+export default SearchBar;

@@ -12,6 +12,7 @@
     height: 100%;
     width: 50%;
     background-color: #37c5e5;
+    z-index: 100;
 }
 
 .sectionLogo {
@@ -75,17 +76,17 @@
     height: 48px;
     border: #000000 1px solid;
     margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .containerForm {
     background: white;
-    width: 405px;
-    height: 483px;
-    /* width: 80%;
-    height: 75%; */
+    width: 100%;
+    height: auto;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin: 25%;
     padding: 20px 40px;
 }
 
@@ -154,4 +155,8 @@
 
 .btnGoogle img {
     margin-right: 10px;
+}
+.buttonLoginForm {
+    width: 100%;
+    justify-content: center !important;
 }
