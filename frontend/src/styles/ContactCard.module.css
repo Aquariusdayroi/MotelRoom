@@ -1,0 +1,42 @@
+.wrapper {
+    width: 100%;
+    max-width: 360px;
+}
+
+.call,
+.zalo,
+.maps {
+    color: white;
+    font-weight: 600;
+    padding: 10px 6px;
+    transition: all 0.3s ease;
+    border: none;
+    outline: none;
+    height: 50px;
+    align-items: center;
+    line-height: 1;
+}
+
+.call > img,
+.zalo > img,
+.maps > img {
+    width: 24px;
+}
+
+.call:hover,
+.zalo:hover,
+.maps:hover {
+    opacity: 0.8;
+}
+
+.call {
+    background-color: #6adafb;
+}
+
+.zalo {
+    background-color: #034bff;
+}
+
+.maps {
+    background-color: #60a850;
+}
