@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Layout from "./layout/Layout";
 import DetailSearch from "./pages/DetailSearch";
+import Detail from "./pages/Detail";
 
 export default function AppRoutes() {
     return (
@@ -45,6 +46,14 @@ function AnimatedRoutes() {
                     }
                 />
                 <Route path="/login" element={<Login />} />
+                <Route
+                    path="/detail/:roomId"
+                    element={
+                        <Layout enableScroll={false}>
+                            <Detail />
+                        </Layout>
+                    }
+                />
             </Routes>
         </AnimatePresence>
     );
