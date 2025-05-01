@@ -4,11 +4,17 @@ from district.models import District
 from user.models import User
 # Create your models here.
 class RentalPost(models.Model):
+    # HOME_TYPES = [
+    #     ('Chung cư', 'Chung cư'),
+    #     ('Nhà trọ', 'Nhà trọ'),
+    #     ('Dãy trọ', 'Dãy trọ'),
+    #     ('Share phòng', 'Share phòng'),
+    # ]
     HOME_TYPES = [
-        ('Chung cư', 'Chung cư'),
-        ('Nhà trọ', 'Nhà trọ'),
-        ('Dãy trọ', 'Dãy trọ'),
-        ('Share phòng', 'Share phòng'),
+        ('Phòng trọ', 'Phòng trọ'),
+        ('Căn hộ dịch vụ', 'Căn hộ dịch vụ'),
+        ('studio', 'studio'),
+        ('duplex', 'duplex'),
     ]
 
     #ForeignKey
@@ -29,8 +35,8 @@ class RentalPost(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
-    latitude = models.DecimalField(max_digits=8, decimal_places=2)
-    longitude = models.DecimalField(max_digits=8, decimal_places=2)
+    latitude = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    longitude = models. DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     has_toilet = models.BooleanField()
     private_rental = models.BooleanField()
     has_washing = models.BooleanField()

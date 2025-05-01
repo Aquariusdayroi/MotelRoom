@@ -64,7 +64,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # Các trường bắt buộc
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    # REQUIRED_FIELDS = ['first_name', 'last_name']
+    REQUIRED_FIELDS = ['first_name']
 
     objects = CustomUserManager()
 

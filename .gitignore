@@ -4,3 +4,5 @@ requirements.txt
 backend/
 venv/
 backend/db.sqlite3
+backend/insertRentalPost.py
+backend/scriptInsertCityAndDistrict.py
