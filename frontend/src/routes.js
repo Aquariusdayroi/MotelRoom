@@ -10,6 +10,7 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Layout from "./layout/Layout";
+import PostManagement from "./pages/PostManagement";
 
 export default function AppRoutes() {
     return (
@@ -36,6 +37,9 @@ function AnimatedRoutes() {
                     }
                 />
                 <Route path="/login" element={<Login />} />
+                <Route path="/post" element={
+                    <PostManagement />
+                } />
             </Routes>
         </AnimatePresence>
     );

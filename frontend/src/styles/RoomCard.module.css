@@ -190,3 +190,58 @@
     font-size: 14px;
     margin-top: 4px;
 }
+
+.actionContainer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+    position: relative;
+}
+  
+.menuDots {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+  
+  .dotsButton {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .dotsButton:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .dropdownContent {
+    position: absolute;
+    bottom: 110%;
+    right: 0;
+    background-color: #55E0FF;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 999;
+    min-width: 120px;
+    padding: 4px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .dropdownContent button {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    color: #f1f1f1;
+  }
+  

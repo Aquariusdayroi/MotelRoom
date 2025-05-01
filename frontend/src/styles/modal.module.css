@@ -40,7 +40,7 @@
 }
 
 .tab.active {
-    border-color: #00bcd4;  
+    border-color: #00bcd4;
     font-size: 14px;
 }
 
@@ -253,6 +253,6 @@
 .error {
     color: red;
     font-size: 0.85rem;
+    margin-left: 32px;
     margin-top: 4px;
-    line-height: 1.4;
 }
