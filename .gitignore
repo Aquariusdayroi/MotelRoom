@@ -1,0 +1,6 @@
+frontend/
+README.md
+requirements.txt
+venv/
+backend/db.sqlite3
+.vscode
