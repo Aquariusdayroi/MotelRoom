@@ -1,10 +1,10 @@
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 
-const Layout = ({ children }) => {
+const Layout = ({ children, enableScroll = true }) => {
     return (
         <>
-            <Header />
+            <Header enableScroll={enableScroll} />
             {children}
             <Footer />
         </>

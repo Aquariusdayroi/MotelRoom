@@ -1,21 +1,23 @@
 import styles from "../styles/Intro.module.css";
 
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+
 import { images } from "../assets/images";
 
 function Intro({ onStart }) {
     const navigate = useNavigate();
 
     const handleStart = () => {
-        navigate("/home");
+        navigate("/home"); // Điều hướng sang trang Home
     };
     return (
         <div>
             <motion.div
                 className={styles.container}
+                style={{ backgroundImage: `url(${images.background})` }}
                 initial={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: "-100vh" }}
+                exit={{ opacity: 0, y: "-100vh" }} // Hiệu ứng cuộn lên khi rời đi
                 transition={{ duration: 1, ease: "easeInOut" }}
                 onClick={handleStart}
             >
