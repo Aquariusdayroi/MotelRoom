@@ -1,6 +1,5 @@
 frontend/
 README.md
 requirements.txt
-backend/
 venv/
 backend/db.sqlite3
