@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from user.models import User
+from user.models import User, OwnerRequest
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import update_last_login
+from django.contrib.auth import authenticate
 
 #JWT token
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -44,34 +45,36 @@ def send_verification_email(user, request):
 
 #Serializer Đăng nhập
 class UserSerializer(serializers.ModelSerializer):
-    city_name = serializers.CharField(source='city.name_city', read_only=True, default=None)
-    district_name = serializers.CharField(source='district.name_district', read_only=True, default=None)
+    city_name = serializers.CharField(source='address.name_city', read_only=True, default=None)
+    district_name = serializers.CharField(source='addres.name_district', read_only=True, default=None)
+    address_name = serializers.CharField(source='addres.name_address', read_only=True, default=None)
     class Meta:
         model = User
         fields = [
-            'id', 'email', 'first_name', 'last_name', 'phone_number',
-            'detail_address', 'city_name', 'district_name',
-            'avatar', 'image_front_ccd', 'image_after_cccd', 'birthday',
-            'created', 'updated_at', 'role', 'is_active'
+            'email', 'fullname', 'phone_number',
+            'address_name', 'district_name', 'city_name',
+            'avatar', 'birthday', 'role'
         ]
-        read_only_fields = ['created', 'updated_at']
+        read_only_fields = ['id', 'created', 'updated_at', 'is_active', 'registration_type', 'email_verified_at']
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        data = super().validate(attrs)
-
-        user = self.user
+        user = authenticate(email=attrs['email'], password=attrs['password'])
+        if not user:
+            raise AuthenticationFailed("Email hoặc mật khẩu không đúng.")
+        if not user.is_active:
+            raise AuthenticationFailed("Tài khoản chưa được kích hoạt.")
+        refresh = self.get_token(user)
         return {
             "success": True,
             "message": "Đăng nhập thành công.",
-            "access": data['access'],
-            "refresh": data['refresh'],
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
             "user": {
                 "user_id": user.id,
                 "email": user.email,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
+                "fullname": user.fullname,
                 "role": user.role
             }
         }
@@ -86,7 +89,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'role', 'password', 'password2']
+        fields = ['email', 'fullname', 'password', 'password2']
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
@@ -100,7 +103,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('password2')
-        user = User.objects.create_user(**validated_data)
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            password=validated_data['password'],
+            fullname=validated_data['fullname'],
+            role='user'
+        )
         user.is_active = False  # Chưa active cho đến khi xác minh
         user.save()
 
@@ -127,8 +135,7 @@ class GoogleLoginSerializer(serializers.Serializer):
 
         # Extract user info from token
         email = idinfo.get("email")
-        first_name = idinfo.get("given_name", "")
-        last_name = idinfo.get("family_name", "")
+        fullname = idinfo.get("name", "")
         google_id = idinfo.get("sub")  # Unique Google User ID
 
         if not email:
@@ -138,8 +145,7 @@ class GoogleLoginSerializer(serializers.Serializer):
         user, created = User.objects.get_or_create(
             email=email,
             defaults={
-                "first_name": first_name,
-                "last_name": last_name,
+                "fullname": fullname,
                 "google_id": google_id,
                 "registration_type": "google",
                 "is_active": True
@@ -162,56 +168,18 @@ class GoogleLoginSerializer(serializers.Serializer):
             "user": {
                 "user_id": user.id,
                 "email": user.email,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
+                "fullname": user.fullname,
                 "role": user.role
             }
         }
 
-#---------------------------------------------------------------------------------------------------#
-#Serializer Đăng xuất
-class LogoutSerializer(serializers.Serializer):
-    refresh = serializers.CharField()
-
-    def validate(self, attrs):
-        self.token = attrs['refresh']
-        return attrs
-
-    def save(self, **kwargs):
-        print(f"[DEBUG] Received token: {self.token}")
-        try:
-            token = RefreshToken(self.token)
-            token.blacklist()
-        except TokenError as e:
-            print(f"[DEBUG] TokenError: {str(e)}")
-            self.fail('invalid_token')
-
-#---------------------------------------------------------------------------------------------------#
-#Serializer Lấy thông tin người dùng
-class UserDetailSerializer(serializers.ModelSerializer):
-    city_name = serializers.CharField(source='city.name_city', read_only=True, default=None)
-    district_name = serializers.CharField(source='district.name_district', read_only=True, default=None)
-
+class OwnerRequestSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = [
-            'id', 'email', 'first_name', 'last_name', 'phone_number',
-            'detail_address', 'city_name', 'district_name',
-            'avatar', 'image_front_ccd', 'image_after_cccd', 'birthday',
-            'created', 'updated_at'
-        ]
-        read_only_fields = ['created', 'updated_at']
+        model = OwnerRequest
+        fields = ['id', 'user', 'cccd', 'image_front_cccd', 'image_back_cccd', 'status', 'rejection_reason', 'created_at', 'reviewed_at']
+        read_only_fields = ['user', 'status', 'rejection_reason', 'created_at', 'reviewed_at']
 
-
-#---------------------------------------------------------------------------------------------------#
-#Serializer Cập nhật thông tin người dùng
-
-class UserUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = [
-            'first_name', 'last_name', 'phone_number',
-            'detail_address', 'city', 'district',
-            'avatar', 'image_front_ccd', 'image_after_cccd', 'birthday'
-        ]
-        read_only_fields = ['email']  # Không cho phép cập nhật email   
+    def validate_user(self, value):
+        if OwnerRequest.objects.filter(user=value).exists():
+            raise serializers.ValidationError("Bạn đã gửi yêu cầu trước đó.")
+        return value

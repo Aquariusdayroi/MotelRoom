@@ -1,15 +1,20 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout, get_user_model
+from django.utils import timezone
+from django.utils.dateparse import parse_date
+from django.db.models import Count
 
-from rest_framework import generics, serializers, status, permissions
+from rest_framework import generics, serializers, status, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.views import APIView
-from user.models import User
-from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer, LogoutSerializer 
+from user.models import User, OwnerRequest
+from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer, OwnerRequestSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
-from datetime import datetime
+import os
+from datetime import datetime, timedelta
 
 #JWT Token
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -20,18 +25,168 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import get_user_model
 
-# Api Lấy Danh sách user và tạo user
-class UserListCreateAPIView(generics.ListCreateAPIView):
+# Api admin lấy danh sách user
+class UserListCreateAPIViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]  # Chỉ admin mới được xài api này
+    permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'], url_path='get-list')
+    def get_list(self, request):
+        # Lấy danh sách người dùng
+        if not request.user.is_superuser and request.user.role != 'admin':
+            return Response({"success": False, 
+                             "message": "Permission denied."
+                            }, 
+                            status=status.HTTP_403_FORBIDDEN)
+        
+        # Lọc theo một số tiêu chí hoặc lấy tất cả người dùng
+        filter_params = {
+            'role': 'role',
+            'city': 'city',
+            'district': 'district',
+            'address': 'address',
+            'email': 'email__icontains',
+            'phone_number': 'phone_number',
+            'fullname': 'fullname__icontains',
+            'is_active': 'is_active',
+        }
+
+        # Tạo một dictionary chứa các bộ lọc
+        filters = {}
+
+        # Duyệt qua các filter_params và lấy giá trị từ request.query_params
+        for param, field in filter_params.items():
+            value = request.query_params.get(param)
+            if value:
+                filters[field] = value
+
+        # Áp dụng các bộ lọc vào queryset
+        if filters:
+            users = User.objects.filter(**filters)
+        else:
+            users = User.objects.all()
+        
+        serializer = self.get_serializer(users, many=True)
+        return Response({
+            "success": True,
+            "message": "Lấy danh sách người dùng thành công.",
+            "users": serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    @action(detail=True, methods=['delete'])
+    def delete(self, request, *args, **kwargs):
+        # Xóa người dùng
+        user_to_delete = self.get_object()
+        
+        if not request.user.is_superuser and request.user.role != 'admin':
+            return Response({"success": False, 
+                             "message": "Permission denied."
+                            }, 
+                            status=status.HTTP_403_FORBIDDEN)
+            
+        # Kiểm tra xem người dùng có quyền xóa chính mình hay không
+        if user_to_delete == request.user:
+            return Response({
+                "success": False, 
+                "message": "Không thể xóa tài khoản của chính mình."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        user_to_delete.delete()
+        return Response({
+            "success": True,
+            "message": "Xóa tài khoản thành công."
+        }, status=status.HTTP_204_NO_CONTENT)
+        
+    @action(detail=False, methods=['get'])
+    def stat(self, request, *args, **kwargs):
+        # Thống kê số lượng người dùng theo tiêu chí
+        total_users = User.objects.count()
+        
+        fields_param = request.query_params.get('fields')
+        if not fields_param:
+            return Response({
+                "success": False,
+                "message": "Thiếu tham số fields. Ví dụ: ?fields=role,city"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        fields = [f.strip() for f in fields_param.split(',')]
+                
+        # Lọc dữ liệu đầu vào trước khi thống kê
+        filterable_fields = [f.name for f in User._meta.fields]  # tất cả field hợp lệ
+        filters = {}
+
+        # Hỗ trợ lọc created, created__gte, created__lte
+        for key in request.query_params:
+            if key == 'fields':
+                continue
+            if key.startswith('created'):
+                date_value = parse_date(request.query_params.get(key))
+                if date_value:
+                    filters[key] = date_value
+            elif key in filterable_fields:
+                filters[key] = request.query_params.get(key)
+
+        filtered_users = User.objects.filter(**filters)
+        filtered_count = filtered_users.count()
+        
+        statistics = {}
+
+        for field in fields:
+            if field not in filterable_fields:
+                continue
+
+            stats = User.objects.values(field).annotate(count=Count('id')).order_by(field)
+            statistics[field] = list(stats)
+
+        return Response({
+            "success": True,
+            "message": "Thống kê số lượng người dùng thành công.",
+            "total_users": total_users,
+            "filtered_users": filtered_count,
+            "statistics": statistics
+        }, status=status.HTTP_200_OK)
 
 #---------------------------------------------------------------------------------------------------#
-# Api Xem Chi tiết, cập nhật, xóa user
+# Api người dùng xem Chi tiết, cập nhật, xóa tài khoản
 class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
+
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]  # Chỉ cần đăng nhập
+    
+    def get_object(self):
+        return self.request.user  # Lấy người dùng hiện tại
+    
+    def retrieve(self, request, *args, **kwargs):
+        # Lấy thông tin người dùng
+        serializer = self.get_serializer(self.get_object())
+        return Response({
+            "success": True,
+            "message": "Lấy thông tin người dùng thành công.",
+            "user": serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    def update(self, request, *args, **kwargs):
+        # Cập nhật thông tin người dùng
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response({
+            "success": True,
+            "message": "Cập nhật thông tin thành công.",
+            "user": serializer.data
+        })
+    
+    def destroy(self, request, *args, **kwargs):
+        # Xóa tài khoản người dùng
+        instance = self.get_object()
+        instance.delete()
+        return Response({
+            "success": True,
+            "message": "Xóa tài khoản thành công."
+        }, status=status.HTTP_204_NO_CONTENT)
 
 
 #---------------------------------------------------------------------------------------------------#
@@ -68,6 +223,7 @@ class VerifyEmailView(APIView):
         else:
             return Response({"success": False, "message": "Liên kết xác minh không hợp lệ hoặc đã hết hạn."}, status=400)
 
+
 #---------------------------------------------------------------------------------------------------#
 #Api Đăng ký
 class RegisterAPIView(generics.CreateAPIView):
@@ -87,7 +243,7 @@ class RegisterAPIView(generics.CreateAPIView):
         return Response({
             "success": True,
             "message": "Đăng ký thành công.",
-            "user": self.get_serializer(user).data
+            "user":  UserSerializer(user).data
         }, status=status.HTTP_201_CREATED)
     
 
@@ -105,34 +261,151 @@ class GoogleLoginView(APIView):
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
-#---------------------------------------------------------------------------------------------------#
-#Api Đăng xuất
-class LogoutView(APIView):
-    permission_classes = [AllowAny]
 
-    def post(self, request):
-        serializer = LogoutSerializer(data=request.data)
+#---------------------------------------------------------------------------------------------------#
+# Xử lý ảnh: xóa sau khi duyệt
+def delete_image_file(image_field):
+    if image_field and os.path.isfile(image_field.path):
+        os.remove(image_field.path)
+
+# API tạo yêu cầu thành Owner
+class OwnerRequestViewSet(viewsets.ModelViewSet):
+    queryset = OwnerRequest.objects.all()
+    serializer_class = OwnerRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'admin':
+            return OwnerRequest.objects.all()
+        return OwnerRequest.objects.filter(user=user)
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        existing_request = OwnerRequest.objects.filter(user=user).first()
+
+        if existing_request:
+            if existing_request.status == 'pending':
+                return Response({
+                    "success": False,
+                    "message": "Yêu cầu đang chờ xử lý."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            elif existing_request.status == 'approved':
+                return Response({
+                    "success": False,
+                    "message": "Bạn đã được xác minh là chủ phòng."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            elif existing_request.status == 'rejected':
+                cooldown_days = 3
+                if existing_request.reviewed_at and timezone.now() < existing_request.reviewed_at + timedelta(days=cooldown_days):
+                    remaining = (existing_request.reviewed_at + timedelta(days=cooldown_days)) - timezone.now()
+                    return Response({
+                        "success": False,
+                        "message": f"Bạn cần chờ thêm {remaining.days} ngày và {remaining.seconds // 3600} giờ trước khi gửi lại yêu cầu."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                    
+                # Cho phép gửi lại -> cập nhật yêu cầu cũ
+                serializer = self.get_serializer(existing_request, data=request.data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save(status='pending', reviewed_at=None, rejection_reason=None)
+                return Response({
+                    "success": True,
+                    "message": "Yêu cầu đã được gửi lại.",
+                    "user": UserSerializer(user).data
+                }, status=status.HTTP_200_OK)
+        
+        # Nếu chưa từng gửi yêu cầu
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"detail": "Đăng xuất thành công"}, status=status.HTTP_205_RESET_CONTENT)
+        serializer.save(user=user)
+        return Response({
+            "success": True,
+            "message": "Yêu cầu đã được gửi thành công.",
+            "user": UserSerializer(user).data
+        }, status=status.HTTP_201_CREATED)
 
-#---------------------------------------------------------------------------------------------------#
-#Api lấy thông tin user
-class GetUserAPIView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated] 
+    @action(detail=False, methods=['get'], url_path='my-request')
+    def my_request(self, request):
+        user = request.user
+        try:
+            owner_request = OwnerRequest.objects.get(user=user)
+            serializer = self.get_serializer(owner_request)
+            return Response({
+                "success": True,
+                "message": "Lấy thông tin yêu cầu thành công.",
+                "request": serializer.data
+            }, status=status.HTTP_200_OK)
+        except OwnerRequest.DoesNotExist:
+            return Response({
+                "success": False,
+                "message": "Bạn chưa gửi yêu cầu nào."
+            }, status=status.HTTP_404_NOT_FOUND)
+            
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser])
+    def get_list(self, request):
+        # Lấy danh sách yêu cầu chủ phòng
+        if not request.user.is_superuser and request.user.role != 'admin':
+            return Response({"success": False, 
+                             "message": "Permission denied."
+                            }, 
+                            status=status.HTTP_403_FORBIDDEN)
+        
+        owner_requests = OwnerRequest.objects.all()
+        serializer = self.get_serializer(owner_requests, many=True)
+        return Response({
+            "success": True,
+            "message": "Lấy danh sách yêu cầu thành công.",
+            "requests": serializer.data
+        }, status=status.HTTP_200_OK)
 
-    def get_object(self):
-        return self.request.user  # Trả về thông tin của user hiện tại
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+    def approve(self, request, pk=None):
+        owner_request = self.get_object()
+        owner_request.status = 'approved'
+        owner_request.reviewed_at = timezone.now()
+        owner_request.save()
 
-#---------------------------------------------------------------------------------------------------#
-#Api cập nhật user
-class UpdateUserAPIView(generics.UpdateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated] 
+        # Cập nhật role user
+        owner_request.user.role = 'owner'
+        owner_request.user.save()
+        
+        # Xóa ảnh
+        delete_image_file(owner_request.image_front_cccd)
+        delete_image_file(owner_request.image_back_cccd)
 
-    def get_object(self):
-        return self.request.user 
-    
+        owner_request.image_front_cccd.delete(save=True)
+        owner_request.image_back_cccd.delete(save=True)
+
+        return Response({
+            "success": True,
+            "message": "Yêu cầu đã được duyệt.",
+            "user": UserSerializer(owner_request.user).data
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+    def reject(self, request, pk=None):
+        owner_request = self.get_object()
+        reason = request.data.get('reason')
+        if not reason:
+            return Response({
+                "success": False,
+                "message": "Lý do từ chối là bắt buộc."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        owner_request.status = 'rejected'
+        owner_request.reviewed_at = timezone.now()
+        owner_request.rejection_reason = reason
+        owner_request.save()
+
+        # Xóa ảnh
+        delete_image_file(owner_request.image_front_cccd)
+        delete_image_file(owner_request.image_back_cccd)
+
+        owner_request.image_front_cccd.delete(save=True)
+        owner_request.image_back_cccd.delete(save=True)
+
+        return Response({
+            "success": True,
+            "message": "Yêu cầu đã bị từ chối.",
+            "user": UserSerializer(owner_request.user).data
+        }, status=status.HTTP_200_OK)

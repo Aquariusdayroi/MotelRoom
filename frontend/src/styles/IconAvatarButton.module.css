@@ -1,0 +1,15 @@
+.iconAvatarButton {
+    background-color: #00bcd4;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.iconAvatarButton:hover {
+    background-color: #0097a7;
+}
