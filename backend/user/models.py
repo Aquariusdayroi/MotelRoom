@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from city.models import City
 from district.models import District
-from address.models import Address
+
 
 
 class CustomUserManager(BaseUserManager):
@@ -30,7 +30,6 @@ class CustomUserManager(BaseUserManager):
 
 
 
-
 class User(AbstractBaseUser, PermissionsMixin):
     REGISTRATION_TYPES = [('local', 'Local'), ('google', 'Google')]
     ROLES = [('user', 'User'), ('owner', 'Owner'), ('admin', 'Admin')]
@@ -40,16 +39,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=255, null=True, blank=True)
     google_id = models.CharField(max_length=255, null=True, blank=True, unique=True)
     registration_type = models.CharField(max_length=10, choices=REGISTRATION_TYPES, default='local')
-    fullname = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=255, null=True, blank=True, unique=True)
+    detail_address = models.CharField(max_length=255, null=True, blank=True)
 
     # ForeignKey
     city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True, related_name='user')
     district = models.ForeignKey(District, on_delete=models.SET_NULL, null=True, blank=True, related_name='user')
-    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True, related_name='user')
-    
 
+    
+    
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='avatars/default.jpg')
+    image_front_ccd = models.CharField(max_length=255, null=True, blank=True)
+    image_after_cccd = models.CharField(max_length=255, null=True, blank=True)
     birthday = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -61,19 +64,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # Các trường bắt buộc
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['fullname']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = CustomUserManager()
 
     def __str__(self):
         return self.email
-
-class OwnerRequest(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    cccd = models.CharField(max_length=12) 
-    image_front_cccd = models.ImageField(upload_to='cccd/front/', null=True, blank=True)
-    image_back_cccd = models.ImageField(upload_to='cccd/back/', null=True, blank=True)
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
-    created_at = models.DateTimeField(auto_now_add=True)
-    reviewed_at = models.DateTimeField(null=True, blank=True)
-    rejection_reason = models.TextField(null=True, blank=True)
