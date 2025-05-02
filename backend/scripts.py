@@ -5,17 +5,19 @@ from tqdm import tqdm
 import random
 from unidecode import unidecode
 from datetime import datetime
+import shutil
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 django.setup()
 
+from django.core.files import File
 
 from city.models import City
 from district.models import District
 from rental_post.models import RentalPost
 from address.models import Address
 from django.contrib.auth import get_user_model
-
+from image.models import Image
 
 def AddDataCity(path: str, sheet_name: str) -> None:
     City.objects.all().delete()
@@ -57,12 +59,12 @@ def AddDataUser(path: str, sheet_name: str) -> None:
     except Exception as e:
         print(f"Lỗi thêm dữ liệu user: {e}")
 
-
-
-
 def AddDataRentalPost(path: str, sheet_name: str) -> None: 
     df = pd.read_excel(path, sheet_name=sheet_name, header=0, index_col=False)
+    df = df.drop(columns=['idx'])
+    df = df.drop_duplicates()
     RentalPost.objects.all().delete()
+    # Address.objects.all().delete()
     try:
         for _, row in tqdm(df.iterrows(), desc= "Thêm Dữ Liệu Bài Đăng", total=len(df)):
             # print(row["Ngày đăng"], type(row["Ngày đăng"]))
@@ -73,7 +75,7 @@ def AddDataRentalPost(path: str, sheet_name: str) -> None:
             address, created = Address.objects.get_or_create(
                 city=city,
                 district=district,
-                description=row["Địa chỉ"]
+                description=row["Địa chỉ"].lower().strip()
             )
             User = get_user_model()
             user = User.objects.get(email = row["Email"])
@@ -91,6 +93,50 @@ def AddDataRentalPost(path: str, sheet_name: str) -> None:
     except Exception as e:
         print(f"Lỗi khi thêm dữ liệu bài đăng: {e}")
     pass
+
+def AddDataImage(path: str, sheet_name: str) -> None: 
+    df = pd.read_excel(path, sheet_name=sheet_name, header=0, index_col=False)
+    df = df.drop(columns=['idx'])
+    df = df.drop_duplicates()
+    for image in Image.objects.all():
+        image.delete()  
+
+    try:
+        for _, row in tqdm(df.iterrows(), desc="Thêm Dữ Liệu Hình Ảnh Bài Đăng", total=len(df)):
+            city = City.objects.filter(name_city__icontains = "Thành phố Hồ Chí Minh").first()
+            district = District.objects.filter(name_district__icontains = row["Quận/Huyện"], city = city).first() 
+            address, created = Address.objects.get_or_create(
+                city=city,
+                district=district,
+                description=row["Địa chỉ"].lower().strip()
+            )
+            
+            
+            rental_post = RentalPost.objects.filter(
+                home_type = row["Kiểu phòng"],
+                title = row["Tiêu đề"],
+                information_detail = row["Nội dung"],
+                address = address, 
+                total_occupancy = 1,
+                acreage = row["Diện tích"],
+                price = row["Giá"],
+            ).first()
+
+            img_path = os.path.join("images_rentalpost", row["Image"].split("\\")[1])
+            try: 
+                for filename in os.listdir(img_path):
+                    if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                        file_path = os.path.join(img_path, filename)
+                        with open(file_path, 'rb') as f:
+                            django_file = File(f)
+                            image = Image.objects.create(
+                                rental_post=rental_post,
+                                image_url=django_file
+                            )
+            except FileNotFoundError:
+                print(f"Thư mục {img_path} không tồn tại")
+    except Exception as e:
+        print(f"Lỗi khi thêm dữ liệu hình ảnh bài đăng: {e}")
 
 
 def FillPhoneNumber(x: str) -> str: 
@@ -118,6 +164,4 @@ if __name__ == "__main__":
     AddDataDistrict("database.xlsx", "Sheet1")
     AddDataUser("data_user.xlsx", "Sheet1")
     AddDataRentalPost('processed_data2.xlsx', "Sheet1")
-
-
-
+    AddDataImage('new_data.xlsx', 'Sheet1')

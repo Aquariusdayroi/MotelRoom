@@ -12,3 +12,6 @@ class Address(models.Model):
     # ForeignKey
     city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True, related_name='address')
     district = models.ForeignKey(District, on_delete=models.SET_NULL, null=True, blank=True, related_name='address')
+    
+    def __str__(self):
+        return self.description
