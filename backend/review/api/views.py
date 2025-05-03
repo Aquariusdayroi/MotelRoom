@@ -7,13 +7,36 @@ from review.api.serializers import ReviewSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
+# Apt lấy review của người dùng hiện tại theo bài đăng
+class UserReviewAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, post_id):
+        """Lấy review của người dùng hiện tại cho bài đăng cụ thể"""
+        
+        # Kiểm tra xem người dùng hiện tại có review cho bài đăng này hay không
+        try:
+            review = Review.objects.get(rental_post__id=post_id, user=request.user)
+        except Review.DoesNotExist:
+            return Response(
+                {"message": "Không tìm thấy review của bạn cho bài đăng này."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Serialize và trả về dữ liệu review của người dùng
+        serializer = ReviewSerializer(review)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# Api xem danh sách review, tạo review mới cho bài đăng
 class ReviewListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, post_id):
-        """Lấy tất cả review theo bài đăng, có thể lọc theo rating"""
+        """Lấy tất cả review theo bài đăng, có thể lọc theo rating và không thuộc về người dùng hiện tại"""
+        
         rating = request.query_params.get("rating")
-        reviews = Review.objects.filter(rental_post__id=post_id)
+        reviews = Review.objects.filter(rental_post__id=post_id).exclude(user=request.user)
 
         if rating:
             try:
@@ -27,6 +50,7 @@ class ReviewListCreateAPIView(APIView):
 
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
     def post(self, request, post_id):
         """Tạo review mới cho bài đăng (mỗi người chỉ được 1 review/bài)"""
@@ -52,7 +76,7 @@ class ReviewListCreateAPIView(APIView):
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
-
+# API xem chi tiết review, sửa review, xóa review theo ID của người dùng hiện tại
 class ReviewDetailAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

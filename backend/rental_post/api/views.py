@@ -1,40 +1,67 @@
 from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rental_post.models import RentalPost
 from .serializers import RentalPostSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
+from rest_framework.pagination import PageNumberPagination
+from django.core.cache import cache
 
-
-class RentalPostListCreateAPIView(APIView):
+# API xem toàn bộ bài đăng, tạo bài đăng của người dùng hiện tại
+class RentalPostListCreateAPIView(GenericAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = RentalPostSerializer
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        return RentalPost.objects.filter(user=self.request.user)
 
     def get(self, request):
-        """Lấy tất cả bài đăng của người dùng đang đăng nhập"""
+        """Lấy danh sách bài đăng với phân trang"""
+        page_number = request.query_params.get('page', 1)
+       
+       # Cache 
+        cached_posts = cache.get(f'rental_posts_cache_page_{page_number}')  
+        if cached_posts:
+            return Response(cached_posts, status=status.HTTP_200_OK)
+        
         posts = RentalPost.objects.filter(user=request.user)
-        serializer = RentalPostSerializer(posts, many=True)
-        return Response({
-            "message": "Lấy danh sách bài đăng thành công.",
-            "data": serializer.data
-        }, status=status.HTTP_200_OK)
+        
+        paginator = self.pagination_class()
+        result_page = paginator.paginate_queryset(posts, request)  # Phân trang dữ liệu
+        serializer = RentalPostSerializer(result_page, many=True)
+
+        result_data = {
+            "count": posts.count(), 
+            "next": paginator.get_next_link(), 
+            "previous": paginator.get_previous_link(), 
+            "results": {
+                "message": "Lấy danh sách bài đăng thành công hihi.",
+                "data": serializer.data
+            }
+        }
+        cache.set(f'rental_posts_cache_page_{page_number}', result_data)  
+
+        return Response(result_data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        """Đăng bài mới"""
+        """Tạo bài đăng mới"""
         serializer = RentalPostSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
+            
+            # Xóa cache của danh sách bài đăng
+            cache.delete('rental_posts_cache')
+
             return Response({
-                "message": "Tạo bài đăng mới thành công.",
-                "data": serializer.data
+                "message": "Bài đăng đã được tạo thành công."
             }, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({
-            "message": "Tạo bài đăng thất bại. Vui lòng kiểm tra lại dữ liệu.",
-            "errors": serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-
+# API xem chi tiết bài đăng, sửa bài đăng, xóa bài đăng theo ID của người dùng hiện tại
 class RentalPostDetailUpdateDeleteAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
