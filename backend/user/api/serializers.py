@@ -2,7 +2,7 @@ from rest_framework import serializers
 from user.models import User, OwnerRequest
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import update_last_login
-from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
 
 #JWT token
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -60,11 +60,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        user = authenticate(email=attrs['email'], password=attrs['password'])
-        if not user:
+        User = get_user_model()
+        try:
+            user = User.objects.get(
+                email = attrs["email"]
+            )
+        except User.DoesNotExist:
+            raise AuthenticationFailed("Email hoặc mật khẩu không đúng.")
+        
+        if not user.check_password(attrs["password"]):
             raise AuthenticationFailed("Email hoặc mật khẩu không đúng.")
         if not user.is_active:
-            raise AuthenticationFailed("Tài khoản chưa được kích hoạt.")
+            raise AuthenticationFailed("Tài khoản chưa xác thực Email")
+        
         refresh = self.get_token(user)
         return {
             "success": True,

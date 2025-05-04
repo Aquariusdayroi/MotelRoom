@@ -198,7 +198,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         if isinstance(exc, AuthenticationFailed):
             return Response({
                 "success": False,
-                "message": "Đăng nhập thất bại. Tài khoản hoặc mật khẩu không đúng."
+                "message": exc.detail["detail"]
             }, status=status.HTTP_401_UNAUTHORIZED)
         return super().handle_exception(exc)
 
