@@ -23,16 +23,16 @@ class RentalPostListCreateAPIView(GenericAPIView):
         page_number = request.query_params.get('page', 1)
 
         # Cache
-        cached_posts = cache.get(f'rental_posts_cache_page_{page_number}')
+        cached_posts = cache.get(f'rental_posts_cache_page_{page_number}_{request.user.id}')
         if cached_posts:
             cached_posts["success"] = True
             return Response(cached_posts, status=status.HTTP_200_OK)
 
-        posts = RentalPost.objects.filter(user=request.user)
+        posts = self.get_queryset()  # dùng lại hàm get_queryset()
 
         paginator = self.pagination_class()
         result_page = paginator.paginate_queryset(posts, request)
-        serializer = RentalPostSerializer(result_page, many=True)
+        serializer = self.get_serializer(result_page, many=True)
 
         result_data = {
             "success": True,
@@ -44,9 +44,10 @@ class RentalPostListCreateAPIView(GenericAPIView):
                 "data": serializer.data
             }
         }
-        cache.set(f'rental_posts_cache_page_{page_number}', result_data)
+        cache.set(f'rental_posts_cache_page_{page_number}_{request.user.id}', result_data)
 
         return Response(result_data, status=status.HTTP_200_OK)
+
 
     def post(self, request):
         """Tạo bài đăng mới"""
