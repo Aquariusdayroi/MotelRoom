@@ -31,5 +31,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/api/', include('user.api.urls')), #api liên quan user 
     path('user-admin/api/', include(router_admin.urls)), # api admin quản lý người dùng
+    path('rental_post/api/', include('rental_post.api.urls')), #api liên quan rental post
+    path('rental_post/api/', include('review.api.urls')), #api liên quan review
 ] 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

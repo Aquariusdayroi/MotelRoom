@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 #JWT token
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 #Google
 from google.oauth2 import id_token
