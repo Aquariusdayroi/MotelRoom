@@ -42,6 +42,7 @@ class UserListCreateAPIViewSet(viewsets.ModelViewSet):
         
         # Lọc theo một số tiêu chí hoặc lấy tất cả người dùng
         filter_params = {
+            'fullname': 'fullname',
             'role': 'role',
             'city': 'city',
             'district': 'district',
