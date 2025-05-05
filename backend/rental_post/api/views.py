@@ -135,6 +135,7 @@ class RentalPostSearchAPIView(ListAPIView):
             "home_type": "home_type__iexact", #Loại nhà
             "price_min":  "price__gte", #Giá bắt đầu
             "price_max": "price__lte", #Giá kết thúc
+            "id": "id__exact",#Tìm theo id
         }
         filters = {}
         for param, field in filter_params.items():
