@@ -18,6 +18,23 @@ class CustomRentalPostPaginationOwnerList(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100  
 
+
+
+class SmartPagination(PageNumberPagination):
+    page_size = 18
+    def get_paginated_response(self, data):
+        total_pages = (self.page.paginator.count + self.get_page_size(self.request) - 1) // self.get_page_size(self.request)
+        return Response({
+            "status": True,
+            "message": "Lấy danh sách bài viết thành công.",
+            "count": self.page.paginator.count,
+            "total_pages": total_pages,
+            "current_page": self.page.number,
+            "next": self.get_next_link(),
+            "previous": self.get_previous_link(),
+            "results": data
+        })
+
 # API xem toàn bộ bài đăng, tạo bài đăng của người dùng hiện tại
 class RentalPostListCreateAPIView(GenericAPIView):
     permission_classes = [IsAuthenticated]
@@ -181,10 +198,29 @@ class RentalPostDetailUpdateDeleteAPIView(APIView):
 
 
 
-#Api tìm kiếm bài đăng theo bộ lọc
+#Api lấy danh sách bài đăng 
+@method_decorator(cache_page(60*10), name='dispatch') #Lưu cache 10p
+class RentalPostListAPIView(ListAPIView):
+
+    serializer_class = RentalPostSerializer
+    pagination_class = SmartPagination
+    
+    def get_queryset(self):
+        return RentalPost.objects.prefetch_related('image')
+    
+    def get_serializer(self, *args, **kwargs):
+        kwargs['context'] = self.get_serializer_context()
+        kwargs['context']['expand_user'] = True
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at']
+        return self.serializer_class(*args, **kwargs)        
+        
+
+
+
+
+# #Api tìm kiếm bài đăng theo bộ lọc
 @method_decorator(cache_page(60*5), name='dispatch') #Lưu cache 5p
 class RentalPostSearchAPIView(ListAPIView):
-
     serializer_class = RentalPostSerializer
     def get_queryset(self):
         filter_params = {
