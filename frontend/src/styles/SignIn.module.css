@@ -152,7 +152,7 @@
 .right_panel {
     width: 50%;
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-        url("../assets/BackgroundLogin.png");
+        url("../assets/img/BackgroundLogin.png");
     background-size: cover;
     background-position: center;
     position: relative;

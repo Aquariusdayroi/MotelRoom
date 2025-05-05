@@ -190,3 +190,16 @@
     font-size: 14px;
     margin-top: 4px;
 }
+
+.clickable {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.clickable:hover {
+    color: #6fa1ec;
+}
+
+.location svg {
+    margin-right: 8px;
+}

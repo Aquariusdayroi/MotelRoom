@@ -12,6 +12,7 @@ const RoomCard = ({
     area,
     isNew,
     onClick,
+    onLocationClick,
 }) => {
     const [isFavorite, setIsFavorite] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -156,7 +157,13 @@ const RoomCard = ({
             </div>
             <div className={styles.content}>
                 <h3 className={styles.address}>{address}</h3>
-                <div className={styles.location}>
+                <div
+                    className={`${styles.location} ${styles.clickable}`}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onLocationClick();
+                    }}
+                >
                     <div>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
