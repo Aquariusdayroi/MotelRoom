@@ -42,6 +42,7 @@ class UserListCreateAPIViewSet(viewsets.ModelViewSet):
         
         # Lọc theo một số tiêu chí hoặc lấy tất cả người dùng
         filter_params = {
+            'fullname': 'fullname',
             'role': 'role',
             'city': 'city',
             'district': 'district',
@@ -198,7 +199,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         if isinstance(exc, AuthenticationFailed):
             return Response({
                 "success": False,
-                "message": "Đăng nhập thất bại. Tài khoản hoặc mật khẩu không đúng."
+                "message": exc.detail["detail"]
             }, status=status.HTTP_401_UNAUTHORIZED)
         return super().handle_exception(exc)
 
