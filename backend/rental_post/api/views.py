@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rental_post.models import RentalPost
@@ -8,8 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from backend import settings
-
 # API xem toàn bộ bài đăng, tạo bài đăng của người dùng hiện tại
 class RentalPostListCreateAPIView(GenericAPIView):
     permission_classes = [IsAuthenticated]
@@ -93,8 +94,7 @@ class RentalPostListCreateAPIView(GenericAPIView):
             "message": "Tạo bài đăng thất bại.",
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
-
-
+    
 # API xem chi tiết bài đăng, sửa bài đăng, xóa bài đăng theo ID của người dùng hiện tại
 class RentalPostDetailUpdateDeleteAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -171,3 +171,50 @@ class RentalPostDetailUpdateDeleteAPIView(APIView):
             "success": True,
             "message": "Bài đăng đã được xóa."
         }, status=status.HTTP_204_NO_CONTENT)
+
+
+
+#Api tìm kiếm bài đăng theo bộ lọc
+@method_decorator(cache_page(60*5), name='dispatch') #Lưu cache 5p
+class RentalPostSearchAPIView(ListAPIView):
+
+    serializer_class = RentalPostSerializer
+    def get_queryset(self):
+        filter_params = {
+            "home_type": "home_type__iexact", #Loại nhà
+            "price_min":  "price__gte", #Giá bắt đầu
+            "price_max": "price__lte", #Giá kết thúc
+            "id": "id__exact",#Tìm theo id
+        }
+        filters = {}
+        for param, field in filter_params.items():
+            value = self.request.query_params.get(param)
+            if value:
+                filters[field] = value
+        
+        if filters:
+            return RentalPost.objects.filter(**filters)
+        else: 
+            return RentalPost.objects.all()
+        
+    def list(self, request, *args, **kwargs):
+
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+
+        if page : 
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response({
+                "status": True,
+                "message": "Lấy danh sách bài viết thành công.",
+                "data": serializer.data 
+            })
+        
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "status": True,
+            "count": len(serializer.data),
+            "message": "Lấy danh sách bài viết thành công.",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+        
