@@ -10,12 +10,19 @@ from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
-from backend import settings
+import backend.settings as settings
+
+# Custom pagination class với page_size được xác định trực tiếp
+class CustomRentalPostPaginationOwnerList(PageNumberPagination):
+    page_size = 6
+    page_size_query_param = 'page_size'
+    max_page_size = 100  
+
 # API xem toàn bộ bài đăng, tạo bài đăng của người dùng hiện tại
 class RentalPostListCreateAPIView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = RentalPostSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = CustomRentalPostPaginationOwnerList
 
     def get_queryset(self):
         return RentalPost.objects.filter(user=self.request.user)
