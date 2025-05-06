@@ -6,12 +6,15 @@ import AreaModal, { destinations } from "./modal/AreaModal";
 import RoomTypeModal from "./modal/RoomTypeModal";
 import PriceModal from "./modal/PriceModal";
 import { Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import roomTypeApi from "../api/searchApi/roomTypeApi";
 
 const SearchBar = ({
     inHeader = false,
     onExpandChange,
     isHeaderSearch = false,
 }) => {
+    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -178,6 +181,54 @@ const SearchBar = ({
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    const handleSearch = async () => {
+        // Nếu không có điều kiện tìm kiếm nào, không làm gì cả
+        if (!area && !roomType && !priceFrom && !priceTo) {
+            return;
+        }
+
+        try {
+            // Xây dựng object params cho API call
+            const searchParams = {};
+            if (area) searchParams.area = area;
+            if (roomType) searchParams.home_type = roomType;
+            if (priceFrom) searchParams.min_price = priceFrom;
+            if (priceTo) searchParams.max_price = priceTo;
+
+            // Gọi API search với các params
+            const response = await roomTypeApi.searchByType(searchParams);
+            const rooms = response.data.results.data;
+
+            // Nếu không có kết quả
+            if (!rooms || rooms.length === 0) {
+                navigate("/detail-search", {
+                    state: {
+                        message: "Không có phòng theo nhu cầu",
+                        searchParams,
+                    },
+                });
+                return;
+            }
+
+            // Chuyển hướng đến trang detail-search với kết quả
+            navigate("/detail-search", {
+                state: {
+                    rooms,
+                    searchParams,
+                },
+            });
+        } catch (error) {
+            console.error("Lỗi khi tìm kiếm:", error);
+            navigate("/detail-search", {
+                state: {
+                    message: "Có lỗi xảy ra khi tìm kiếm",
+                    // eslint-disable-next-line no-undef
+                    searchParams,
+                },
+            });
+        }
+    };
     return (
         <div
             ref={searchRef}
@@ -252,6 +303,7 @@ const SearchBar = ({
                         <ButtonPrimary
                             icon={<Search size={30} />}
                             className={styles.searchButton}
+                            onClick={() => handleSearch()} // Đơn giản hóa xử lý onClick
                         />
                     </div>
                 </div>

@@ -1,33 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import styles from "../../styles/AreaModal.module.css"; // Có thể tái sử dụng styles
-
-export const roomTypes = [
-    {
-        name: "Phòng trọ",
-        description: "Phòng đơn giản, giá cả phải chăng",
-        color: "#f44336",
-    },
-    {
-        name: "Căn hộ Studio",
-        description: "Căn hộ nhỏ gọn, đầy đủ tiện nghi",
-        color: "#2196f3",
-    },
-    {
-        name: "Căn hộ Mini",
-        description: "Căn hộ có không gian riêng tư",
-        color: "#4caf50",
-    },
-    {
-        name: "Nhà nguyên căn",
-        description: "Nhà riêng biệt, phù hợp gia đình",
-        color: "#ff9800",
-    },
-    {
-        name: "Homestay",
-        description: "Không gian sống độc đáo, tiện nghi",
-        color: "#9c27b0",
-    },
-];
+import roomTypeApi from "../../api/searchApi/roomTypeApi";
 
 const RoomTypeModal = ({
     open,
@@ -37,8 +10,59 @@ const RoomTypeModal = ({
     isHeaderSearch,
     onSelect,
 }) => {
-    const [position, setPosition] = useState(null);
+    const [roomTypes, setRoomTypes] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const modalRef = useRef(null);
+    const [position, setPosition] = useState(null);
+
+    useEffect(() => {
+        const fetchRoomTypes = async () => {
+            setLoading(true);
+            try {
+                const response = await roomTypeApi.getAll();
+                const data = response.data;
+
+                // Extract unique home types and create roomTypes array
+                const uniqueHomeTypes = [
+                    ...new Set(data.results.data.map((item) => item.home_type)),
+                ];
+                const formattedRoomTypes = uniqueHomeTypes.map(
+                    (type, index) => ({
+                        name: type,
+                        description: getDescription(type),
+                        color: getColor(index),
+                    })
+                );
+
+                setRoomTypes(formattedRoomTypes);
+            } catch (err) {
+                setError("Không thể tải danh sách loại phòng");
+                console.error("Error fetching room types:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (open) {
+            fetchRoomTypes();
+        }
+    }, [open]);
+
+    const getDescription = (type) => {
+        const descriptions = {
+            "Phòng trọ": "Phòng đơn giản, giá cả phải chăng",
+            "Căn hộ Studio": "Căn hộ nhỏ gọn, đầy đủ tiện nghi",
+            "Căn hộ Mini": "Căn hộ có không gian riêng tư",
+            "Nhà nguyên căn": "Nhà riêng biệt, phù hợp gia đình",
+            Homestay: "Không gian sống độc đáo, tiện nghi",
+        };
+        return descriptions[type] || "Chưa có mô tả";
+    };
+    const getColor = (index) => {
+        const colors = ["#f44336", "#2196f3", "#4caf50", "#ff9800", "#9c27b0"];
+        return colors[index % colors.length];
+    };
     const displayRoomTypes =
         filteredRoomTypes.length > 0 ? filteredRoomTypes : roomTypes;
 
@@ -107,7 +131,6 @@ const RoomTypeModal = ({
                 transition:
                     "opacity 0.2s ease-in-out, visibility 0.2s ease-in-out",
             }}
-            onClick={(e) => e.stopPropagation()}
         >
             <div className={styles.modalHeader}>
                 <span>
@@ -123,33 +146,39 @@ const RoomTypeModal = ({
                     ×
                 </button>
             </div>
-            <ul className={styles.list}>
-                {displayRoomTypes.map((roomType, index) => (
-                    <li
-                        key={index}
-                        className={styles.listItem}
-                        onClick={() => {
-                            onSelect(roomType.name); // Thêm onSelect handler
-                            onClose();
-                        }}
-                    >
-                        <div className={styles.listItemIcon}>
-                            <div
-                                className={styles.dot}
-                                style={{ backgroundColor: roomType.color }}
-                            />
-                        </div>
-                        <div className={styles.listItemContent}>
-                            <h3 className={styles.listItemTitle}>
-                                {roomType.name}
-                            </h3>
-                            <p className={styles.listItemDescription}>
-                                {roomType.description}
-                            </p>
-                        </div>
-                    </li>
-                ))}
-            </ul>
+
+            {loading && <div className={styles.loading}>Đang tải...</div>}
+            {error && <div className={styles.error}>{error}</div>}
+
+            {!loading && !error && (
+                <ul className={styles.list}>
+                    {displayRoomTypes.map((roomType, index) => (
+                        <li
+                            key={index}
+                            className={styles.listItem}
+                            onClick={() => {
+                                onSelect(roomType.name);
+                                onClose();
+                            }}
+                        >
+                            <div className={styles.listItemIcon}>
+                                <div
+                                    className={styles.dot}
+                                    style={{ backgroundColor: roomType.color }}
+                                />
+                            </div>
+                            <div className={styles.listItemContent}>
+                                <h3 className={styles.listItemTitle}>
+                                    {roomType.name}
+                                </h3>
+                                <p className={styles.listItemDescription}>
+                                    {roomType.description}
+                                </p>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
 };

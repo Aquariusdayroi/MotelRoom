@@ -5,6 +5,7 @@ import { images } from "../assets/images";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { useLocation } from "react-router-dom";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
@@ -23,6 +24,10 @@ const fetchCoordinates = async (address) => {
 };
 
 const DetailSearch = () => {
+    const location = useLocation();
+    const { rooms, message, searchParams } = location.state || {};
+
+    const [displayRooms, setDisplayRooms] = useState([]);
     const mapRef = useRef(null);
     const mapContainerRef = useRef(null);
     const routeRef = useRef(null);
@@ -193,34 +198,77 @@ const DetailSearch = () => {
         }
     };
 
+    useEffect(() => {
+        if (rooms) {
+            setDisplayRooms(rooms);
+        } else if (!message) {
+            // Nếu không có rooms và message, hiển thị dữ liệu mặc định
+            setDisplayRooms(roomData);
+        }
+    }, [rooms]);
+
     return (
         <div className="d-flex">
             <div className={`${styles.container} col-md-8 pe-1`}>
-                {" "}
-                {/* Changed col-md-9 to col-md-8 and pe-0 to pe-1 */}
-                <div className="pt-5 pb-2 fs-4 fw-bold">Hơn 1.000 chỗ ở</div>
-                <div className="row g-2">
-                    {" "}
-                    {/* Changed g-3 to g-2 for tighter card spacing */}
-                    {roomData.map((room) => (
-                        <div key={room.id} className="col-md-4 pe-1">
-                            {" "}
-                            {/* Changed pe-2 to pe-1 */}
-                            <RoomCard
-                                {...room}
-                                onClick={() => setSelectedRoomId(room.id)}
-                                onLocationClick={() =>
-                                    handleLocationClick(room.id)
-                                }
-                            />
+                <div className="pt-5 pb-2">
+                    <div className="d-flex justify-content-between align-items-center">
+                        <div className="fs-4 fw-bold">
+                            {message ? (
+                                <span className="text-danger">{message}</span>
+                            ) : (
+                                `${displayRooms.length} chỗ ở được tìm thấy`
+                            )}
                         </div>
-                    ))}
+                        {searchParams && (
+                            <div className="text-muted">
+                                {searchParams.area &&
+                                    `Khu vực: ${searchParams.area}`}
+                                {searchParams.home_type &&
+                                    ` | Loại: ${searchParams.home_type}`}
+                                {searchParams.min_price &&
+                                    ` | Từ: ${new Intl.NumberFormat("vi-VN", {
+                                        style: "currency",
+                                        currency: "VND",
+                                        minimumFractionDigits: 0,
+                                    }).format(searchParams.min_price)}`}
+                                {searchParams.max_price &&
+                                    ` | Đến: ${new Intl.NumberFormat("vi-VN", {
+                                        style: "currency",
+                                        currency: "VND",
+                                        minimumFractionDigits: 0,
+                                    }).format(searchParams.max_price)}`}
+                            </div>
+                        )}
+                    </div>
                 </div>
+
+                {!message && (
+                    <div className="row g-2">
+                        {displayRooms.map((room) => (
+                            <div key={room.id} className="col-md-4 pe-1">
+                                <RoomCard
+                                    {...room}
+                                    onClick={() => setSelectedRoomId(room.id)}
+                                    onLocationClick={() =>
+                                        handleLocationClick(room.id)
+                                    }
+                                />
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {message && (
+                    <div className="text-center py-5">
+                        <div className="fs-5 mb-3">{message}</div>
+                        <div className="text-muted">
+                            Vui lòng thử lại với tiêu chí tìm kiếm khác
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="col-md-4 ps-0">
-                {" "}
-                {/* Changed col-md-3 to col-md-4 */}
                 <div
                     ref={mapContainerRef}
                     style={{ height: "100vh", width: "100%" }}
