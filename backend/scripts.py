@@ -18,6 +18,7 @@ from rental_post.models import RentalPost
 from address.models import Address
 from django.contrib.auth import get_user_model
 from image.models import Image
+import requests
 
 def AddDataCity(path: str, sheet_name: str) -> None:
     City.objects.all().delete()
@@ -64,13 +65,11 @@ def AddDataRentalPost(path: str, sheet_name: str) -> None:
     df = df.drop(columns=['idx'])
     df = df.drop_duplicates()
     RentalPost.objects.all().delete()
-    # Address.objects.all().delete()
+    Address.objects.all().delete()
+
     try:
         for _, row in tqdm(df.iterrows(), desc= "Thêm Dữ Liệu Bài Đăng", total=len(df)):
-            # print(row["Ngày đăng"], type(row["Ngày đăng"]))
-            # break
-            # print(row["Thành phố"])
-            city = City.objects.filter(name_city__icontains = "Thành phố Hồ Chí Minh").first()
+            city = City.objects.filter(name_city__icontains = row["Thành phố"]).first()
             district = District.objects.filter(name_district__icontains = row["Quận/Huyện"], city = city).first() 
             address, created = Address.objects.get_or_create(
                 city=city,
@@ -98,12 +97,12 @@ def AddDataImage(path: str, sheet_name: str) -> None:
     df = pd.read_excel(path, sheet_name=sheet_name, header=0, index_col=False)
     df = df.drop(columns=['idx'])
     df = df.drop_duplicates()
-    for image in Image.objects.all():
+    for image in tqdm(Image.objects.all(), desc="Đang Xóa Hình Ảnh", total=len(Image.objects.all())):
         image.delete()  
 
     try:
         for _, row in tqdm(df.iterrows(), desc="Thêm Dữ Liệu Hình Ảnh Bài Đăng", total=len(df)):
-            city = City.objects.filter(name_city__icontains = "Thành phố Hồ Chí Minh").first()
+            city = City.objects.filter(name_city__icontains = row["Thành phố"]).first()
             district = District.objects.filter(name_district__icontains = row["Quận/Huyện"], city = city).first() 
             address, created = Address.objects.get_or_create(
                 city=city,
@@ -158,10 +157,32 @@ def CreateDataUser() -> None:
     print(df_user.head())
     df_user.to_excel("data_user.xlsx", index=False)
 
+def AddLatitudeLongitude() -> None: 
+    data = Address.objects.all()
+    for address in tqdm(data, total= len(data), desc="Thêm Tọa Độ Địa Chỉ"): 
+        search_text = address.description
+        url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{search_text}.json"
+        params = {
+            "access_token": "pk.eyJ1Ijoia2hhbmh2bjMxMDMiLCJhIjoiY21hYmFuaXF6MjhzbTJqcXp3dHRmcm8yaiJ9.ceexBpDLsIvcLV7kGYKpHA",
+            "language": "vi",
+            "country": "VN",
+            "limit": 1
+        }
+        response = requests.get(url, params=params)
+        data = response.json()
+        try:
+            coordinates = data["features"][0]["geometry"]["coordinates"]
+            address.longitude = coordinates[0]
+            address.latitude = coordinates[1]
+            address.save()
+        except Exception as e: 
+                print(f"Không tìm thấy địa chỉ.{ address.description}")
+                
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     AddDataCity("database.xlsx", "Sheet2")
     AddDataDistrict("database.xlsx", "Sheet1")
     AddDataUser("data_user.xlsx", "Sheet1")
     AddDataRentalPost('processed_data2.xlsx', "Sheet1")
     AddDataImage('new_data.xlsx', 'Sheet1')
+    AddLatitudeLongitude()
