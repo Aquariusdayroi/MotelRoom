@@ -7,6 +7,8 @@ from favorite.models import Favorite
 from rental_post.models import RentalPost
 from .serializers import FavoriteSerializer
 
+from django.core.cache import cache
+
 class AddFavoriteAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -25,6 +27,10 @@ class AddFavoriteAPIView(APIView):
             user = user, 
             rentalpost = rentalpost
         )
+        #Xóa cache
+        cache.delete(f"rentalpost_list_user_{user.id}")
+        cache.delete(f"rentalpost_favorite_user_{user.id}")
+
         if created: 
             return Response({
                 'status': True,
@@ -49,6 +55,10 @@ class DeleteFavoriteAPIView(APIView):
             user = user, 
             rentalpost_id = post_id
         ).delete()
+
+        #Xóa cache
+        cache.delete(f"rentalpost_list_user_{user.id}")
+        cache.delete(f"rentalpost_favorite_user_{user.id}")
 
         if deleted: 
             return Response({

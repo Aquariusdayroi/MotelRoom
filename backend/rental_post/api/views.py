@@ -205,7 +205,6 @@ class RentalPostDetailUpdateDeleteAPIView(APIView):
 
 
 #Api lấy danh sách bài đăng 
-@method_decorator(cache_page(60*10), name='dispatch') #Lưu cache 10p
 class RentalPostListAPIView(ListAPIView):
 
     serializer_class = RentalPostSerializer
@@ -218,7 +217,12 @@ class RentalPostListAPIView(ListAPIView):
         return super().paginate_queryset(queryset)
 
     def get_queryset(self):
-        return RentalPost.objects.prefetch_related('image')
+        cache_key = f"rentalpost_list_user_{self.request.user.id if self.request.user.is_authenticated else 'anon'}"
+        queryset = cache.get(cache_key)
+        if queryset is None:
+            queryset = RentalPost.objects.prefetch_related('image')
+            cache.set(cache_key, queryset, timeout=60*10)  # 10 phút
+        return queryset
     
 
     def get_serializer_context(self):
@@ -238,10 +242,7 @@ class RentalPostListAPIView(ListAPIView):
         return self.serializer_class(*args, **kwargs)        
 
 
-
-
 # #Api tìm kiếm bài đăng theo bộ lọc
-@method_decorator(cache_page(60*5), name='dispatch') #Lưu cache 5p
 class RentalPostSearchAPIView(ListAPIView):
     serializer_class = RentalPostSerializer
     pagination_class = SmartPagination
@@ -318,7 +319,6 @@ class RentalPostSearchAPIView(ListAPIView):
     
 
 #Api lấy danh sách bài đăng yêu thích
-@method_decorator(cache_page(60*30), name='dispatch') #Lưu cache 30p
 class RentalPostFavoriteListAPIView(ListAPIView):
 
     serializer_class = RentalPostFavoriteSerializer
@@ -330,7 +330,12 @@ class RentalPostFavoriteListAPIView(ListAPIView):
         return super().paginate_queryset(queryset)
     
     def get_queryset(self):
-        return RentalPost.objects.filter(favorite__user=self.request.user).select_related('address').prefetch_related('image')
+        cache_key = f"rentalpost_favorite_user_{self.request.user.id if self.request.user.is_authenticated else 'anon'}"
+        queryset = cache.get(cache_key)
+        if queryset is None:
+            queryset = RentalPost.objects.filter(favorite__user=self.request.user).select_related('address').prefetch_related('image')
+            cache.set(cache_key, queryset, timeout=60*10)  # 10 phút
+        return queryset
     
     def get_serializer(self, *args, **kwargs):
         kwargs['context'] = self.get_serializer_context()
