@@ -16,6 +16,8 @@ from django.db.models import F, FloatField
 from django.db.models.expressions import ExpressionWrapper
 from django.db.models.functions import ACos, Cos, Radians, Sin
 
+from favorite.models import Favorite
+
 # Custom pagination class với page_size được xác định trực tiếp
 class CustomRentalPostPaginationOwnerList(PageNumberPagination):
     page_size = 6
@@ -212,12 +214,24 @@ class RentalPostListAPIView(ListAPIView):
     def get_queryset(self):
         return RentalPost.objects.prefetch_related('image')
     
+
+    def get_serializer_context(self):
+        context =  super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            print('helo')
+            print(Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True))
+            favorite_ids = set(
+                Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
+            )
+            context['favorite_post_ids'] = favorite_ids
+
+        return context
+
     def get_serializer(self, *args, **kwargs):
         kwargs['context'] = self.get_serializer_context()
         kwargs['context']['expand_user'] = True
-        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at']
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
         return self.serializer_class(*args, **kwargs)        
-        
 
 
 
@@ -280,3 +294,25 @@ class RentalPostSearchAPIView(ListAPIView):
         kwargs['context']['expand_user'] = True
         kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at']
         return self.serializer_class(*args, **kwargs)        
+    
+
+#Api lấy danh sách bài đăng yêu thích
+@method_decorator(cache_page(60*30), name='dispatch') #Lưu cache 30p
+class RentalPostFavoriteListAPIView(ListAPIView):
+
+    serializer_class = RentalPostSerializer
+    pagination_class = SmartPagination
+    pagination_class.page_size = 6
+    
+    def get_queryset(self):
+         
+        return RentalPost.objects.filter(favorite__user=self.request.user).select_related('address').prefetch_related('image')
+    
+    def get_serializer(self, *args, **kwargs):
+        kwargs['context'] = self.get_serializer_context()
+        kwargs['context']['expand_user'] = True
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at']
+        return self.serializer_class(*args, **kwargs)        
+        
+
+

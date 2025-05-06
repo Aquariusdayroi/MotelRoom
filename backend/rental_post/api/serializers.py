@@ -39,6 +39,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     address = AddressSerializer()
     user = serializers.SerializerMethodField()
     images = ImageSerializer(source='image', many=True, read_only=True)
+    is_favorite = serializers.SerializerMethodField()
 
     class Meta:
         model = RentalPost
@@ -46,10 +47,15 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
             'id', 'user', 'home_type', 'title', 'information_detail',
             'address', 'total_occupancy', 'acreage', 'price', 
             'create_at', 'update_at', 'has_toilet', 'private_rental',
-            'has_washing', 'curfew_time', 'images',
+            'has_washing', 'curfew_time', 'images', 'is_favorite',
         ]
         read_only_fields = ('user', 'create_at', 'update_at')
-        
+
+    def get_is_favorite(self, obj):
+        favorite_ids = self.context.get('favorite_post_ids', set())
+        return obj.id in favorite_ids
+    
+    
     def get_user(self, obj):
         if self.context.get("expand_user"):
             return UserForRentalPostSerializer(obj.user).data
