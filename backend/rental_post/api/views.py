@@ -295,8 +295,9 @@ class RentalPostSearchAPIView(ListAPIView):
             value = self.request.query_params.get(param)
             if value:
                 filters[field] = value
+
         if filters:
-            queryset = queryset.filter(**filter)
+            queryset = queryset.filter(**filters)
         return queryset
         
 
