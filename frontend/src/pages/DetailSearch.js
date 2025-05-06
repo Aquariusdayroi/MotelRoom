@@ -6,82 +6,18 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useLocation } from "react-router-dom";
+import mapboxApi from "../api/mapboxApi";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
-const fetchCoordinates = async (address) => {
-    const encodedAddress = encodeURIComponent(address);
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxgl.accessToken}`;
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data.features && data.features.length > 0) {
-        const [lng, lat] = data.features[0].center;
-        return [lat, lng];
-    }
-
-    throw new Error("Không tìm thấy tọa độ cho địa chỉ.");
-};
-
 const DetailSearch = () => {
     const location = useLocation();
-    const { rooms, message, searchParams } = location.state || {};
+    const { rooms, message, searchParams, timestamp } = location.state || {};
 
     const [displayRooms, setDisplayRooms] = useState([]);
     const mapRef = useRef(null);
     const mapContainerRef = useRef(null);
-    const routeRef = useRef(null);
     const markersRef = useRef([]);
-    const roomData = [
-        {
-            id: 1,
-            images: [images.background, images.background],
-            address: "Phòng trọ Quận 1",
-            location:
-                "12 Nguyễn Văn Bảo, Phường 1, Gò Vấp, Hồ Chí Minh, Việt Nam",
-            owner: "Nguyễn Văn A",
-            price: "3.000.000đ",
-            type: "Phòng trọ",
-            area: "25m²",
-            isNew: true,
-        },
-        {
-            id: 2,
-            images: [images.background],
-            address: "Phòng trọ Quận 2",
-            location:
-                "366 Đ. Phan Văn Trị, Phường 5, Gò Vấp, Hồ Chí Minh, Việt Nam",
-            owner: "Trần Thị B",
-            price: "2.500.000đ",
-            type: "Phòng trọ",
-            area: "20m²",
-            isNew: false,
-        },
-        {
-            id: 3,
-            images: [images.background],
-            address: "Phòng trọ Quận 3",
-            location:
-                "12 Đ. Phan Văn Trị, Phường 7, Gò Vấp, Hồ Chí Minh, Việt Nam",
-            owner: "Lê Văn C",
-            price: "4.000.000đ",
-            type: "Phòng trọ",
-            area: "30m²",
-            isNew: true,
-        },
-        {
-            id: 4,
-            images: [images.background],
-            address: "Phòng trọ Quận 3",
-            location:
-                "12 Đ. Phan Văn Trị, Phường 7, Gò Vấp, Hồ Chí Minh, Việt Nam",
-            owner: "Lê Văn C",
-            price: "4.000.000đ",
-            type: "Phòng trọ",
-            area: "30m²",
-            isNew: true,
-        },
-    ];
     const [selectedRoomId, setSelectedRoomId] = useState(null);
     const [selectedCoordinates, setSelectedCoordinates] = useState(null);
     const [currentPosition, setCurrentPosition] = useState(null);
@@ -112,7 +48,6 @@ const DetailSearch = () => {
 
         const map = mapRef.current;
 
-        // Clear existing markers
         markersRef.current.forEach((marker) => marker.remove());
         markersRef.current = [];
 
@@ -120,8 +55,6 @@ const DetailSearch = () => {
             center: [selectedCoordinates[1], selectedCoordinates[0]],
             zoom: 14,
         });
-
-        // Add markers
         const destinationMarker = new mapboxgl.Marker()
             .setLngLat([selectedCoordinates[1], selectedCoordinates[0]])
             .addTo(map);
@@ -132,7 +65,6 @@ const DetailSearch = () => {
 
         markersRef.current.push(destinationMarker, currentPositionMarker);
 
-        // Remove existing route
         if (map.getLayer("route")) map.removeLayer("route");
         if (map.getSource("route")) map.removeSource("route");
 
@@ -145,7 +77,6 @@ const DetailSearch = () => {
                 if (data.routes && data.routes.length > 0) {
                     const route = data.routes[0];
 
-                    // Add route to map
                     map.addSource("route", {
                         type: "geojson",
                         data: {
@@ -170,7 +101,6 @@ const DetailSearch = () => {
                         },
                     });
 
-                    // Fit map to show entire route
                     const bounds = new mapboxgl.LngLatBounds();
                     route.geometry.coordinates.forEach((coord) => {
                         bounds.extend(coord);
@@ -186,11 +116,13 @@ const DetailSearch = () => {
     }, [selectedCoordinates, currentPosition]);
 
     const handleLocationClick = async (id) => {
-        const room = roomData.find((r) => r.id === id);
+        const room = displayRooms.find((r) => r.id === id);
         if (!room) return;
 
         try {
-            const coords = await fetchCoordinates(room.location);
+            const coords = await mapboxApi.fetchCoordinates(
+                room.address.description
+            );
             setSelectedRoomId(id);
             setSelectedCoordinates(coords);
         } catch (err) {
@@ -199,11 +131,34 @@ const DetailSearch = () => {
     };
 
     useEffect(() => {
+        if (location.state) {
+            setDisplayRooms(location.state.rooms || []);
+            setSelectedRoomId(null);
+            setSelectedCoordinates(null);
+
+            if (
+                location.state.searchParams?.lat &&
+                location.state.searchParams?.lng
+            ) {
+                const newCenter = [
+                    location.state.searchParams.lng,
+                    location.state.searchParams.lat,
+                ];
+
+                if (mapRef.current) {
+                    mapRef.current.flyTo({
+                        center: newCenter,
+                        zoom: 14,
+                        essential: true,
+                    });
+                }
+            }
+        }
+    }, [location.state, timestamp]);
+
+    useEffect(() => {
         if (rooms) {
             setDisplayRooms(rooms);
-        } else if (!message) {
-            // Nếu không có rooms và message, hiển thị dữ liệu mặc định
-            setDisplayRooms(roomData);
         }
     }, [rooms]);
 
@@ -247,7 +202,26 @@ const DetailSearch = () => {
                         {displayRooms.map((room) => (
                             <div key={room.id} className="col-md-4 pe-1">
                                 <RoomCard
-                                    {...room}
+                                    key={room.id}
+                                    images={
+                                        room.images && room.images.length > 0
+                                            ? room.images.map(
+                                                  (img) => img.image_url
+                                              )
+                                            : [images.background]
+                                    }
+                                    address={room.title} // Tiêu đề bài đăng
+                                    location={room.address?.description} // Địa chỉ đầy đủ
+                                    owner={room.user?.fullname}
+                                    price={`${parseInt(
+                                        room.price
+                                    ).toLocaleString()}đ`}
+                                    type={room.home_type}
+                                    area={`${room.acreage}m²`}
+                                    isNew={
+                                        new Date(room.update_at) >
+                                        Date.now() - 1000 * 60 * 60 * 24 * 7
+                                    }
                                     onClick={() => setSelectedRoomId(room.id)}
                                     onLocationClick={() =>
                                         handleLocationClick(room.id)

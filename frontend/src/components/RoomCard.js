@@ -159,10 +159,7 @@ const RoomCard = ({
                 <h3 className={styles.address}>{address}</h3>
                 <div
                     className={`${styles.location} ${styles.clickable}`}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onLocationClick();
-                    }}
+                    onClick={onLocationClick}
                 >
                     <div>
                         <svg

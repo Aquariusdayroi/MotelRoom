@@ -30,7 +30,7 @@ const PriceModal = ({
             setLoading(true);
             try {
                 const response = await priceApi.getAll();
-                const prices = response.data.results.data.map((item) =>
+                const prices = response.data.results.map((item) =>
                     parseFloat(item.price)
                 );
 

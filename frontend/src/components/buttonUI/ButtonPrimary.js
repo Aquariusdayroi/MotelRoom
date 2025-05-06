@@ -1,9 +1,18 @@
 import { images } from "../../assets/images";
 import styles from "../../styles/ButtonPrimary.module.css";
 
-const ButtonPrimary = ({ des, icon = null, avatar = false, className }) => {
+const ButtonPrimary = ({
+    des,
+    icon = null,
+    avatar = false,
+    className,
+    onClick,
+}) => {
     return (
-        <button className={`${styles.buttonPrimary} ${className}`}>
+        <button
+            className={`${styles.buttonPrimary} ${className}`}
+            onClick={onClick}
+        >
             {icon && <span className={styles.icon}>{icon}</span>}
             {des}
             {avatar && (
