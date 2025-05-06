@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rental_post',
     'review',
     'image',
+    'favorite',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
