@@ -12,6 +12,10 @@ from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 import backend.settings as settings
 
+from django.db.models import F, FloatField
+from django.db.models.expressions import ExpressionWrapper
+from django.db.models.functions import ACos, Cos, Radians, Sin
+
 # Custom pagination class với page_size được xác định trực tiếp
 class CustomRentalPostPaginationOwnerList(PageNumberPagination):
     page_size = 6
@@ -222,7 +226,40 @@ class RentalPostListAPIView(ListAPIView):
 @method_decorator(cache_page(60*5), name='dispatch') #Lưu cache 5p
 class RentalPostSearchAPIView(ListAPIView):
     serializer_class = RentalPostSerializer
+    pagination_class = SmartPagination
+
     def get_queryset(self):
+
+        queryset = RentalPost.objects.select_related('address').prefetch_related('image')
+
+        lat = self.request.query_params.get('lat')
+        lng = self.request.query_params.get('lng')
+        # radius_km = request.query_params.get('radius', 5)  # mặc định 5km
+
+        if lat and lng:
+            try:
+                lat = float(lat)
+                lng = float(lng)
+                # radius_km = float(radius_km)
+
+                # Haversine formula tính khoảng cách giữa 2 tọa độ (trả về km)
+                distance_expr = ExpressionWrapper(
+                    6371 * ACos(
+                        Cos(Radians(lat)) *
+                        Cos(Radians(F('address__latitude'))) *
+                        Cos(Radians(F('address__longitude')) - Radians(lng)) +
+                        Sin(Radians(lat)) *
+                        Sin(Radians(F('address__latitude')))
+                    ),
+                    output_field=FloatField()
+                )
+
+                queryset = queryset.annotate(distance = distance_expr)
+                queryset = queryset.order_by('distance')
+              
+            except ValueError:
+                pass 
+            
         filter_params = {
             "home_type": "home_type__iexact", #Loại nhà
             "price_min":  "price__gte", #Giá bắt đầu
@@ -234,30 +271,12 @@ class RentalPostSearchAPIView(ListAPIView):
             value = self.request.query_params.get(param)
             if value:
                 filters[field] = value
-        
         if filters:
-            return RentalPost.objects.filter(**filters)
-        else: 
-            return RentalPost.objects.all()
+            queryset = queryset.filter(**filter)
+        return queryset
         
-    def list(self, request, *args, **kwargs):
-
-        queryset = self.get_queryset()
-        page = self.paginate_queryset(queryset)
-
-        if page : 
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response({
-                "status": True,
-                "message": "Lấy danh sách bài viết thành công.",
-                "data": serializer.data 
-            })
-        
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({
-            "status": True,
-            "count": len(serializer.data),
-            "message": "Lấy danh sách bài viết thành công.",
-            "data": serializer.data
-        }, status=status.HTTP_200_OK)
-        
+    def get_serializer(self, *args, **kwargs):
+        kwargs['context'] = self.get_serializer_context()
+        kwargs['context']['expand_user'] = True
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at']
+        return self.serializer_class(*args, **kwargs)        
