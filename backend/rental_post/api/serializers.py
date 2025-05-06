@@ -88,3 +88,27 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         instance.save()
         return instance
 
+
+
+
+class RentalPostFavoriteSerializer(DynamicFieldsModelSerializer):
+    address = AddressSerializer()
+    user = serializers.SerializerMethodField()
+    images = ImageSerializer(source='image', many=True, read_only=True)
+    is_favorite = serializers.BooleanField(default = True)
+
+    class Meta:
+        model = RentalPost
+        fields = [
+            'id', 'user', 'home_type', 'title', 'information_detail',
+            'address', 'total_occupancy', 'acreage', 'price', 
+            'create_at', 'update_at', 'has_toilet', 'private_rental',
+            'has_washing', 'curfew_time', 'images', 'is_favorite',
+        ]
+        read_only_fields = ('user', 'create_at', 'update_at')
+    
+    
+    def get_user(self, obj):
+        if self.context.get("expand_user"):
+            return UserForRentalPostSerializer(obj.user).data
+        return obj.user.id

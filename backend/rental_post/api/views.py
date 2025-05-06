@@ -3,7 +3,7 @@ from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rental_post.models import RentalPost
-from .serializers import RentalPostSerializer
+from .serializers import RentalPostSerializer, RentalPostFavoriteSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
@@ -211,6 +211,12 @@ class RentalPostListAPIView(ListAPIView):
     serializer_class = RentalPostSerializer
     pagination_class = SmartPagination
     
+
+    def paginate_queryset(self, queryset):
+        if self.paginator is not None:
+            self.paginator.page_size = 20
+        return super().paginate_queryset(queryset)
+
     def get_queryset(self):
         return RentalPost.objects.prefetch_related('image')
     
@@ -218,8 +224,6 @@ class RentalPostListAPIView(ListAPIView):
     def get_serializer_context(self):
         context =  super().get_serializer_context()
         if self.request.user.is_authenticated:
-            print('helo')
-            print(Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True))
             favorite_ids = set(
                 Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
             )
@@ -241,6 +245,11 @@ class RentalPostListAPIView(ListAPIView):
 class RentalPostSearchAPIView(ListAPIView):
     serializer_class = RentalPostSerializer
     pagination_class = SmartPagination
+
+    def paginate_queryset(self, queryset):
+        if self.paginator is not None:
+            self.paginator.page_size = 18
+        return super().paginate_queryset(queryset)
 
     def get_queryset(self):
 
@@ -289,10 +298,22 @@ class RentalPostSearchAPIView(ListAPIView):
             queryset = queryset.filter(**filter)
         return queryset
         
+
+    
+    def get_serializer_context(self):
+        context =  super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            favorite_ids = set(
+                Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
+            )
+            context['favorite_post_ids'] = favorite_ids
+
+        return context
+
     def get_serializer(self, *args, **kwargs):
         kwargs['context'] = self.get_serializer_context()
         kwargs['context']['expand_user'] = True
-        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at']
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
         return self.serializer_class(*args, **kwargs)        
     
 
@@ -300,18 +321,21 @@ class RentalPostSearchAPIView(ListAPIView):
 @method_decorator(cache_page(60*30), name='dispatch') #Lưu cache 30p
 class RentalPostFavoriteListAPIView(ListAPIView):
 
-    serializer_class = RentalPostSerializer
+    serializer_class = RentalPostFavoriteSerializer
     pagination_class = SmartPagination
-    pagination_class.page_size = 6
+
+    def paginate_queryset(self, queryset):
+        if self.paginator is not None:
+            self.paginator.page_size = 6
+        return super().paginate_queryset(queryset)
     
     def get_queryset(self):
-         
         return RentalPost.objects.filter(favorite__user=self.request.user).select_related('address').prefetch_related('image')
     
     def get_serializer(self, *args, **kwargs):
         kwargs['context'] = self.get_serializer_context()
         kwargs['context']['expand_user'] = True
-        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at']
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
         return self.serializer_class(*args, **kwargs)        
         
 
