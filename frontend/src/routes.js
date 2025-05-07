@@ -13,6 +13,7 @@ import Layout from "./layout/Layout";
 import DetailSearch from "./pages/DetailSearch";
 import Detail from "./pages/Detail";
 import ProtectedRoute from "./until/ProtectedRoute";
+import PostManagement from "./pages/PostManagement";
 
 export default function AppRoutes() {
     return (
@@ -65,6 +66,7 @@ function AnimatedRoutes() {
                         </ProtectedRoute>
                     }
                 />
+                <Route path="/post" element={<PostManagement />} />
             </Routes>
         </AnimatePresence>
     );
