@@ -215,18 +215,16 @@ const RoomCard = ({
                                 clipRule="evenodd"
                             />
                         </svg>
-                        {location?.description}
+                        {location}
                     </div>
                 </div>
                 <div>
                     <div className={styles.owner}>
-                        {owner?.avatar && (
-                            <img
-                                src={`http://localhost:8000${owner.avatar}`}
-                                alt={owner.id}
-                                className={styles.ownerAvatar}
-                            />
-                        )}
+                        <img
+                            src={`http://localhost:8000${owner.avatar}`}
+                            alt={owner.id}
+                            className={styles.ownerAvatar}
+                        />
                         <span>Chủ nhà: {owner?.fullname}</span>
                     </div>
                     <div className={styles.details}>
