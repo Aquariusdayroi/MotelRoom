@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 
 #JWT Token
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework.exceptions import AuthenticationFailed
 
 #Gmail
@@ -203,6 +204,33 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             }, status=status.HTTP_401_UNAUTHORIZED)
         return super().handle_exception(exc)
 
+#---------------------------------------------------------------------------------------------------#
+# Api Đăng xuất
+class LogoutView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request): 
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response({
+                "success": False,
+                "message": "Thiếu refresh token."
+            }, status=status.HTTP_400_BAD_REQUEST) 
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({
+                "success": True,
+                "message": "Đăng xuất thành công."
+            }, status=status.HTTP_200_OK)
+        except TokenError:
+            return Response({
+                "success": False,
+                "message": "Refresh token không hợp lệ hoặc đã hết hạn."
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
 
 
 #---------------------------------------------------------------------------------------------------#
