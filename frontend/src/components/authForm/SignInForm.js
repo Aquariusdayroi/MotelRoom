@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import styles from "../styles/SignIn.module.css";
+import styles from "../../styles/SignIn.module.css";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import authApi from "../api/authApi";
+import authApi from "../../api/authApi";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
-import NotifyModal from "./modal/NotifyModal";
+import NotifyModal from "../modal/NotifyModal";
 import { DotLoader } from "react-spinners";
 
 function SignInForm({ onSwitch }) {

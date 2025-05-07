@@ -1,14 +1,14 @@
 import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import styles from "../styles/Login.module.css";
+import styles from "../../styles/Login.module.css";
 import { GoogleLogin } from "@react-oauth/google";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import ButtonPrimary from "./buttonUI/ButtonPrimary";
+import ButtonPrimary from "../buttonUI/ButtonPrimary";
 import { DotLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
-import { AuthToken } from "../authToken";
-import NotifyModal from "./modal/NotifyModal";
+import { AuthToken } from "../../authToken";
+import NotifyModal from "../modal/NotifyModal";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

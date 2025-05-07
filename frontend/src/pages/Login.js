@@ -5,8 +5,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
-import LoginForm from "../components/LoginForm";
-import SignInForm from "../components/SignInForm";
+import LoginForm from "../components/authForm/LoginForm";
+import SignInForm from "../components/authForm/SignInForm";
 import Footer from "../layout/components/Footer";
 import { images } from "../assets/images";
 

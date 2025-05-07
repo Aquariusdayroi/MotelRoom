@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import styles from "../styles/Search.module.css";
 import ButtonPrimary from "./buttonUI/ButtonPrimary";
-import ItemSearch from "./buttonUI/ItemSearch";
+import ItemSearch from "./inputUI/ItemSearch";
 import AreaModal from "./modal/AreaModal";
 import RoomTypeModal from "./modal/RoomTypeModal";
 import PriceModal from "./modal/PriceModal";
@@ -9,6 +9,8 @@ import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import roomTypeApi from "../api/searchApi/roomTypeApi";
 import mapboxApi from "../api/mapboxApi";
+
+const DEBOUNCE_DELAY = 500;
 
 const SearchBar = ({
     inHeader = false,
@@ -78,20 +80,15 @@ const SearchBar = ({
 
     const handleAreaChange = async (e) => {
         const value = e.target.value;
-        setArea(value);
+        setArea(value); // Chỉ cập nhật giá trị hiển thị
 
         if (!value.trim()) {
             setFilteredDestinations([]);
             return;
         }
 
-        try {
-            const suggestions = await mapboxApi.searchLocation(value);
-            setFilteredDestinations(suggestions);
-        } catch (error) {
-            console.error("Lỗi khi tìm kiếm địa điểm:", error);
-            setFilteredDestinations([]);
-        }
+        // Chỉ gọi hàm debounced để xử lý tìm kiếm
+        debouncedLocationSearch(value);
     };
 
     const handleAreaSelect = async (suggestion) => {
@@ -270,6 +267,34 @@ const SearchBar = ({
         };
     }, []);
 
+    const debouncedLocationSearch = useCallback(
+        (() => {
+            let timeoutId = null;
+            return async (value) => {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                timeoutId = setTimeout(async () => {
+                    if (!value.trim()) {
+                        setFilteredDestinations([]);
+                        return;
+                    }
+                    try {
+                        const suggestions = await mapboxApi.searchLocation(
+                            value
+                        );
+                        setFilteredDestinations(suggestions);
+                    } catch (error) {
+                        console.error("Lỗi khi tìm kiếm địa điểm:", error);
+                        setFilteredDestinations([]);
+                    }
+                    timeoutId = null;
+                }, DEBOUNCE_DELAY);
+            };
+        })(),
+        []
+    );
+
     const handleSearch = async () => {
         setIsExpanded(false);
         setIsAnyModalOpen(false);
@@ -294,7 +319,6 @@ const SearchBar = ({
             max_price: getNumericPrice(priceTo),
         };
 
-        // Remove undefined values
         const finalParams = Object.fromEntries(
             Object.entries(searchParams).filter(([_, v]) => v != null)
         );
@@ -386,13 +410,8 @@ const SearchBar = ({
                         onClick={handleOpenPriceFromModal}
                         onChange={handlePriceFromChange}
                         value={
-                            priceFrom
-                                ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                      minimumFractionDigits: 0,
-                                      maximumFractionDigits: 0,
-                                  }).format(priceFrom)
+                            priceFrom != null && priceFrom !== ""
+                                ? Number(priceFrom).toLocaleString("vi-VN")
                                 : ""
                         }
                     />
@@ -405,13 +424,8 @@ const SearchBar = ({
                         onClick={handleOpenPriceToModal}
                         onChange={handlePriceToChange}
                         value={
-                            priceTo
-                                ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                      minimumFractionDigits: 0,
-                                      maximumFractionDigits: 0,
-                                  }).format(priceTo)
+                            priceTo != null && priceTo !== ""
+                                ? Number(priceTo).toLocaleString("vi-VN")
                                 : ""
                         }
                     />
