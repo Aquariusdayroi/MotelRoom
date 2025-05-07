@@ -47,12 +47,14 @@
     margin-bottom: 16px;
 }
 .searchButton {
+    z-index: 100;
     height: 40px;
     border-radius: 13px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-left: 24px;
+    pointer-events: all;
 }
 .searchInHeader {
     display: flex;
