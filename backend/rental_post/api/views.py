@@ -272,7 +272,7 @@ class RentalPostSearchAPIView(ListAPIView):
             if value:
                 filters[field] = value
         if filters:
-            queryset = queryset.filter(**filter)
+            queryset = queryset.filter(**filters)
         return queryset
         
     def get_serializer(self, *args, **kwargs):
