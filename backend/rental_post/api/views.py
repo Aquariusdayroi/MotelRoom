@@ -3,7 +3,7 @@ from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rental_post.models import RentalPost
-from .serializers import RentalPostSerializer
+from .serializers import RentalPostSerializer, RentalPostFavoriteSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
@@ -15,6 +15,8 @@ import backend.settings as settings
 from django.db.models import F, FloatField
 from django.db.models.expressions import ExpressionWrapper
 from django.db.models.functions import ACos, Cos, Radians, Sin
+
+from favorite.models import Favorite
 
 # Custom pagination class với page_size được xác định trực tiếp
 class CustomRentalPostPaginationOwnerList(PageNumberPagination):
@@ -203,30 +205,52 @@ class RentalPostDetailUpdateDeleteAPIView(APIView):
 
 
 #Api lấy danh sách bài đăng 
-@method_decorator(cache_page(60*10), name='dispatch') #Lưu cache 10p
 class RentalPostListAPIView(ListAPIView):
 
     serializer_class = RentalPostSerializer
     pagination_class = SmartPagination
     
+
+    def paginate_queryset(self, queryset):
+        if self.paginator is not None:
+            self.paginator.page_size = 20
+        return super().paginate_queryset(queryset)
+
     def get_queryset(self):
-        return RentalPost.objects.prefetch_related('image')
+        cache_key = f"rentalpost_list_user_{self.request.user.id if self.request.user.is_authenticated else 'anon'}"
+        queryset = cache.get(cache_key)
+        if queryset is None:
+            queryset = RentalPost.objects.prefetch_related('image')
+            cache.set(cache_key, queryset, timeout=60*10)  # 10 phút
+        return queryset
     
+
+    def get_serializer_context(self):
+        context =  super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            favorite_ids = set(
+                Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
+            )
+            context['favorite_post_ids'] = favorite_ids
+
+        return context
+
     def get_serializer(self, *args, **kwargs):
         kwargs['context'] = self.get_serializer_context()
         kwargs['context']['expand_user'] = True
-        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at']
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
         return self.serializer_class(*args, **kwargs)        
-        
-
-
 
 
 # #Api tìm kiếm bài đăng theo bộ lọc
-@method_decorator(cache_page(60*5), name='dispatch') #Lưu cache 5p
 class RentalPostSearchAPIView(ListAPIView):
     serializer_class = RentalPostSerializer
     pagination_class = SmartPagination
+
+    def paginate_queryset(self, queryset):
+        if self.paginator is not None:
+            self.paginator.page_size = 18
+        return super().paginate_queryset(queryset)
 
     def get_queryset(self):
 
@@ -271,12 +295,54 @@ class RentalPostSearchAPIView(ListAPIView):
             value = self.request.query_params.get(param)
             if value:
                 filters[field] = value
+
         if filters:
             queryset = queryset.filter(**filters)
         return queryset
         
+
+    
+    def get_serializer_context(self):
+        context =  super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            favorite_ids = set(
+                Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
+            )
+            context['favorite_post_ids'] = favorite_ids
+
+        return context
+
     def get_serializer(self, *args, **kwargs):
         kwargs['context'] = self.get_serializer_context()
         kwargs['context']['expand_user'] = True
-        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at']
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
         return self.serializer_class(*args, **kwargs)        
+    
+
+#Api lấy danh sách bài đăng yêu thích
+class RentalPostFavoriteListAPIView(ListAPIView):
+
+    serializer_class = RentalPostFavoriteSerializer
+    pagination_class = SmartPagination
+
+    def paginate_queryset(self, queryset):
+        if self.paginator is not None:
+            self.paginator.page_size = 6
+        return super().paginate_queryset(queryset)
+    
+    def get_queryset(self):
+        cache_key = f"rentalpost_favorite_user_{self.request.user.id if self.request.user.is_authenticated else 'anon'}"
+        queryset = cache.get(cache_key)
+        if queryset is None:
+            queryset = RentalPost.objects.filter(favorite__user=self.request.user).select_related('address').prefetch_related('image')
+            cache.set(cache_key, queryset, timeout=60*10)  # 10 phút
+        return queryset
+    
+    def get_serializer(self, *args, **kwargs):
+        kwargs['context'] = self.get_serializer_context()
+        kwargs['context']['expand_user'] = True
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
+        return self.serializer_class(*args, **kwargs)        
+        
+
+

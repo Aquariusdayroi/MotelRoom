@@ -4,7 +4,7 @@ import Header from "./img/Header.png";
 import notFound from "./img/notFound.png";
 import BackgroundLogin from "./img/BackgroundLogin.png";
 import iconGoogle from "./img/iconGoogle.png";
-
+import fallbackAvatar from "./img/fallback_avatar.png";
 const images = {
     logo,
     background,
@@ -12,6 +12,7 @@ const images = {
     notFound,
     BackgroundLogin,
     iconGoogle,
+    fallbackAvatar,
 };
 
 export { images };

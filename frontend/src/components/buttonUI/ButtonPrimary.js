@@ -7,10 +7,15 @@ const ButtonPrimary = ({
     avatar = false,
     className,
     onClick,
+    disabled,
+    isActive = true,
 }) => {
     return (
         <button
-            className={`${styles.buttonPrimary} ${className}`}
+            className={`${
+                isActive ? styles.buttonPrimary : styles.buttonPrimaryInActive
+            } ${className} 
+                        ${disabled ? styles.buttonPrimaryDisabled : ""}`}
             onClick={onClick}
         >
             {icon && <span className={styles.icon}>{icon}</span>}
