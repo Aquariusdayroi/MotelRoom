@@ -1,5 +1,5 @@
 # Python
-__pycache__/
+__pycache__/*
 *.py[cod]
 *.pyo
 
@@ -23,3 +23,4 @@ db.sqlite3
 Thumbs.db
 
 images_rentalpost/
+# backend/
