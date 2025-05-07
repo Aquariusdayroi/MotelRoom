@@ -66,7 +66,16 @@ function AnimatedRoutes() {
                         </ProtectedRoute>
                     }
                 />
-                <Route path="/post" element={<PostManagement />} />
+                <Route
+                    path="/post"
+                    element={
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <PostManagement />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                />
             </Routes>
         </AnimatePresence>
     );

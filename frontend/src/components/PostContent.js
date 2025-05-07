@@ -1,79 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import RoomCard from "./rooms/RoomCard";
 import "../styles/PostManagement.css";
-
-import frame from "../assets/management-img/Frame.png";
-import room1 from "../assets/management-img/img1.png";
-import room2 from "../assets/management-img/img2.jpg";
-import room3 from "../assets/management-img/img3.jpg";
-
-const initialPosts = [
-    {
-        id: 1,
-        title: "Nhà trọ số 67/4 Cao Thắng, Phường 3,...",
-        location: "Quận 1, TP.HCM",
-        owner: "Ender",
-        price: "3 triệu",
-        type: "Chung cư",
-        area: "30m²",
-        isNew: true,
-        images: [room1, room2, room3],
-    },
-    {
-        id: 2,
-        title: "Nhà trọ số 67/4 Cao Thắng, Phường 3,...",
-        address: "Quận 3, Thành phố Hồ Chí Minh",
-        price: "4 triệu/tháng",
-        type: "Phòng trọ",
-        area: "25m²",
-        owner: "Ender",
-        image: room2,
-    },
-    {
-        id: 3,
-        title: "Nhà trọ số 67/4 Cao Thắng, Phường 3,...",
-        address: "Quận 5, Thành phố Hồ Chí Minh",
-        price: "5 triệu/tháng",
-        type: "Nhà nguyên căn",
-        area: "50m²",
-        owner: "Ender",
-        image: room3,
-    },
-    {
-        id: 4,
-        title: "Nhà trọ số 67/4 Cao Thắng, Phường 3,...",
-        address: "Quận 7, Thành phố Hồ Chí Minh",
-        price: "6 triệu/tháng",
-        type: "Chung cư",
-        area: "40m²",
-        owner: "Ender",
-        image: room2,
-    },
-    {
-        id: 5,
-        title: "Nhà trọ số 67/4 Cao Thắng, Phường 3,...",
-        address: "Quận 10, Thành phố Hồ Chí Minh",
-        price: "2 triệu/tháng",
-        type: "Phòng trọ",
-        area: "20m²",
-        owner: "Ender",
-        image: room1,
-    },
-    {
-        id: 6,
-        title: "Nhà trọ số 67/4 Cao Thắng, Phường 3,...",
-        address: "Quận 12, Thành phố Hồ Chí Minh",
-        price: "7 triệu/tháng",
-        type: "Nhà nguyên căn",
-        area: "70m²",
-        owner: "Ender",
-        image: room3,
-    },
-];
+import axiosClient from "../api/axiosClient";
 
 export default function PostContent() {
-    const [posts, setPosts] = useState(initialPosts);
+    const [posts, setPosts] = useState([]);
     const [editingPost, setEditingPost] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [newData, setNewData] = useState({
         price: "",
         address: "",
@@ -82,8 +16,33 @@ export default function PostContent() {
         image: "",
     });
 
-    const handleDelete = (id) => {
-        setPosts((prev) => prev.filter((post) => post.id !== id));
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const response = await axiosClient.get(
+                    "/rental_post/api/my-posts/"
+                );
+                if (response.data.success) {
+                    setPosts(response.data.results.data);
+                }
+            } catch (error) {
+                setError("Failed to fetch posts");
+                console.error("Error fetching posts:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPosts();
+    }, []);
+
+    const handleDelete = async (id) => {
+        try {
+            await axiosClient.delete(`/rental_post/api/posts/${id}/`);
+            setPosts((prev) => prev.filter((post) => post.id !== id));
+        } catch (error) {
+            console.error("Error deleting post:", error);
+        }
     };
 
     const handleHide = (id) => {
@@ -99,21 +58,32 @@ export default function PostContent() {
         setEditingPost(post);
         setNewData({
             price: post.price,
-            address: post.address,
-            owner: post.owner,
-            type: post.type,
-            image: post.image,
+            address: post.address.description,
+            type: post.home_type,
         });
     };
 
-    const saveEdit = () => {
-        setPosts((prev) =>
-            prev.map((post) =>
-                post.id === editingPost.id ? { ...post, ...newData } : post
-            )
-        );
-        setEditingPost(null);
+    const saveEdit = async () => {
+        try {
+            await axiosClient.put(`/rental_post/api/posts/${editingPost.id}/`, {
+                price: newData.price,
+                address: newData.address,
+                home_type: newData.type,
+            });
+
+            setPosts((prev) =>
+                prev.map((post) =>
+                    post.id === editingPost.id ? { ...post, ...newData } : post
+                )
+            );
+            setEditingPost(null);
+        } catch (error) {
+            console.error("Error updating post:", error);
+        }
     };
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -129,7 +99,7 @@ export default function PostContent() {
                 <div className="search-bar">
                     <input
                         className="search-input"
-                        placeholder="Tìm trong bài đăng của Ender"
+                        placeholder="Tìm trong bài đăng của bạn"
                     />
                     <button
                         className="btn btn-info search-btn"
@@ -157,14 +127,13 @@ export default function PostContent() {
                         .map((post) => (
                             <div key={post.id} className="col-12 col-md-4 mb-4">
                                 <RoomCard
-                                    images={post.images || [post.image]}
+                                    id={post.id}
                                     title={post.title}
-                                    location={post.location || post.address}
-                                    owner={post.owner}
+                                    address={post.address.description}
                                     price={post.price}
-                                    type={post.type}
-                                    area={post.area}
-                                    isNew={post.isNew}
+                                    home_type={post.home_type}
+                                    acreage={post.acreage}
+                                    user={post.user}
                                     onDelete={() => handleDelete(post.id)}
                                     onEdit={() => handleEdit(post.id)}
                                     onHide={() => handleHide(post.id)}

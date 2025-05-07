@@ -107,20 +107,27 @@ const Header = ({
                                         icon={true}
                                     />
                                 )}
-                                <ButtonLanguage
-                                    des={
-                                        !user
-                                            ? "Cho thuê trọ qua Simi"
-                                            : role === "user"
-                                            ? "Cho thuê trọ qua Simi"
-                                            : role === "owner"
-                                            ? "Quản lý bài đăng"
-                                            : role === "admin"
-                                            ? "Quản lý"
-                                            : "Cho thuê trọ qua Simi"
-                                    }
-                                    icon={false}
-                                />
+                                {role === "owner" ? (
+                                    <Link to="/post">
+                                        <ButtonLanguage
+                                            des="Quản lý bài đăng"
+                                            icon={false}
+                                        />
+                                    </Link>
+                                ) : (
+                                    <ButtonLanguage
+                                        des={
+                                            !user
+                                                ? "Cho thuê trọ qua Simi"
+                                                : role === "user"
+                                                ? "Cho thuê trọ qua Simi"
+                                                : role === "admin"
+                                                ? "Quản lý"
+                                                : "Cho thuê trọ qua Simi"
+                                        }
+                                        icon={false}
+                                    />
+                                )}
                             </div>
                         )}
                         {!user ? (
