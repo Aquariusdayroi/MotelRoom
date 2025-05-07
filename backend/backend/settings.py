@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rental_post',
     'review',
     'image',
+    'favorite',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
@@ -140,6 +141,7 @@ CACHES = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
+    'AUTH_TOKEN_CLASSES': ("rest_framework_simplejwt.tokens.AccessToken",),
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),  # Hoặc 'minutes=60', 'hours=24', v.v.
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': False,

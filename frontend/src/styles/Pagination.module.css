@@ -1,0 +1,9 @@
+.pagiBtn {
+    width: 45px;
+    height: 45px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+}

@@ -33,6 +33,7 @@ urlpatterns = [
     path('user-admin/api/', include(router_admin.urls)), # api admin quản lý người dùng
     path('rental_post/api/', include('rental_post.api.urls')), #api liên quan rental post
     path('rental_post/api/', include('review.api.urls')), #api liên quan review
-    path('images/api/', include('image.api.urls')) #api liên quan đến image
+    path('images/api/', include('image.api.urls')), #api liên quan đến image
+    path('favorite/api/', include('favorite.api.url')),
 ] 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

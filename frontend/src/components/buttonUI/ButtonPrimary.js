@@ -1,9 +1,13 @@
-import { images } from "../../assets/images";
-import styles from "../../styles/ButtonPrimary.module.css";
+import { images } from '../../assets/images';
+import styles from '../../styles/ButtonPrimary.module.css';
 
-const ButtonPrimary = ({ des, icon = null, avatar = false, className }) => {
+const ButtonPrimary = ({ des, icon = null, avatar = false, className, onClick, disabled, isActive = true }) => {
     return (
-        <button className={`${styles.buttonPrimary} ${className}`}>
+        <button
+            className={`${isActive ? styles.buttonPrimary : styles.buttonPrimaryInActive} ${className} 
+                        ${disabled ? styles.buttonPrimaryDisabled : ''}`}
+            onClick={onClick}
+        >
             {icon && <span className={styles.icon}>{icon}</span>}
             {des}
             {avatar && (
@@ -12,11 +16,11 @@ const ButtonPrimary = ({ des, icon = null, avatar = false, className }) => {
                     alt="avatar"
                     className="rounded-circle"
                     style={{
-                        width: "44px",
-                        height: "44px",
-                        objectFit: "cover",
-                        marginLeft: "6px",
-                        border: "2px solid #fff",
+                        width: '44px',
+                        height: '44px',
+                        objectFit: 'cover',
+                        marginLeft: '6px',
+                        border: '2px solid #fff',
                     }}
                 />
             )}
