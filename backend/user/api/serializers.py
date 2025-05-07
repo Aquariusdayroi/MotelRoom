@@ -19,6 +19,8 @@ from google.auth.transport import requests
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
 
 #Send Gmail
 from django.core.mail import send_mail
@@ -26,6 +28,22 @@ from django.urls import reverse
 from django.conf import settings
 
 #Xác thực mail 
+# def send_verification_email(user, request):
+#     token = default_token_generator.make_token(user)
+#     uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+#     verify_url = request.build_absolute_uri(
+#         reverse('verify-email', kwargs={'uidb64': uid, 'token': token})
+#     )
+
+#     send_mail(
+#         subject='Xác minh email tài khoản của bạn',
+#         message=f'Vui lòng nhấn vào liên kết sau để xác minh email:\n{verify_url}',
+#         from_email=settings.DEFAULT_FROM_EMAIL,
+#         recipient_list=[user.email],
+#         fail_silently=False,
+#     )
+
 def send_verification_email(user, request):
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -34,13 +52,22 @@ def send_verification_email(user, request):
         reverse('verify-email', kwargs={'uidb64': uid, 'token': token})
     )
 
-    send_mail(
-        subject='Xác minh email tài khoản của bạn',
-        message=f'Vui lòng nhấn vào liên kết sau để xác minh email:\n{verify_url}',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        fail_silently=False,
-    )
+    subject = 'Xác nhận tài khoản Simi của bạn '
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to_email = [user.email]
+
+    # Text fallback
+    text_content = f'Vui lòng nhấn vào liên kết sau để xác minh email của bạn:\n{verify_url}'
+
+    # HTML content dùng template
+    html_content = render_to_string('form_email.html', {
+        'user': user,
+        'verify_url': verify_url
+    })
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
 
 
 #Serializer Đăng nhập
