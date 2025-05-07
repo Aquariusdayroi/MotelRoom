@@ -205,19 +205,15 @@ const DetailSearch = () => {
                                     key={room.id}
                                     images={
                                         room.images && room.images.length > 0
-                                            ? room.images.map(
-                                                  (img) => img.image_url
-                                              )
+                                            ? room.images
                                             : [images.background]
                                     }
-                                    address={room.title} // Tiêu đề bài đăng
-                                    location={room.address?.description} // Địa chỉ đầy đủ
-                                    owner={room.user?.fullname}
-                                    price={`${parseInt(
-                                        room.price
-                                    ).toLocaleString()}đ`}
-                                    type={room.home_type}
-                                    area={`${room.acreage}m²`}
+                                    title={room.title}
+                                    address={room.address}
+                                    user={room.user} // Truyền toàn bộ user object
+                                    price={room.price}
+                                    home_type={room.home_type}
+                                    acreage={room.acreage}
                                     isNew={
                                         new Date(room.update_at) >
                                         Date.now() - 1000 * 60 * 60 * 24 * 7
