@@ -14,6 +14,7 @@ import DetailSearch from "./pages/DetailSearch";
 import Detail from "./pages/Detail";
 import ProtectedRoute from "./until/ProtectedRoute";
 import PostManagement from "./pages/PostManagement";
+import AdminManagement from "./pages/AdminManagement";
 
 export default function AppRoutes() {
     return (
@@ -76,6 +77,34 @@ function AnimatedRoutes() {
                         </ProtectedRoute>
                     }
                 />
+                <Route
+                    path="/admin-manage"
+                    element={
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <AdminManagement />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route
+                        path="authentic"
+                        element={<div>Xác thực tài khoản</div>}
+                    />
+                    <Route path="post" element={<div>Quản lý bài đăng</div>} />
+                    <Route
+                        path="comment"
+                        element={<div>Quản lý đánh giá</div>}
+                    />
+                    <Route
+                        path="account"
+                        element={<div>Quản lý tài khoản</div>}
+                    />
+                    <Route
+                        path="statistical"
+                        element={<div>Thống kê hệ thống</div>}
+                    />
+                </Route>
             </Routes>
         </AnimatePresence>
     );

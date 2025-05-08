@@ -114,6 +114,13 @@ const Header = ({
                                             icon={false}
                                         />
                                     </Link>
+                                ) : role === "admin" ? (
+                                    <Link to="/admin-manage">
+                                        <ButtonLanguage
+                                            des="Quản lý"
+                                            icon={false}
+                                        />
+                                    </Link>
                                 ) : (
                                     <ButtonLanguage
                                         des={
@@ -121,8 +128,6 @@ const Header = ({
                                                 ? "Cho thuê trọ qua Simi"
                                                 : role === "user"
                                                 ? "Cho thuê trọ qua Simi"
-                                                : role === "admin"
-                                                ? "Quản lý"
                                                 : "Cho thuê trọ qua Simi"
                                         }
                                         icon={false}
