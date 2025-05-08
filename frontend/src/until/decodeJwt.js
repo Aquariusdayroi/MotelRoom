@@ -1,18 +1,22 @@
 const decodeJwtPayload = (token) => {
     try {
-        // Tách token ra làm 3 phần: header, payload, signature
         const parts = token.split(".");
         if (parts.length !== 3) {
-            throw new Error("JWT not valid");
+            throw new Error("JWT không hợp lệ");
         }
 
-        // Lấy và giải mã payload
-        const decoded = atob(parts[1]);
+        const base64Url = parts[1];
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        const padded = base64.padEnd(
+            base64.length + ((4 - (base64.length % 4)) % 4),
+            "="
+        ); // padding
+        const decoded = atob(padded);
+
         return JSON.parse(decoded);
     } catch (error) {
-        console.error("Failed to decode JWT:", error);
+        console.error("Giải mã JWT thất bại:", error);
         return null;
     }
 };
-
 export default decodeJwtPayload;

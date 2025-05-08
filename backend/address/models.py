@@ -6,8 +6,8 @@ from city.models import City
 class Address(models.Model):
     description = models.CharField(max_length=255)
     
-    latitude = models.DecimalField(max_digits=8, decimal_places=2, null=True)
-    longitude = models.DecimalField(max_digits=8, decimal_places=2, null= True)
+    latitude = models.DecimalField(max_digits=15, decimal_places=6, null=True)
+    longitude = models.DecimalField(max_digits=15, decimal_places=6, null= True)
 
     # ForeignKey
     city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True, related_name='address')

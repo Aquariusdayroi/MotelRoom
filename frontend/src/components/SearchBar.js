@@ -1,17 +1,23 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import styles from "../styles/Search.module.css";
 import ButtonPrimary from "./buttonUI/ButtonPrimary";
-import ItemSearch from "./buttonUI/ItemSearch";
-import AreaModal, { destinations } from "./modal/AreaModal";
+import ItemSearch from "./inputUI/ItemSearch";
+import AreaModal from "./modal/AreaModal";
 import RoomTypeModal from "./modal/RoomTypeModal";
 import PriceModal from "./modal/PriceModal";
 import { Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import roomTypeApi from "../api/searchApi/roomTypeApi";
+import mapboxApi from "../api/mapboxApi";
+
+const DEBOUNCE_DELAY = 500;
 
 const SearchBar = ({
     inHeader = false,
     onExpandChange,
     isHeaderSearch = false,
 }) => {
+    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -23,6 +29,12 @@ const SearchBar = ({
     const [isPriceToModalOpen, setIsPriceToModalOpen] = useState(false);
     const [priceFromAnchorEl, setPriceFromAnchorEl] = useState(null);
     const [priceToAnchorEl, setPriceToAnchorEl] = useState(null);
+
+    const [selectedArea, setSelectedArea] = useState({
+        name: "",
+        lat: null,
+        lng: null,
+    });
 
     const [area, setArea] = useState("");
     const [roomType, setRoomType] = useState("");
@@ -66,19 +78,95 @@ const SearchBar = ({
         }
     };
 
-    const handleAreaChange = (e) => {
+    const handleAreaChange = async (e) => {
         const value = e.target.value;
-        setArea(value);
-        const filtered = destinations.filter((dest) =>
-            dest.name.toLowerCase().includes(value.toLowerCase())
-        );
-        setFilteredDestinations(filtered);
+        setArea(value); // Chỉ cập nhật giá trị hiển thị
+
+        if (!value.trim()) {
+            setFilteredDestinations([]);
+            return;
+        }
+
+        // Chỉ gọi hàm debounced để xử lý tìm kiếm
+        debouncedLocationSearch(value);
     };
 
-    const handleAreaFocus = (event) => {
-        handleOpenModal(event);
-        setFilteredDestinations(destinations);
+    const handleAreaSelect = async (suggestion) => {
+        if (!suggestion) return;
+        console.log("Selected suggestion:", suggestion);
+
+        try {
+            if (suggestion.coordinates) {
+                console.log(
+                    "Using existing coordinates:",
+                    suggestion.coordinates
+                );
+                setArea(suggestion.name);
+                setSelectedArea({
+                    name: suggestion.name,
+                    lat: parseFloat(suggestion.coordinates.lat),
+                    lng: parseFloat(suggestion.coordinates.lng),
+                });
+            } else {
+                try {
+                    const locationDetails = await mapboxApi.retrieveLocation(
+                        suggestion.id
+                    );
+
+                    if (locationDetails && locationDetails.coordinates) {
+                        console.log(
+                            "Retrieved coordinates from Search API:",
+                            locationDetails.coordinates
+                        );
+                        setArea(suggestion.name);
+                        setSelectedArea({
+                            name: suggestion.name,
+                            ...locationDetails.coordinates,
+                        });
+                    } else {
+                        console.log("Falling back to Geocoding API");
+                        const response = await fetch(
+                            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+                                suggestion.name
+                            )}.json?access_token=${
+                                process.env.REACT_APP_MAPBOX_TOKEN
+                            }`
+                        );
+                        const data = await response.json();
+
+                        if (data.features && data.features[0]) {
+                            const coordinates = data.features[0].center;
+                            setArea(suggestion.name);
+                            setSelectedArea({
+                                name: suggestion.name,
+                                lng: coordinates[0],
+                                lat: coordinates[1],
+                            });
+                        } else {
+                            console.warn(
+                                "No coordinates found for:",
+                                suggestion.name
+                            );
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error getting coordinates:", error);
+                }
+            }
+
+            if (window.map && selectedArea.lat && selectedArea.lng) {
+                window.map.flyTo({
+                    center: [selectedArea.lng, selectedArea.lat],
+                    zoom: 15,
+                });
+            }
+
+            handleCloseModal();
+        } catch (error) {
+            console.error("Error in handleAreaSelect:", error);
+        }
     };
+
     const handleOpenRoomTypeModal = (event) => {
         closeAllModals();
         setRoomTypeAnchorEl(event.currentTarget);
@@ -178,6 +266,104 @@ const SearchBar = ({
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    const debouncedLocationSearch = useCallback(
+        (() => {
+            let timeoutId = null;
+            return async (value) => {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                timeoutId = setTimeout(async () => {
+                    if (!value.trim()) {
+                        setFilteredDestinations([]);
+                        return;
+                    }
+                    try {
+                        const suggestions = await mapboxApi.searchLocation(
+                            value
+                        );
+                        setFilteredDestinations(suggestions);
+                    } catch (error) {
+                        console.error("Lỗi khi tìm kiếm địa điểm:", error);
+                        setFilteredDestinations([]);
+                    }
+                    timeoutId = null;
+                }, DEBOUNCE_DELAY);
+            };
+        })(),
+        []
+    );
+
+    const handleSearch = async () => {
+        setIsExpanded(false);
+        setIsAnyModalOpen(false);
+        if (onExpandChange) {
+            onExpandChange(false);
+        }
+
+        const getNumericPrice = (price) => {
+            if (typeof price === "number") return price;
+            if (typeof price === "string") {
+                return parseInt(price.replace(/[^\d]/g, "")) || undefined;
+            }
+            return undefined;
+        };
+
+        let searchParams = {
+            page: 1,
+            lat: selectedArea.lat,
+            lng: selectedArea.lng,
+            home_type: roomType ? roomType.trim() : undefined,
+            min_price: getNumericPrice(priceFrom),
+            max_price: getNumericPrice(priceTo),
+        };
+
+        const finalParams = Object.fromEntries(
+            Object.entries(searchParams).filter(([_, v]) => v != null)
+        );
+
+        if (Object.keys(finalParams).length <= 1) {
+            console.log("No search parameters provided");
+            return;
+        }
+
+        try {
+            console.log("Sending search request with params:", finalParams);
+            const response = await roomTypeApi.searchByType(finalParams);
+
+            if (!response.data || !response.data.results) {
+                throw new Error("Invalid response format");
+            }
+
+            const rooms = response.data.results || [];
+
+            // Force a reset by using replace instead of push
+            navigate("/detail-search", {
+                state: {
+                    rooms,
+                    searchParams: finalParams,
+                    message:
+                        rooms.length === 0
+                            ? "Không có phòng theo nhu cầu"
+                            : null,
+                    timestamp: new Date().getTime(), // Add timestamp to force state update
+                },
+                replace: true, // This will replace the current entry in history
+            });
+        } catch (error) {
+            console.error("Search error:", error);
+            navigate("/detail-search", {
+                state: {
+                    message: "Có lỗi xảy ra khi tìm kiếm: " + error.message,
+                    searchParams: finalParams,
+                    timestamp: new Date().getTime(),
+                },
+                replace: true,
+            });
+        }
+    };
+
     return (
         <div
             ref={searchRef}
@@ -196,9 +382,14 @@ const SearchBar = ({
                         title="Khu vực"
                         placeholder="Tìm kiếm khu vực đến"
                         inHeader={inHeader && !isExpanded}
-                        onClick={handleOpenModal}
-                        onChange={handleAreaChange}
-                        onFocus={handleAreaFocus}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            handleOpenModal(e);
+                        }}
+                        onChange={(e) => {
+                            e.stopPropagation();
+                            handleAreaChange(e);
+                        }}
                         value={area}
                         ref={inputRef}
                     />
@@ -219,13 +410,8 @@ const SearchBar = ({
                         onClick={handleOpenPriceFromModal}
                         onChange={handlePriceFromChange}
                         value={
-                            priceFrom
-                                ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                      minimumFractionDigits: 0,
-                                      maximumFractionDigits: 0,
-                                  }).format(priceFrom)
+                            priceFrom != null && priceFrom !== ""
+                                ? Number(priceFrom).toLocaleString("vi-VN")
                                 : ""
                         }
                     />
@@ -238,13 +424,8 @@ const SearchBar = ({
                         onClick={handleOpenPriceToModal}
                         onChange={handlePriceToChange}
                         value={
-                            priceTo
-                                ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                      minimumFractionDigits: 0,
-                                      maximumFractionDigits: 0,
-                                  }).format(priceTo)
+                            priceTo != null && priceTo !== ""
+                                ? Number(priceTo).toLocaleString("vi-VN")
                                 : ""
                         }
                     />
@@ -252,6 +433,7 @@ const SearchBar = ({
                         <ButtonPrimary
                             icon={<Search size={30} />}
                             className={styles.searchButton}
+                            onClick={handleSearch}
                         />
                     </div>
                 </div>
@@ -263,14 +445,21 @@ const SearchBar = ({
                 anchorEl={anchorEl}
                 filteredDestinations={filteredDestinations}
                 isHeaderSearch={isHeaderSearch}
-                onSelect={(value) => setArea(value)}
+                onSelect={handleAreaSelect}
             />
             <RoomTypeModal
                 open={isRoomTypeModalOpen}
                 onClose={handleCloseRoomTypeModal}
                 anchorEl={roomTypeAnchorEl}
                 isHeaderSearch={isHeaderSearch}
-                onSelect={(value) => setRoomType(value)}
+                onSelect={(value) => {
+                    const roomTypeValue = value.toString();
+                    setRoomType(roomTypeValue);
+                    console.log(
+                        "Selected room type (processed):",
+                        roomTypeValue
+                    );
+                }}
             />
             <PriceModal
                 open={isPriceFromModalOpen}

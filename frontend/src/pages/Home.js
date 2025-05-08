@@ -1,27 +1,30 @@
 import styles from "../styles/Home.module.css";
 import { motion } from "framer-motion";
-import RoomCard from "../components/RoomCard";
-import { images } from "../assets/images";
+import RoomCard from "../components/rooms/RoomCard";
+import { useEffect, useState } from "react";
+import axiosClient from "../api/axiosClient";
+import { Link, useSearchParams } from "react-router-dom";
+import Pagination from "../components/Pagination";
 
 function Home() {
-    const rooms = [
-        {
-            id: 1,
-            images: [
-                images.background,
-                images.Header || images.background,
-                images.logo || images.background,
-            ],
-            address: "Nhà trọ số 67/4 Cao Thắng, Phường 3",
-            location:
-                "Quận 3, Thành phố Hồ Chí Minh Quận 3, Thành phố Hồ Chí Minh",
-            owner: "Tấn Đạt",
-            price: "3.5 triệu",
-            type: "Căn hộ, chung cư",
-            area: "70m²",
-            isNew: true,
-        },
-    ];
+    const [data, setData] = useState({});
+
+    const [searchParams] = useSearchParams();
+    const page = +searchParams.get("page") || 1;
+
+    useEffect(() => {
+        const fetchRooms = async () => {
+            try {
+                const response = await axiosClient.get(
+                    `/rental_post/api/?page=${page}`
+                );
+                setData(response.data);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        fetchRooms();
+    }, [page]);
 
     return (
         <div>
@@ -33,12 +36,19 @@ function Home() {
                 <div className={styles.container}>
                     <div className={styles.title}>Danh sách đề cử hàng đầu</div>
                     <div className={styles.grid}>
-                        {rooms.map((room) => (
-                            <RoomCard key={room.id} {...room} />
+                        {data?.results?.map((room) => (
+                            <Link
+                                key={room.id}
+                                to={`/detail/${room.id}`}
+                                className="text-decoration-none"
+                            >
+                                <RoomCard {...room} />
+                            </Link>
                         ))}
                     </div>
                 </div>
             </motion.div>
+            <Pagination totalPages={data?.total_pages} />
         </div>
     );
 }
