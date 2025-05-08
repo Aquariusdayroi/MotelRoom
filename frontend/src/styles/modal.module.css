@@ -1,0 +1,201 @@
+.register_box {
+    background: #fff;
+    padding: 20px 40px;
+    border-radius: 12px;
+    width: 100%;
+    /* max-width: 400px; */
+    /* max-width: 400px; */
+    height: 560px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.title_re {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.tab_header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    font-weight: 600;
+    padding-bottom: 8px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: #333;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.tab.active {
+    border-color: #00bcd4;
+    font-size: 14px;
+}
+
+.input_group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 18px;
+    border: 1px solid #333;
+    /* border-radius: 4px; */
+    padding: 10px;
+}
+
+.input_group input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    padding-left: 8px;
+}
+
+.icon {
+    font-size: 18px;
+}
+
+.toggle {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.checkbox input {
+    margin-right: 6px;
+}
+
+.btn_submit {
+    width: 100%;
+    background: #00cfff;
+    color: white;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    /* transition: background 0.3s ease; */
+}
+
+.btn_submit:hover {
+    background: #00b7e6;
+}
+
+.login_link {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+.login_link a {
+    color: #00bcd4;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.input_group {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    padding: 5px;
+    width: 100%;
+    position: relative;
+}
+
+.input_group span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.input_group span img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    margin-left: 5px;
+}
+
+.input_group input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 10px;
+}
+
+.page_wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.left_panel {
+    width: 50%;
+    background-color: #00cfff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.right_panel {
+    width: 50%;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url("../assets/img/BackgroundLogin.png");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.branding {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: white;
+    margin-bottom: 270px;
+}
+
+.logo {
+    width: 100px;
+    margin-bottom: 10px;
+}
+
+.branding h2 {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.btnShowPassword {
+    position: absolute;
+    right: 0;
+    font-size: 25px;
+    color: #000000;
+    font-weight: 500;
+    line-height: 24px;
+    width: 15%;
+    height: 100%;
+    cursor: pointer;
+    border: none;
+    background-color: #ffffff;
+}

@@ -1,8 +1,8 @@
-import React, { useContext, useState } from 'react';
-import styles from '../styles/RoomCard.module.css';
-import { images } from '../assets/images';
-import { AuthToken } from '../authToken';
-import axiosClient from '../api/axiosClient';
+import React, { useContext, useState } from "react";
+import styles from "../../styles/RoomCard.module.css";
+import { images } from "../../assets/images";
+import { AuthToken } from "../../authToken";
+import axiosClient from "../../api/axiosClient";
 
 const RoomCard = ({
     id,
@@ -15,6 +15,7 @@ const RoomCard = ({
     acreage: area,
     isNew,
     onClick,
+    onLocationClick,
     is_favorite,
 }) => {
     let { user, role, logout } = useContext(AuthToken);
@@ -27,7 +28,9 @@ const RoomCard = ({
         e.preventDefault();
         if (isTransitioning) return;
         setIsTransitioning(true);
-        setCurrentImageIndex((prevIndex) => (prevIndex === imageList.length - 1 ? 0 : prevIndex + 1));
+        setCurrentImageIndex((prevIndex) =>
+            prevIndex === imageList.length - 1 ? 0 : prevIndex + 1
+        );
         setTimeout(() => setIsTransitioning(false), 500);
     };
 
@@ -35,7 +38,9 @@ const RoomCard = ({
         e.preventDefault();
         if (isTransitioning) return;
         setIsTransitioning(true);
-        setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? imageList.length - 1 : prevIndex - 1));
+        setCurrentImageIndex((prevIndex) =>
+            prevIndex === 0 ? imageList.length - 1 : prevIndex - 1
+        );
         setTimeout(() => setIsTransitioning(false), 500);
     };
 
@@ -51,10 +56,14 @@ const RoomCard = ({
 
         try {
             if (isFavorite) {
-                const response = await axiosClient.delete(`/favorite/api/delete/${id}/`);
+                const response = await axiosClient.delete(
+                    `/favorite/api/delete/${id}/`
+                );
                 console.log(response.data);
             } else {
-                const response = await axiosClient.post(`/favorite/api/add/${id}/`);
+                const response = await axiosClient.post(
+                    `/favorite/api/add/${id}/`
+                );
                 console.log(response.data);
             }
 
@@ -89,7 +98,10 @@ const RoomCard = ({
                 </div>
                 {isNew && <span className={styles.newBadge}>Mới</span>}
                 {user && (
-                    <button className={styles.favoriteButton} onClick={handleSetFavorite}>
+                    <button
+                        className={styles.favoriteButton}
+                        onClick={handleSetFavorite}
+                    >
                         {isFavorite ? (
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -135,7 +147,11 @@ const RoomCard = ({
                                 width="20"
                                 height="20"
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                                />
                             </svg>
                         </button>
                         <button
@@ -152,14 +168,22 @@ const RoomCard = ({
                                 width="20"
                                 height="20"
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                />
                             </svg>
                         </button>
                         <div className={styles.dots}>
                             {imageList.map((_, index) => (
                                 <span
                                     key={index}
-                                    className={`${styles.dot} ${index === currentImageIndex ? styles.activeDot : ''}`}
+                                    className={`${styles.dot} ${
+                                        index === currentImageIndex
+                                            ? styles.activeDot
+                                            : ""
+                                    }`}
                                     onClick={(e) => {
                                         e.preventDefault();
                                         goToImage(index);
@@ -171,39 +195,44 @@ const RoomCard = ({
                 )}
             </div>
             <div className={styles.content}>
-                <div>
-                    <h3 className={styles.address}>{address}</h3>
-                    <div className={styles.location}>
-                        <div>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                                width="18px"
-                                height="18px"
-                                style={{ marginBottom: '7px' }}
-                            >
-                                <path
-                                    fillRule="evenodd"
-                                    d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                                    clipRule="evenodd"
-                                />
-                            </svg>
-                            {location?.description}
-                        </div>
+                <h3 className={styles.address}>{address}</h3>
+                <div
+                    className={`${styles.location} ${styles.clickable}`}
+                    onClick={onLocationClick}
+                >
+                    <div>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            width="18px"
+                            height="18px"
+                            style={{ marginBottom: "7px" }}
+                        >
+                            <path
+                                fillRule="evenodd"
+                                d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                                clipRule="evenodd"
+                            />
+                        </svg>
+                        {location?.description}
                     </div>
                 </div>
                 <div>
                     <div className={styles.owner}>
-                        <img
-                            src={`http://localhost:8000${owner.avatar}`}
-                            alt={owner.id}
-                            className={styles.ownerAvatar}
-                        />
+                        {owner?.avatar && (
+                            <img
+                                src={`http://localhost:8000${owner.avatar}`}
+                                alt={owner.id}
+                                className={styles.ownerAvatar}
+                            />
+                        )}
                         <span>Chủ nhà: {owner?.fullname}</span>
                     </div>
                     <div className={styles.details}>
-                        <div className={styles.price}>Từ: {price / 1000000} triệu/tháng</div>
+                        <div className={styles.price}>
+                            Từ: {price / 1000000} triệu/tháng
+                        </div>
                         <div className={styles.info}>
                             Loại hình: {type}, {Math.floor(area)}m²
                         </div>

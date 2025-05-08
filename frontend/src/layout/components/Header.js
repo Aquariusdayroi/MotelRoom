@@ -9,12 +9,17 @@ import SearchBar from "../../components/SearchBar";
 import { AlignJustify } from "lucide-react";
 import LoginModal from "../../components/modal/LoginModal";
 
-const Header = ({ enableScroll = true, showBigSearch = true }) => {
+const Header = ({
+    enableScroll = true,
+    showBigSearch = true,
+    enableSearch = true,
+}) => {
     let { user, role, logout } = useContext(AuthToken);
     const [isScrolled, setIsScrolled] = useState(false);
     const [showContent, setShowContent] = useState(true);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [timeoutId, setTimeoutId] = useState(null);
+    const [avatarUrl, setAvatarUrl] = useState(images.fallbackAvatar);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -49,6 +54,30 @@ const Header = ({ enableScroll = true, showBigSearch = true }) => {
         }, 200);
         setTimeoutId(id);
     };
+    useEffect(() => {
+        const fetchUserAvatar = async () => {
+            if (user && user.id) {
+                try {
+                    // có api thì đổi lại
+                    const response = await fetch(
+                        `/api/users/${user.id}/avatar`
+                    );
+                    if (response.ok) {
+                        const data = await response.json();
+                        setAvatarUrl(data.avatarUrl || images.fallbackAvatar);
+                    } else {
+                        setAvatarUrl(images.fallbackAvatar);
+                    }
+                } catch (error) {
+                    console.error("Error fetching avatar:", error);
+                    setAvatarUrl(images.fallbackAvatar);
+                }
+            }
+        };
+
+        fetchUserAvatar();
+    }, [user]);
+
     return (
         <div
             className={`${styles.container} ${
@@ -66,7 +95,7 @@ const Header = ({ enableScroll = true, showBigSearch = true }) => {
                             <img src={images.logo} className={styles.logo} />
                         </Link>
                     </div>
-                    {isScrolled && (
+                    {isScrolled && enableSearch && (
                         <SearchBar inHeader={true} isHeaderSearch={true} />
                     )}
                     <div className={styles.buttonGroup}>
@@ -78,10 +107,27 @@ const Header = ({ enableScroll = true, showBigSearch = true }) => {
                                         icon={true}
                                     />
                                 )}
-                                <ButtonLanguage
-                                    des={"Cho thuê trọ qua Simi"}
-                                    icon={false}
-                                />
+                                {role === "owner" ? (
+                                    <Link to="/post">
+                                        <ButtonLanguage
+                                            des="Quản lý bài đăng"
+                                            icon={false}
+                                        />
+                                    </Link>
+                                ) : (
+                                    <ButtonLanguage
+                                        des={
+                                            !user
+                                                ? "Cho thuê trọ qua Simi"
+                                                : role === "user"
+                                                ? "Cho thuê trọ qua Simi"
+                                                : role === "admin"
+                                                ? "Quản lý"
+                                                : "Cho thuê trọ qua Simi"
+                                        }
+                                        icon={false}
+                                    />
+                                )}
                             </div>
                         )}
                         {!user ? (
@@ -97,6 +143,7 @@ const Header = ({ enableScroll = true, showBigSearch = true }) => {
                                 <ButtonPrimary
                                     icon={<AlignJustify size={34} />}
                                     avatar={true}
+                                    avatarUrl={avatarUrl}
                                     className={`${styles.buttonAvatar}`}
                                 />
                                 {showLoginModal && <LoginModal />}
@@ -105,7 +152,7 @@ const Header = ({ enableScroll = true, showBigSearch = true }) => {
                     </div>
                 </div>
             </header>
-            {showContent && showBigSearch && (
+            {showContent && showBigSearch && enableSearch && (
                 <div className={`${styles.content} ${styles.fadeContent}`}>
                     <div className={styles.title}>
                         Easy Way To Find <br /> Your Perfect Property{" "}
