@@ -25,6 +25,10 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from django.conf import settings
 
+#Time delay
+import time
+
+
 #Xác thực mail 
 def send_verification_email(user, request):
     token = default_token_generator.make_token(user)
@@ -62,6 +66,7 @@ class UserSerializer(serializers.ModelSerializer):
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         User = get_user_model()
+        time.sleep(1)
         try:
             user = User.objects.get(
                 email = attrs["email"]
@@ -132,15 +137,23 @@ class GoogleLoginSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         idinfo = None
-        try:
-            # Verify the token with Google
-            idinfo = id_token.verify_oauth2_token(
-                attrs['token'], 
-                requests.Request(), 
-                audience=None  # có thể truyền client_id nếu cần kiểm tra cụ thể
-            )
-        except ValueError:
-            raise serializers.ValidationError("Token Google không hợp lệ.")
+        for attempt in range(3):
+            try:
+                # Verify the token with Google
+                idinfo = id_token.verify_oauth2_token(
+                    attrs['token'], 
+                    requests.Request(), 
+                    audience=None  # có thể truyền client_id nếu cần kiểm tra cụ thể
+                )
+                break
+            except ValueError as e:
+                if attempt == 0:
+                    print("Xác thực token Google thất bại, thử lại sau 1 giây:", e)
+                    time.sleep(1)
+                else:
+                    print("Lỗi xác thực token Google:", e)
+                    raise serializers.ValidationError("Token Google không hợp lệ.")
+                
 
         # Extract user info from token
         email = idinfo.get("email")
