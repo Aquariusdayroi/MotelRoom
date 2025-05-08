@@ -306,9 +306,6 @@ class OwnerRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        if user.role == 'admin':
-            return OwnerRequest.objects.all()
         return OwnerRequest.objects.filter(user=user)
 
     def create(self, request, *args, **kwargs):
@@ -371,8 +368,18 @@ class OwnerRequestViewSet(viewsets.ModelViewSet):
                 "success": False,
                 "message": "Bạn chưa gửi yêu cầu nào."
             }, status=status.HTTP_404_NOT_FOUND)
-            
-    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser])
+        
+class AdminRequestViewSet(viewsets.ModelViewSet):
+    queryset = OwnerRequest.objects.all()
+    serializer_class = OwnerRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'admin':
+            return OwnerRequest.objects.all()
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser], url_path='list-requests')
     def get_list(self, request):
         # Lấy danh sách yêu cầu chủ phòng
         if not request.user.is_superuser and request.user.role != 'admin':
