@@ -1,11 +1,11 @@
 // DetailSearch.js
 import styles from "../styles/DetailSearch.module.css";
-import RoomCard from "../components/RoomCard";
+import RoomCard from "../components/rooms/RoomCard";
 import { images } from "../assets/images";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import mapboxApi from "../api/mapboxApi";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
@@ -201,28 +201,49 @@ const DetailSearch = () => {
                     <div className="row g-2">
                         {displayRooms.map((room) => (
                             <div key={room.id} className="col-md-4 pe-1">
-                                <RoomCard
+                                <Link
                                     key={room.id}
-                                    images={
-                                        room.images && room.images.length > 0
-                                            ? room.images
-                                            : [images.background]
-                                    }
-                                    title={room.title}
-                                    address={room.address}
-                                    user={room.user} // Truyền toàn bộ user object
-                                    price={room.price}
-                                    home_type={room.home_type}
-                                    acreage={room.acreage}
-                                    isNew={
-                                        new Date(room.update_at) >
-                                        Date.now() - 1000 * 60 * 60 * 24 * 7
-                                    }
-                                    onClick={() => setSelectedRoomId(room.id)}
-                                    onLocationClick={() =>
-                                        handleLocationClick(room.id)
-                                    }
-                                />
+                                    to={`/detail/${room.id}`}
+                                    className="text-decoration-none"
+                                    onClick={(e) => {
+                                        // Prevent navigation if clicking on the address
+                                        if (
+                                            e.target.closest(
+                                                `.${styles.location}`
+                                            )
+                                        ) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                >
+                                    <RoomCard
+                                        key={room.id}
+                                        id={room.id}
+                                        images={
+                                            room.images &&
+                                            room.images.length > 0
+                                                ? room.images
+                                                : [images.background]
+                                        }
+                                        title={room.title}
+                                        address={room.address}
+                                        user={room.user}
+                                        price={room.price}
+                                        home_type={room.home_type}
+                                        acreage={room.acreage}
+                                        isNew={
+                                            new Date(room.update_at) >
+                                            Date.now() - 1000 * 60 * 60 * 24 * 7
+                                        }
+                                        onClick={() =>
+                                            setSelectedRoomId(room.id)
+                                        }
+                                        onLocationClick={(e) => {
+                                            e.preventDefault();
+                                            handleLocationClick(room.id);
+                                        }}
+                                    />
+                                </Link>
                             </div>
                         ))}
                     </div>

@@ -1,5 +1,5 @@
 .buttonPrimary {
-    padding: 0.5rem 1.8rem;
+    padding: 0.5rem 1rem;
     border-radius: 50px;
     border: none;
     background-color: var(--primary-color);
@@ -13,6 +13,7 @@
     height: 50px;
     text-decoration: none;
     justify-content: end;
+    width: 114px;
 }
 
 .buttonPrimary:hover {

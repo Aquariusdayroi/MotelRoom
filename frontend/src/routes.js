@@ -12,6 +12,8 @@ import Login from "./pages/Login";
 import Layout from "./layout/Layout";
 import DetailSearch from "./pages/DetailSearch";
 import Detail from "./pages/Detail";
+import ProtectedRoute from "./until/ProtectedRoute";
+import PostManagement from "./pages/PostManagement";
 
 export default function AppRoutes() {
     return (
@@ -21,7 +23,6 @@ export default function AppRoutes() {
     );
 }
 
-// Component để quản lý các route với hiệu ứng chuyển đổi
 function AnimatedRoutes() {
     const location = useLocation();
 
@@ -57,7 +58,23 @@ function AnimatedRoutes() {
                 <Route
                     path="/profile"
                     enableScroll={false}
-                    element={<Profile />}
+                    element={
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <Profile />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/post"
+                    element={
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <PostManagement />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
                 />
             </Routes>
         </AnimatePresence>

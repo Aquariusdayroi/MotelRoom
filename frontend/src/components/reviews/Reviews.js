@@ -1,5 +1,5 @@
-import Comment from './Comment';
-import React, { useState } from 'react';
+import Comment from "./Comment";
+import React, { useState } from "react";
 
 function Reviews({ data }) {
     const [showAll, setShowAll] = useState(false);
@@ -24,8 +24,11 @@ function Reviews({ data }) {
             ))}
 
             {data.length > initialCommentCount && (
-                <button className="btn btn-outline-primary d-block mt-4" onClick={() => setShowAll(!showAll)}>
-                    {showAll ? 'Ẩn bớt đánh giá' : `Hiển thị tất cả đánh giá`}
+                <button
+                    className="btn btn-outline-primary d-block mt-4"
+                    onClick={() => setShowAll(!showAll)}
+                >
+                    {showAll ? "Ẩn bớt đánh giá" : `Hiển thị tất cả đánh giá`}
                 </button>
             )}
         </div>
