@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 import os
 from datetime import datetime, timedelta
+import time
 
 #JWT Token
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -219,6 +220,7 @@ class LogoutView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST) 
 
         try:
+            time.sleep(1)
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response({
