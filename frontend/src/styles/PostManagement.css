@@ -1,6 +1,6 @@
 .post-management-container {
-    margin: 70px;
     display: flex;
+    padding: 20px 10vw;
 }
 
 .search-input {
