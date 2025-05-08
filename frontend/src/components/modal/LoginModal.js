@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const LoginModal = () => {
     const menuItems = [
-        { to: "/account", label: "Tài khoản" },
+        { to: "/profile", label: "Tài khoản" },
         { to: "/notifications", label: "Thông báo" },
         { to: "/messages", label: "Tin nhắn" },
         { to: "/favorites", label: "Yêu thích" },

@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import authApi from "../api/authApi";
 import decodeJwtPayload from "./../until/decodeJwt";
@@ -8,14 +8,25 @@ export let AuthToken = createContext();
 const AuthProvider = ({ children }) => {
     const authTokenCookie = Cookies.get("authToken");
 
+    const decodedToken = authTokenCookie
+        ? decodeJwtPayload(authTokenCookie)
+        : null;
     const [user, setUser] = useState(authTokenCookie || null);
-    const [role, setRole] = useState(
-        authTokenCookie ? decodeJwtPayload(authTokenCookie).role : null
-    );
-    const [userInfo, setUserInfo] = useState(
-        authTokenCookie ? decodeJwtPayload(authTokenCookie) : null
-    );
+    const [role, setRole] = useState(decodedToken ? decodedToken.role : null);
+    const [userInfo, setUserInfo] = useState(decodedToken || null);
+    useEffect(() => {
+        const token = Cookies.get("authToken");
+        const userInfoCookie = Cookies.get("userInfo");
 
+        if (token && userInfoCookie) {
+            const decoded = decodeJwtPayload(token);
+            const parsedUser = JSON.parse(userInfoCookie);
+
+            setUser(token);
+            setRole(parsedUser.role || (decoded && decoded.role) || null);
+            setUserInfo(parsedUser);
+        }
+    }, []);
     const login = async (data) => {
         const res = await authApi.login(data);
 

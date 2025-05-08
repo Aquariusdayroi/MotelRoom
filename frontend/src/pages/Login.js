@@ -1,14 +1,12 @@
-import styles from "../styles/Login.module.css"; // CSS
-import logo from "../assets/img/logo.png";
-import backgroundLogin from "../assets/BackgroundLogin.png";
+import styles from "../styles/Login.module.css";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
-import LoginForm from "../components/LoginForm";
-import SignInForm from "../components/SignInForm";
+import LoginForm from "../components/authForm/LoginForm";
+import SignInForm from "../components/authForm/SignInForm";
 import Footer from "../layout/components/Footer";
 import { images } from "../assets/images";
 
@@ -78,14 +76,14 @@ function Login() {
                 </div>
                 <div className={styles.sectionLogo}>
                     <img
-                        src={backgroundLogin}
+                        src={images.BackgroundLogin}
                         alt="backgroundLogin"
                         className={styles.backgroundImage}
                     />
                     <div className={styles.darkOverlay}></div>{" "}
                     {/* Lớp phủ màu đen */}
                     <div className={styles.logoOverlay}>
-                        <img src={logo} alt="Logo" />
+                        <img src={images.logo} alt="Logo" />
                         <p>Lựa chọn theo cách của bạn</p>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import axios from "axios";
 import queryString from "query-string";
-
+import Cookies from "js-cookie";
 const baseURL = process.env.REACT_APP_API_URL
     ? `${process.env.REACT_APP_API_URL}/api`
     : "http://localhost:8000";
@@ -11,12 +11,14 @@ const axiosClient = axios.create({
     },
     paramsSerializer: (params) => queryString.stringify(params),
 });
+console.log("Helllo\n");
+console.log(axiosClient.baseURL);
 
 axiosClient.interceptors.request.use(async (config) => {
     if (config.skipAuth) {
         return config;
     }
-    const token = localStorage.getItem("access_token");
+    const token = Cookies.get("authToken");
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -33,6 +35,27 @@ axiosClient.interceptors.response.use(
     (error) => {
         console.error("Error response:", error.response);
         throw error;
+    }
+);
+
+axiosClient.interceptors.request.use(
+    (config) => {
+        console.log("Request:", config.url, config.params);
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+axiosClient.interceptors.response.use(
+    (response) => {
+        console.log("Response:", response.data);
+        return response;
+    },
+    (error) => {
+        console.error("Error response:", error.response);
+        return Promise.reject(error);
     }
 );
 

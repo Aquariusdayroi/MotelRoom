@@ -1,90 +1,28 @@
-import { Link } from "react-router-dom";
 import Footer from "../layout/components/Footer";
-import logo from "../assets/img/logo.png";
 import styles from "../styles/Profile.module.css";
-import IconAvatarButton from "../components/buttonUI/IconAvatarButton";
-import ProfileMenu from "../components/modal/ProfileMenu";
 import UserCard from "../components/UserCard";
-import RoomCard from "../components/RoomCard";
+import RoomCard from "../components/rooms/RoomCard";
 import { images } from "../assets/images";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import ReviewCard from "../components/ReviewCard";
+import ReviewCard from "../components/reviews/ReviewCard";
 import { useNavigate } from "react-router-dom";
 import ButtonPrimary from "../components/buttonUI/ButtonPrimary";
-import { AlignJustify } from "lucide-react";
+import { AuthToken } from "../authToken";
+import axiosClient from "../api/axiosClient";
+import RoomProfile from "../components/rooms/RoomProfile";
+
 function Profile() {
+    const { role } = useContext(AuthToken);
+    const [rooms, setRooms] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const navigate = useNavigate();
     const handleBackToHome = () => {
         navigate("/home");
     };
-    const roomList = [
-        {
-            id: 1,
-            images: [
-                images.background,
-                images.Header || images.background,
-                images.logo || images.background,
-            ],
-            address: "Nhà trọ số 67/4 Cao Thắng, Phường 3",
-            location:
-                "Quận 3, Thành phố Hồ Chí Minh Quận 3, Thành phố Hồ Chí Minh",
-            owner: "Tấn Đạt",
-            price: "1.5 triệu",
-            type: "Căn hộ, chung cư",
-            area: "70m²",
-            isNew: true,
-        },
-        {
-            id: 2,
-            images: [
-                images.background,
-                images.Header || images.background,
-                images.logo || images.background,
-            ],
-            address: "Nhà trọ số 67/4 Cao Thắng, Phường 3",
-            location:
-                "Quận 3, Thành phố Hồ Chí Minh Quận 3, Thành phố Hồ Chí Minh",
-            owner: "Tấn Đạt",
-            price: "2.5 triệu",
-            type: "Căn hộ, chung cư",
-            area: "70m²",
-            isNew: true,
-        },
-        {
-            id: 3,
-            images: [
-                images.background,
-                images.Header || images.background,
-                images.logo || images.background,
-            ],
-            address: "Nhà trọ số 67/4 Cao Thắng, Phường 3",
-            location:
-                "Quận 3, Thành phố Hồ Chí Minh Quận 3, Thành phố Hồ Chí Minh",
-            owner: "Tấn Đạt",
-            price: "3.5 triệu",
-            type: "Căn hộ, chung cư",
-            area: "70m²",
-            isNew: true,
-        },
-        {
-            id: 4,
-            images: [
-                images.background,
-                images.Header || images.background,
-                images.logo || images.background,
-            ],
-            address: "Nhà trọ số 67/4 Cao Thắng, Phường 3",
-            location:
-                "Quận 3, Thành phố Hồ Chí Minh Quận 3, Thành phố Hồ Chí Minh",
-            owner: "Tấn Đạt",
-            price: "4.5 triệu",
-            type: "Căn hộ, chung cư",
-            area: "70m²",
-            isNew: true,
-        },
-    ];
     const reviews = [
         {
             rating: 1,
@@ -119,13 +57,14 @@ function Profile() {
             location: ".........",
         },
     ];
+
     const [startIndex, setStartIndex] = useState(0);
     const itemsPerPage = 2;
     const [direction, setDirection] = useState(1);
     const handlePrev = () => {
         setStartIndex((prev) =>
             prev - itemsPerPage < 0
-                ? roomList.length - itemsPerPage
+                ? rooms.length - itemsPerPage
                 : prev - itemsPerPage
         );
     };
@@ -137,50 +76,47 @@ function Profile() {
     const reviewsToDisplay = showAllReviews ? reviews : reviews.slice(0, 3); // Hiển thị tất cả hoặc chỉ 3 review
 
     const handleNext = () => {
-        setStartIndex((prev) => (prev + itemsPerPage) % roomList.length);
+        setStartIndex((prev) => (prev + itemsPerPage) % rooms.length);
     };
-    const visibleRooms = roomList.slice(startIndex, startIndex + itemsPerPage);
-    const displayRooms =
-        visibleRooms.length < itemsPerPage
-            ? [
-                  ...visibleRooms,
-                  ...roomList.slice(0, itemsPerPage - visibleRooms.length),
-              ]
-            : visibleRooms;
+
+    useEffect(() => {
+        const fetchRooms = async () => {
+            try {
+                setLoading(true);
+                let response;
+                if (role === "user") {
+                    response = await axiosClient.get("/user/api/my-favorite/");
+                    setRooms(response.data.results);
+                } else if (role === "owner") {
+                    // có api thì đổi lại
+                    response = await axiosClient.get("/owner/api/my-posts/");
+                    setRooms(response.data.results);
+                }
+                setLoading(false);
+            } catch (err) {
+                setError(err.message);
+                setLoading(false);
+            }
+        };
+
+        if (role) {
+            fetchRooms();
+        }
+    }, [role]);
+
+    const renderContent = () => (
+        <RoomProfile
+            loading={loading}
+            error={error}
+            rooms={rooms}
+            role={role}
+            startIndex={startIndex}
+            direction={direction}
+        />
+    );
+
     return (
         <div>
-            <header className={styles.header}>
-                <Link to="/home" className="logo">
-                    <img src={logo} alt="Logo" />
-                </Link>
-                {/* <ProfileMenu
-                    button={
-                        <IconAvatarButton
-                            icon={true}
-                            avatar={logo}
-                            onClick={() => console.log("Button clicked!")}
-                        />
-                    }
-                >
-                    <ul className={styles.menuList}>
-                        <li>Tài khoản</li>
-                        <li>Thông báo</li>
-                        <li>Tin nhắn</li>
-                        <li>Yêu thích</li>
-                        <li>Đối tác</li>
-                        <hr className="bg-white" style={{ height: "2px" }} />
-                        <li>Tìm phòng</li>
-                        <li>Điều khoản</li>
-                        <li>Chính sách</li>
-                        <li>Liên hệ</li>
-                    </ul>
-                </ProfileMenu> */}
-                <ButtonPrimary
-                    icon={<AlignJustify size={34} />}
-                    avatar={true}
-                    className={`${styles.buttonAvatar}`}
-                />
-            </header>
             <div className={styles.profileContainer}>
                 <div className={styles.profileContent}>
                     <UserCard></UserCard>
@@ -211,82 +147,63 @@ function Profile() {
                         className="d-flex align-items-center justify-content-between mb-3 px-3"
                         style={{ gap: "1rem" }}
                     >
-                        <h5 className="fw-bold m-0">Mục cho thuê của Đắt</h5>
-                        <motion.button
-                            className="btn btn-info text-white px-3"
-                            transition={{
-                                duration: 0.5,
-                                delay: 0.8,
-                                ease: "easeOut",
-                            }}
-                            onClick={handleBackToHome}
-                        >
-                            Đến trang quản lý
-                        </motion.button>
-                        <div
-                            className="d-flex align-items-center"
-                            style={{ gap: "0.5rem" }}
-                        >
-                            <button
-                                className="btn btn-outline-dark rounded-circle p-2 d-flex align-items-center justify-content-center"
-                                style={{ width: "36px", height: "36px" }}
-                                onClick={handlePrev}
-                            >
-                                <FaChevronLeft size={14} />
-                            </button>
+                        {role === "owner" ? (
+                            <>
+                                <h5 className="fw-bold m-0">
+                                    Mục cho thuê của bạn
+                                </h5>
+                                <ButtonPrimary
+                                    des="Đến trang quản lý"
+                                    className={styles.buttonManage}
+                                    onClick={handleBackToHome}
+                                />
+                            </>
+                        ) : role === "user" ? (
+                            <h5 className="fw-bold m-0">
+                                Các mục yêu thích của bạn
+                            </h5>
+                        ) : null}
 
-                            <button
-                                className="btn btn-outline-dark rounded-circle p-2 d-flex align-items-center justify-content-center"
-                                style={{ width: "36px", height: "36px" }}
-                                onClick={handleNext}
+                        {rooms.length > 0 && (
+                            <div
+                                className="d-flex align-items-center"
+                                style={{ gap: "0.5rem" }}
                             >
-                                <FaChevronRight size={14} />
-                            </button>
-                        </div>
-                    </div>
-                    <div className="d-flex align-items-center justify-content-center flex-column">
-                        <div className={styles.sliderWrapper}>
-                            <AnimatePresence initial={false} custom={direction}>
-                                <motion.div
-                                    key={startIndex}
-                                    className={styles.motionWrapper}
-                                    initial={{
-                                        opacity: 0,
-                                        x: direction > 0 ? 100 : -100,
-                                    }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{
-                                        opacity: 0,
-                                        x: direction > 0 ? -100 : 100,
-                                    }}
-                                    transition={{
-                                        duration: 1,
-                                        ease: "easeInOut",
-                                    }}
+                                <button
+                                    className="btn btn-outline-dark rounded-circle p-2 d-flex align-items-center justify-content-center"
+                                    style={{ width: "36px", height: "36px" }}
+                                    onClick={handlePrev}
                                 >
-                                    {displayRooms.map((room) => (
-                                        <div
-                                            className={styles.cardWrapper}
-                                            key={room.id}
-                                        >
-                                            <RoomCard {...room} />
-                                        </div>
-                                    ))}
-                                </motion.div>
-                            </AnimatePresence>
-                        </div>
+                                    <FaChevronLeft size={14} />
+                                </button>
+                                <button
+                                    className="btn btn-outline-dark rounded-circle p-2 d-flex align-items-center justify-content-center"
+                                    style={{ width: "36px", height: "36px" }}
+                                    onClick={handleNext}
+                                >
+                                    <FaChevronRight size={14} />
+                                </button>
+                            </div>
+                        )}
                     </div>
+                    {renderContent()}
                 </div>
             </div>
             <div
                 className="d-flex align-items-center"
                 style={{ padding: "0 2%" }}
             >
-                <h5 className="fw-bold text-dark m-0">Đánh giá về Đắt</h5>
+                <h5 className="fw-bold text-dark m-0">
+                    {role === "user"
+                        ? "Đánh giá của tôi"
+                        : role === "owner"
+                        ? "Đánh giá bài viết của tôi"
+                        : "Đánh giá về Đắt"}
+                </h5>
                 <span
                     className="fst-italic text-dark ms-3"
                     style={{ cursor: "pointer" }}
-                    onClick={toggleReviews} // Gắn sự kiện click
+                    onClick={toggleReviews}
                 >
                     {showAllReviews ? "Thu gọn" : "Xem toàn bộ"}
                 </span>
@@ -307,7 +224,7 @@ function Profile() {
                         key={index}
                         style={{
                             flex: "1 1 calc(33.333% - 16px)",
-                            minWidth: "250px", // Giới hạn tối đa 500px
+                            minWidth: "250px",
                             wordWrap: "break-word",
                             maxWidth: "calc(33.333% - 16px)",
                             whiteSpace: "pre-wrap",

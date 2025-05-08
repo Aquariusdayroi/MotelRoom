@@ -1,51 +1,54 @@
 import React, { useEffect, useState, useRef } from "react";
 import styles from "../../styles/AreaModal.module.css";
-
-export const destinations = [
-    {
-        name: "Hà Nội",
-        description: "Có các thắng cảnh như Nhà hát lớn Hà Nội",
-        color: "#f44336",
-    },
-    {
-        name: "Vũng Tàu, Bà Rịa - Vũng Tàu",
-        description: "Có đường bờ biển tuyệt đẹp",
-        color: "#2196f3",
-    },
-    {
-        name: "Đà Lạt, Lâm Đồng",
-        description: "Phù hợp cho người yêu thiên nhiên",
-        color: "#4caf50",
-    },
-    {
-        name: "Bangkok, Thái Lan",
-        description: "Có cuộc sống về đêm náo nhiệt",
-        color: "#ff9800",
-    },
-    {
-        name: "Nha Trang, Khánh Hòa",
-        description: "Có các thắng cảnh như Chùa Ponagar",
-        color: "#2196f3",
-    },
-    {
-        name: "Đà Nẵng, Đà Nẵng",
-        description: "Điểm đến có bãi biển được ưa chuộng",
-        color: "#2196f3",
-    },
-];
-
+import areaApi from "../../api/searchApi/areaApi";
 const AreaModal = ({
     open,
     onClose,
     anchorEl,
-    filteredDestinations = [],
     isHeaderSearch,
     onSelect,
+    filteredDestinations,
 }) => {
-    const [position, setPosition] = useState(null); // Thay đổi giá trị khởi tạo
+    const [position, setPosition] = useState(null);
+    const [apiResults, setApiResults] = useState([]);
     const modalRef = useRef(null);
-    const displayDestinations =
-        filteredDestinations.length > 0 ? filteredDestinations : destinations;
+    const [currentLat, setCurrentLat] = useState(10.822401263655559);
+    const [currentLng, setCurrentLng] = useState(106.687317464751);
+
+    useEffect(() => {
+        if (filteredDestinations && filteredDestinations.length > 0) {
+            setApiResults(filteredDestinations);
+        }
+    }, [filteredDestinations]);
+
+    useEffect(() => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                setCurrentLat(position.coords.latitude);
+                setCurrentLng(position.coords.longitude);
+            });
+        }
+    }, []);
+
+    useEffect(() => {
+        if (open && currentLat && currentLng) {
+            areaApi(currentLat, currentLng).then((results) => {
+                console.log("API Response:", results);
+                setApiResults(
+                    results.map((item) => ({
+                        id: item.id,
+                        name: item.address.description,
+                        description: item.title,
+                        color: "#2196f3",
+                        coordinates: {
+                            lat: item.address.latitude, // Lấy từ item.address
+                            lng: item.address.longitude, // Lấy từ item.address
+                        },
+                    }))
+                );
+            });
+        }
+    }, [open, currentLat, currentLng]);
 
     useEffect(() => {
         if (open && anchorEl) {
@@ -58,9 +61,7 @@ const AreaModal = ({
                     left = window.innerWidth - modalWidth - 10;
                 }
 
-                // Điều chỉnh top giảm 58px tại đây
                 setPosition({
-                    // Chỉ giảm top 58px khi là header search
                     top: rect.bottom - (isHeaderSearch ? 58 : 0),
                     left: left,
                     width: modalWidth,
@@ -99,6 +100,14 @@ const AreaModal = ({
         };
     }, [open, anchorEl, onClose]);
 
+    const hasCoordinates = (destination) => {
+        return (
+            destination.coordinates &&
+            destination.coordinates.lat &&
+            destination.coordinates.lng
+        );
+    };
+
     if (!open || !anchorEl || !position) return null;
 
     return (
@@ -118,9 +127,9 @@ const AreaModal = ({
         >
             <div className={styles.modalHeader}>
                 <span>
-                    {filteredDestinations.length > 0
-                        ? "Kết quả tìm kiếm"
-                        : "Khu vực được đề xuất"}
+                    {apiResults.length > 0
+                        ? "Kết quả khu vực gợi ý"
+                        : "Đang tải dữ liệu..."}
                 </span>
                 <button
                     className={styles.closeButton}
@@ -131,12 +140,41 @@ const AreaModal = ({
                 </button>
             </div>
             <ul className={styles.list}>
-                {displayDestinations.map((destination, index) => (
+                {apiResults.map((destination) => (
                     <li
-                        key={index}
+                        key={destination.id}
                         className={styles.listItem}
                         onClick={() => {
-                            onSelect(destination.name); // Thêm onSelect handler
+                            if (hasCoordinates(destination)) {
+                                // Trường hợp 1: Có tọa độ sẵn từ backend
+                                console.log(
+                                    "Using existing coordinates:",
+                                    destination.coordinates
+                                );
+                                onSelect({
+                                    id: destination.id,
+                                    name: destination.name,
+                                    coordinates: {
+                                        lat: parseFloat(
+                                            destination.coordinates.lat
+                                        ),
+                                        lng: parseFloat(
+                                            destination.coordinates.lng
+                                        ),
+                                    },
+                                });
+                            } else {
+                                // Trường hợp 2: Địa điểm người dùng nhập, cần search từ Mapbox
+                                console.log(
+                                    "Searching coordinates for:",
+                                    destination.name
+                                );
+                                onSelect({
+                                    id: destination.id,
+                                    name: destination.name,
+                                    needGeocoding: true, // Flag để component cha biết cần tìm tọa độ
+                                });
+                            }
                             onClose();
                         }}
                     >
@@ -146,13 +184,13 @@ const AreaModal = ({
                                 style={{ backgroundColor: destination.color }}
                             />
                         </div>
-                        <div className={styles.listItemContent}>
-                            <h3 className={styles.listItemTitle}>
+                        <div className={styles.locationInfo}>
+                            <div className={styles.name}>
                                 {destination.name}
-                            </h3>
-                            <p className={styles.listItemDescription}>
+                            </div>
+                            <div className={styles.description}>
                                 {destination.description}
-                            </p>
+                            </div>
                         </div>
                     </li>
                 ))}
