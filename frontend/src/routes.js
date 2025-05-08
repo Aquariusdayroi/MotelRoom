@@ -12,7 +12,6 @@ import Login from "./pages/Login";
 import Layout from "./layout/Layout";
 import DetailSearch from "./pages/DetailSearch";
 import Detail from "./pages/Detail";
-
 export default function AppRoutes() {
     return (
         <Router>
