@@ -88,7 +88,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 AUTH_USER_MODEL = 'user.User'
 CORS_ALLOW_ALL_ORIGINS = True
-
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Địa chỉ frontend
+]
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
