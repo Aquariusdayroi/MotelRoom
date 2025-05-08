@@ -11,8 +11,6 @@ const axiosClient = axios.create({
     },
     paramsSerializer: (params) => queryString.stringify(params),
 });
-console.log("Helllo\n");
-console.log(axiosClient.baseURL);
 
 axiosClient.interceptors.request.use(async (config) => {
     if (config.skipAuth) {
@@ -33,14 +31,12 @@ axiosClient.interceptors.response.use(
         return res;
     },
     (error) => {
-        console.error("Error response:", error.response);
         throw error;
     }
 );
 
 axiosClient.interceptors.request.use(
     (config) => {
-        console.log("Request:", config.url, config.params);
         return config;
     },
     (error) => {
@@ -50,7 +46,6 @@ axiosClient.interceptors.request.use(
 
 axiosClient.interceptors.response.use(
     (response) => {
-        console.log("Response:", response.data);
         return response;
     },
     (error) => {
