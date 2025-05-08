@@ -21,7 +21,7 @@ function Profile() {
 
     const navigate = useNavigate();
     const handleBackToHome = () => {
-        navigate("/home");
+        navigate("/post");
     };
     const reviews = [
         {
