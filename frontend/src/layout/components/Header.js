@@ -15,13 +15,20 @@ const Header = ({
     enableSearch = true,
 }) => {
     let { user, role, logout } = useContext(AuthToken);
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [showContent, setShowContent] = useState(true);
+    const [isScrolled, setIsScrolled] = useState(!enableScroll);
+    const [showContent, setShowContent] = useState(enableScroll);
+    const [isInitialized, setIsInitialized] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [timeoutId, setTimeoutId] = useState(null);
     const [avatarUrl, setAvatarUrl] = useState(images.fallbackAvatar);
 
     useEffect(() => {
+        if (!enableScroll) {
+            setIsScrolled(true);
+            setShowContent(false);
+        }
+        setIsInitialized(true);
+
         const handleScroll = () => {
             if (!enableScroll) {
                 setIsScrolled(true);
@@ -31,11 +38,6 @@ const Header = ({
             setIsScrolled(window.scrollY > 50);
             setShowContent(window.scrollY <= 50);
         };
-
-        if (!enableScroll) {
-            setIsScrolled(true);
-            setShowContent(false);
-        }
 
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
@@ -78,11 +80,14 @@ const Header = ({
         fetchUserAvatar();
     }, [user]);
 
+    if (!isInitialized) {
+        return null;
+    }
     return (
         <div
             className={`${styles.container} ${
                 !showContent ? styles.headerOnly : ""
-            }`}
+            } ${isInitialized ? "initialized" : ""}`}
         >
             <header
                 className={`${styles.header} ${
@@ -114,6 +119,13 @@ const Header = ({
                                             icon={false}
                                         />
                                     </Link>
+                                ) : role === "admin" ? (
+                                    <Link to="/admin-manage">
+                                        <ButtonLanguage
+                                            des="Quản lý"
+                                            icon={false}
+                                        />
+                                    </Link>
                                 ) : (
                                     <ButtonLanguage
                                         des={
@@ -121,8 +133,6 @@ const Header = ({
                                                 ? "Cho thuê trọ qua Simi"
                                                 : role === "user"
                                                 ? "Cho thuê trọ qua Simi"
-                                                : role === "admin"
-                                                ? "Quản lý"
                                                 : "Cho thuê trọ qua Simi"
                                         }
                                         icon={false}
