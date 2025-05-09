@@ -62,7 +62,7 @@ class MessageListView(generics.ListAPIView):
     def get_queryset(self):
         conversation_id = self.request.query_params.get('conversation_id')
         if conversation_id:
-            return Message.objects.filter(conversation_id=conversation_id).order_by('create_at')
+            return Message.objects.filter(conversation_id=conversation_id).order_by('-create_at')
         return Message.objects.none()
 
         

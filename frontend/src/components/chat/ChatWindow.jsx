@@ -30,7 +30,7 @@ export default function ChatWindow({ token, conversation }) {
           params: { conversation_id: conversation.id },
         });
         console.log('Dữ liệu từ API:', res.data);
-        setMessages(Array.isArray(res.data.results) ? res.data.results : []);
+        setMessages(Array.isArray(res.data.results) ? res.data.results.reverse() : []);
       } catch (error) {
         console.error('❌ Lỗi khi lấy tin nhắn:', error);
         setMessages([]);
