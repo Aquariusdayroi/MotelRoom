@@ -14,7 +14,7 @@ import DetailSearch from "./pages/DetailSearch";
 import Detail from "./pages/Detail";
 import ProtectedRoute from "./until/ProtectedRoute";
 import PostManagement from "./pages/PostManagement";
-
+import HostDashboard from "./pages/HostDashboard";
 export default function AppRoutes() {
     return (
         <Router>
@@ -72,6 +72,16 @@ function AnimatedRoutes() {
                         <ProtectedRoute>
                             <Layout enableScroll={false} enableSearch={false}>
                                 <PostManagement />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/host-dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <HostDashboard />
                             </Layout>
                         </ProtectedRoute>
                     }

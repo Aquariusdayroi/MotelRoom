@@ -1,0 +1,173 @@
+.container {
+    background: #fff;
+    padding: 0 2rem;
+}
+
+.sidebar {
+    background-color: #f9fcfd;
+    padding: 1rem;
+    height: 100%;
+    border-right: 1px solid #ddd;
+    height: 100%;
+}
+
+.menuItem {
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    width: 100%;
+    font-size: 1.2rem;
+}
+
+.active {
+    background-color: #d4f4ff;
+}
+
+.statCard {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: left;
+    height: 100%;
+}
+
+.statIcon {
+    font-size: 2.2rem;
+    margin-right: 1rem;
+    color: #1a4e8a;
+    min-width: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.statNumber {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #1a4e8a;
+    line-height: 1.1;
+}
+
+.statLabel {
+    font-size: 1.1rem;
+    color: #1a4e8a;
+    font-weight: 400;
+    line-height: 1.2;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.hostDashboard {
+    padding: 10px;
+    flex-grow: 1;
+}
+
+.searchInput {
+    max-width: 50rem;
+    border-radius: 10px;
+    height: 50px;
+    flex: 1;
+}
+
+.btnFind {
+    background-color: #2ecdf2;
+    border: none;
+    border-radius: 8px;
+    padding: 0 24px;
+    font-weight: 500;
+    height: 45px;
+    font-size: 1.1rem;
+}
+
+.sortButton {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #000;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background-color .25s;
+    padding: 0 20px;
+    font-size: 1.1rem;
+}
+
+.sortButton:hover {
+    background-color: #f2f2f2;
+}
+
+.arrow {
+    font-size: 0.8rem;
+    /* nhỏ hơn text một chút */
+}
+
+.btnCreatePost {
+    background-color: #2ecdf2;
+    border: none;
+    border-radius: 8px;
+    padding: 0 24px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    height: 45px;
+    font-size: 1.1rem;
+}
+
+.sortButton::after {
+    display: none !important;
+}
+
+.searchBarGroup {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.searchLeft {
+    flex: 1;
+    min-width: 0;
+}
+
+.searchRight {
+    gap: 10px;
+}
+
+.hover-card {
+    display: block;
+    width: 100%;
+    transition: background 0.2s, box-shadow 0.2s, border 0.2s;
+    border-radius: 10px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    background: #fff;
+}
+
+.hover-card:hover {
+    background: #1aafd0;
+    box-shadow: 0 2px 8px rgba(26, 78, 138, 0.08);
+    border: 1.5px solid #1a4e8a;
+    cursor: pointer;
+}
+
+.hover-card:hover .fw-bold,
+.hover-card:hover .text-primary,
+.hover-card:hover .text-muted,
+.hover-card:hover small,
+.hover-card:hover div {
+    color: #fff !important;
+}
+
+.hover-card:hover .statIcon,
+.hover-card:hover svg {
+    color: #fff !important;
+}
