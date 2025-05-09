@@ -11,8 +11,8 @@ const axiosClient = axios.create({
     },
     paramsSerializer: (params) => queryString.stringify(params),
 });
-console.log("Helllo\n");
-console.log(axiosClient.baseURL);
+// console.log("Helllo\n");
+// console.log(axiosClient.baseURL);
 
 axiosClient.interceptors.request.use(async (config) => {
     if (config.skipAuth) {

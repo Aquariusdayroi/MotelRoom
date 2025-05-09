@@ -14,6 +14,7 @@ import DetailSearch from "./pages/DetailSearch";
 import Detail from "./pages/Detail";
 import ProtectedRoute from "./until/ProtectedRoute";
 import PostManagement from "./pages/PostManagement";
+import Chat  from './pages/Chat';
 
 export default function AppRoutes() {
     return (
@@ -74,6 +75,14 @@ function AnimatedRoutes() {
                                 <PostManagement />
                             </Layout>
                         </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/chat"
+                    element={
+                        // <Layout enableScroll={false}>
+                            <Chat/>
+                        // </Layout>
                     }
                 />
             </Routes>
