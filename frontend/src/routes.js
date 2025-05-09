@@ -3,6 +3,7 @@ import {
     Routes,
     Route,
     useLocation,
+    Navigate,
 } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import Intro from "./pages/Intro";
@@ -14,7 +15,10 @@ import DetailSearch from "./pages/DetailSearch";
 import Detail from "./pages/Detail";
 import ProtectedRoute from "./until/ProtectedRoute";
 import PostManagement from "./pages/PostManagement";
-import Chat  from './pages/Chat';
+import Chat from "./pages/Chat";
+import AdminManagement from "./pages/AdminManagement";
+import AnimatedPage from "./animations/AnimatedPage";
+import AuthenticManage from "./components/adminManage/AuthenticManage";
 
 export default function AppRoutes() {
     return (
@@ -58,7 +62,6 @@ function AnimatedRoutes() {
                 />
                 <Route
                     path="/profile"
-                    enableScroll={false}
                     element={
                         <ProtectedRoute>
                             <Layout enableScroll={false} enableSearch={false}>
@@ -77,14 +80,67 @@ function AnimatedRoutes() {
                         </ProtectedRoute>
                     }
                 />
+                <Route path="/chat" element={<Chat />} />
+
                 <Route
-                    path="/chat"
+                    path="/admin-manage"
                     element={
-                        // <Layout enableScroll={false}>
-                            <Chat/>
-                        // </Layout>
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <AdminManagement />
+                            </Layout>
+                        </ProtectedRoute>
                     }
-                />
+                >
+                    <Route
+                        index
+                        element={
+                            <AnimatedPage>
+                                <Navigate to="authentic" replace />
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="authentic"
+                        element={
+                            <AnimatedPage>
+                                <AuthenticManage />
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="post"
+                        element={
+                            <AnimatedPage>
+                                <div>Quản lý bài đăng</div>
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="comment"
+                        element={
+                            <AnimatedPage>
+                                <div>Quản lý đánh giá</div>
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="account"
+                        element={
+                            <AnimatedPage>
+                                <div>Quản lý tài khoản</div>
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="statistical"
+                        element={
+                            <AnimatedPage>
+                                <div>Thống kê hệ thống</div>
+                            </AnimatedPage>
+                        }
+                    />
+                </Route>
             </Routes>
         </AnimatePresence>
     );
