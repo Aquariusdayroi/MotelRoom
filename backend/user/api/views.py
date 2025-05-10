@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout, get_user_model
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -11,11 +11,15 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.views import APIView
 from user.models import User, OwnerRequest
 from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer, OwnerRequestSerializer
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 
 import os
 from datetime import datetime, timedelta
 import time
+
+#Review
+from review.models import Review
+from review.api.serializers import ReviewSerializer
 
 #JWT Token
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -470,3 +474,45 @@ class UserDetailAPIView(generics.RetrieveAPIView):
                 "success": False,
                 "message": "Người dùng không tồn tại."
             }, status=status.HTTP_404_NOT_FOUND)
+            
+            
+#---------------------------------------------------------------------------------------------------#
+# API lấy 10 review hàng đầu trong trang cá nhân của tôi
+class MyLatestReviewsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Lấy 10 review mới nhất của người dùng hiện tại"""
+        # Sắp xếp theo rating, lấy 10 review mới nhất
+        user = request.user
+        if user.role == 'owner':
+            reviews = Review.objects.filter(rental_post__owner=user).exclude(user=user).order_by('-rating', '-time')[:10]
+        else:
+            reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response({
+            "success": True,
+            "message": "Lấy danh sách review thành công.",
+            "reviews": serializer.data
+        }, status=status.HTTP_200_OK)   
+
+# API lấy 10 review của người dùng khác
+class UserLatestReviewsAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, user_id):
+        """Lấy 10 review của người dùng khác"""
+        target_user = get_object_or_404(User, id=user_id)
+        user = User.objects.filter(id=user_id).first()
+        if user.role == 'owner':
+        # Lấy các review của người khác viết cho bài đăng mà user là chủ
+            reviews = Review.objects.filter(rental_post__owner=user).exclude(user=user).order_by('-rating', '-time')[:10]
+        else:
+            # Người thường: lấy review mà chính họ viết
+            reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
+        
+        return Response({
+            "success": True,
+            "message": "Lấy danh sách review thành công.",
+            "reviews": ReviewSerializer(reviews, many=True).data
+        }, status=status.HTTP_200_OK)

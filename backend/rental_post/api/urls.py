@@ -6,6 +6,8 @@ urlpatterns = [
     path('my-posts/<int:id>/', views.RentalPostDetailUpdateDeleteAPIView.as_view(), name='rentalpost-detail-update-delete'),
     path('my-posts/search/', views.MyRentalPostSearchKeyWordAPIView.as_view(), name='my-rentalpost-search'),
     path('', views.RentalPostListAPIView.as_view(), name= 'rentalpost-list'),
+    path('<int:id>/', views.RentalPostDetailAPIView.as_view(), name= 'rentalpost-detail'),
+    path('by-user/<int:user_id>/', views.RentalPostListByUserAPIView.as_view(), name= 'rentalpost-by-user'),
     path('search/', views.RentalPostSearchAPIView.as_view(), name= 'rentalpost-search'),
     # path('my')
 ]

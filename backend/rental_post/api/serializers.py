@@ -47,7 +47,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
             'id', 'user', 'home_type', 'title', 'information_detail',
             'address', 'total_occupancy', 'acreage', 'price', 
             'create_at', 'update_at', 'has_toilet', 'private_rental',
-            'has_washing', 'curfew_time', 'images', 'is_favorite',
+            'has_washing', 'curfew_time', 'images', 'is_favorite', 'create_at', 'update_at',
         ]
         read_only_fields = ('user', 'create_at', 'update_at')
 
