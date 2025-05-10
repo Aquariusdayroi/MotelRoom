@@ -447,3 +447,26 @@ class AdminRequestViewSet(viewsets.ModelViewSet):
             "message": "Yêu cầu đã bị từ chối.",
             "user": UserSerializer(owner_request.user).data
         }, status=status.HTTP_200_OK)
+        
+#---------------------------------------------------------------------------------------------------#
+# Api lấy thông tin người dùng theo id
+class UserDetailAPIView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]  # Bất kỳ ai
+
+    def get(self, request, *args, **kwargs):
+        user_id = kwargs.get('user_id')
+        try:
+            user = self.get_queryset().get(id=user_id)
+            serializer = self.get_serializer(user)
+            return Response({
+                "success": True,
+                "message": "Lấy thông tin người dùng thành công.",
+                "user": serializer.data
+            }, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({
+                "success": False,
+                "message": "Người dùng không tồn tại."
+            }, status=status.HTTP_404_NOT_FOUND)

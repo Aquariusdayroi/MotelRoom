@@ -202,7 +202,52 @@ class RentalPostDetailUpdateDeleteAPIView(APIView):
             "message": "Bài đăng đã được xóa."
         }, status=status.HTTP_204_NO_CONTENT)
 
+# API tìm kiếm bài đăng theo từ khóa
+class RentalPostSearchAPIView(ListAPIView):
+    serializer_class = RentalPostSerializer
+    pagination_class = SmartPagination
 
+    def paginate_queryset(self, queryset):
+        if self.paginator is not None:
+            self.paginator.page_size = 6
+        return super().paginate_queryset(queryset)
+
+    def get_queryset(self):
+        queryset = RentalPost.objects.select_related('address').prefetch_related('image')
+        search_query = self.request.query_params.get('keyword', None)
+        if search_query:
+            queryset = queryset.filter(title__icontains=search_query)
+        return queryset
+
+# #Api tìm kiếm bài đăng theo bộ lọc
+class MyRentalPostSearchKeyWordAPIView(ListAPIView):
+    serializer_class = RentalPostSerializer
+    pagination_class = SmartPagination
+
+    def paginate_queryset(self, queryset):
+        if self.paginator is not None:
+            self.paginator.page_size = 6
+        return super().paginate_queryset(queryset)
+
+    def get_queryset(self):
+
+        queryset = RentalPost.objects.select_related('address').prefetch_related('image')
+            
+        filter_params = {
+            "home_type": "home_type__iexact", #Loại nhà
+            "price_min":  "price__gte", #Giá bắt đầu
+            "price_max": "price__lte", #Giá kết thúc
+            "id": "id__exact",#Tìm theo id
+        }
+        filters = {}
+        for param, field in filter_params.items():
+            value = self.request.query_params.get(param)
+            if value:
+                filters[field] = value
+
+        if filters:
+            queryset = queryset.filter(**filters)
+        return queryset
 
 #Api lấy danh sách bài đăng 
 class RentalPostListAPIView(ListAPIView):
