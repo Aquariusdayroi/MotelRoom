@@ -163,7 +163,7 @@ const DetailSearch = () => {
     }, [rooms]);
 
     return (
-        <div className="d-flex">
+        <div className="d-flex mb-5">
             <div className={`${styles.container} col-md-8 pe-1`}>
                 <div className="pt-5 pb-2">
                     <div className="d-flex justify-content-between align-items-center">
@@ -198,7 +198,7 @@ const DetailSearch = () => {
                 </div>
 
                 {!message && (
-                    <div className="row g-2">
+                    <div className={`${styles.listRoom} row g-2`}>
                         {displayRooms.map((room) => (
                             <div key={room.id} className="col-md-4 pe-1">
                                 <Link
@@ -206,7 +206,6 @@ const DetailSearch = () => {
                                     to={`/detail/${room.id}`}
                                     className="text-decoration-none"
                                     onClick={(e) => {
-                                        // Prevent navigation if clicking on the address
                                         if (
                                             e.target.closest(
                                                 `.${styles.location}`
@@ -259,10 +258,15 @@ const DetailSearch = () => {
                 )}
             </div>
 
-            <div className="col-md-4 ps-0">
+            <div className="col-md-4 ps-0 p-3">
                 <div
                     ref={mapContainerRef}
-                    style={{ height: "100vh", width: "100%" }}
+                    style={{
+                        height: "88vh",
+                        width: "100%",
+                        borderRadius: "10px",
+                        border: "1px solid #ccc",
+                    }}
                 />
             </div>
         </div>

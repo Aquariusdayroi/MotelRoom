@@ -1,6 +1,9 @@
 import axios from "axios";
 import queryString from "query-string";
 import Cookies from "js-cookie";
+import { logout } from "../authToken";
+import forceLogout from "../until/forceLogout";
+
 const baseURL = process.env.REACT_APP_API_URL
     ? `${process.env.REACT_APP_API_URL}/api`
     : "http://localhost:8000";
@@ -50,6 +53,19 @@ axiosClient.interceptors.response.use(
     },
     (error) => {
         console.error("Error response:", error.response);
+        return Promise.reject(error);
+    }
+);
+
+axiosClient.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const status = error.response?.status;
+
+        if (status === 401 || status === 403) {
+            forceLogout();
+        }
+
         return Promise.reject(error);
     }
 );
