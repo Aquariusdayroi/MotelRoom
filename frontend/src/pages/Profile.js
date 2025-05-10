@@ -22,6 +22,7 @@ import {
 import { Building } from "lucide-react";
 import decodeJwtPayload from "../until/decodeJwt";
 import { getUserInfoById } from "../api/userApi/getUserInfoById";
+import SettingProfileModal from "../components/modal/SettingProfileModal";
 
 function Profile() {
     const [userInfo, setUserInfo] = useState(null);
@@ -30,6 +31,9 @@ function Profile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { user } = useContext(AuthToken);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const handleOpenModal = () => setShowEditModal(true);
+    const handleCloseModal = () => setShowEditModal(false);
 
     const navigate = useNavigate();
     const handleBackToHome = () => {
@@ -184,7 +188,7 @@ function Profile() {
                                         cursor: "pointer",
                                     }}
                                 >
-                                    <Pencil />
+                                    <Pencil onClick={handleOpenModal} />
                                 </div>
                             </div>
                             <ul className="list-unstyled mb-4 ps-3">
@@ -233,7 +237,7 @@ function Profile() {
                                         cursor: "pointer",
                                     }}
                                 >
-                                    <Pencil />
+                                    <Pencil onClick={handleOpenModal} />
                                 </div>
                             </div>
                             <ul className="list-unstyled ps-3">
@@ -346,6 +350,11 @@ function Profile() {
                     </div>
                 ))}
             </div>
+            <SettingProfileModal
+                show={showEditModal}
+                onHide={handleCloseModal}
+                userInfo={userInfo}
+            />
         </div>
     );
 }

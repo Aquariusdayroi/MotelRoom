@@ -20,15 +20,15 @@ h1 {
     font-family: "Noto Sans TC", sans-serif;
 }
 
-p {
+.container p {
     margin-top: 21px;
     font-size: 16px;
     font-family: "Noto Sans TC", sans-serif;
     font-weight: 100; /* Hoặc font-weight: 400; */
-    width: 1000px !important;
+    width: 1000px;
     height: 95px;
     text-align: justify;
-    margin: 60px 0px !important;
+    margin: 60px 0px;
 }
 
 .button {
