@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
-import styles from "../../styles/RoomCard.module.css";
-import { images } from "../../assets/images";
-import { AuthToken } from "../../authToken";
-import axiosClient from "../../api/axiosClient";
+import React, { useContext, useState } from 'react';
+import styles from '../../styles/RoomCard.module.css';
+import { images } from '../../assets/images';
+import { AuthToken } from '../../authToken';
+import axiosClient from '../../api/axiosClient';
 
 const RoomCard = ({
     id,
@@ -18,7 +18,7 @@ const RoomCard = ({
     onLocationClick,
     is_favorite,
 }) => {
-    let { user, role, logout } = useContext(AuthToken);
+    let { user } = useContext(AuthToken);
 
     const [isFavorite, setIsFavorite] = useState(is_favorite);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -36,9 +36,7 @@ const RoomCard = ({
         e.preventDefault();
         if (isTransitioning) return;
         setIsTransitioning(true);
-        setCurrentImageIndex((prevIndex) =>
-            prevIndex === imageList.length - 1 ? 0 : prevIndex + 1
-        );
+        setCurrentImageIndex((prevIndex) => (prevIndex === imageList.length - 1 ? 0 : prevIndex + 1));
         setTimeout(() => setIsTransitioning(false), 500);
     };
 
@@ -46,9 +44,7 @@ const RoomCard = ({
         e.preventDefault();
         if (isTransitioning) return;
         setIsTransitioning(true);
-        setCurrentImageIndex((prevIndex) =>
-            prevIndex === 0 ? imageList.length - 1 : prevIndex - 1
-        );
+        setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? imageList.length - 1 : prevIndex - 1));
         setTimeout(() => setIsTransitioning(false), 500);
     };
 
@@ -100,10 +96,7 @@ const RoomCard = ({
                 </div>
                 {isNew && <span className={styles.newBadge}>Mới</span>}
                 {user && (
-                    <button
-                        className={styles.favoriteButton}
-                        onClick={handleSetFavorite}
-                    >
+                    <button className={styles.favoriteButton} onClick={handleSetFavorite}>
                         {isFavorite ? (
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -149,11 +142,7 @@ const RoomCard = ({
                                 width="20"
                                 height="20"
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M15.75 19.5L8.25 12l7.5-7.5"
-                                />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                             </svg>
                         </button>
                         <button
@@ -170,22 +159,14 @@ const RoomCard = ({
                                 width="20"
                                 height="20"
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                                />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                             </svg>
                         </button>
                         <div className={styles.dots}>
                             {imageList.map((_, index) => (
                                 <span
                                     key={index}
-                                    className={`${styles.dot} ${
-                                        index === currentImageIndex
-                                            ? styles.activeDot
-                                            : ""
-                                    }`}
+                                    className={`${styles.dot} ${index === currentImageIndex ? styles.activeDot : ''}`}
                                     onClick={(e) => {
                                         e.preventDefault();
                                         goToImage(index);
@@ -198,10 +179,7 @@ const RoomCard = ({
             </div>
             <div className={styles.content}>
                 <h3 className={styles.address}>{address}</h3>
-                <div
-                    className={`${styles.location} ${styles.clickable}`}
-                    onClick={onLocationClick}
-                >
+                <div className={`${styles.location} ${styles.clickable}`} onClick={onLocationClick}>
                     <div>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -209,7 +187,7 @@ const RoomCard = ({
                             fill="currentColor"
                             width="18px"
                             height="18px"
-                            style={{ marginBottom: "7px" }}
+                            style={{ marginBottom: '7px' }}
                         >
                             <path
                                 fillRule="evenodd"
@@ -232,9 +210,7 @@ const RoomCard = ({
                         <span>Chủ nhà: {owner?.fullname}</span>
                     </div>
                     <div className={styles.details}>
-                        <div className={styles.price}>
-                            Từ: {price / 1000000} triệu/tháng
-                        </div>
+                        <div className={styles.price}>Từ: {price / 1000000} triệu/tháng</div>
                         <div className={styles.info}>
                             Loại hình: {type}, {Math.floor(area)}m²
                         </div>
