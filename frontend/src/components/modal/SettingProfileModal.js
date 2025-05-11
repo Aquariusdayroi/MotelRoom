@@ -39,9 +39,9 @@ const SettingProfileModal = ({ show, onHide, userInfo, onSave }) => {
                 birthday: formatDate(userInfo.birthday),
                 email: userInfo.email || "",
                 phone: userInfo.phone_number || "",
-                address: userInfo.address_name || "",
-                district: userInfo.district_name || "",
-                city: userInfo.city_name || "",
+                address: userInfo.address?.address_name || "",
+                district: userInfo.address?.district || "",
+                city: userInfo.address?.city || "",
             });
         }
     }, [userInfo]);
