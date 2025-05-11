@@ -108,9 +108,32 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
             'id', 'user', 'home_type', 'title', 'information_detail',
             'address', 'description', 'latitude', 'longitude',
             'city', 'district', 'total_occupancy', 'acreage', 'price',
-            'create_at', 'update_at', 'has_toilet', 'private_rental',
-            'has_washing', 'curfew_time', 'images', 'is_favorite', 'create_at', 'update_at',
+            'create_at', 'update_at',  'images', 'is_favorite', 'is_public',
+
+            # Tiện nghi cơ bản
+            'has_wifi',
+            'has_tv',
+            'has_kitchen',
+            'has_washing_machine',
+            'has_parking',
+            'has_fridge',
+            'has_air_conditioner',
+            'has_attic',
+            'has_water_heater',
+
+            # Tiện nghi thêm
+            'has_dehumidifier',
+            'has_hot_tub',
+            'has_balcony',
+            'has_elevator',
+            'has_microwave',
+
+            # Tiện nghi an toàn
+            'has_security_camera',
+            'has_first_aid_kit',
+            'has_fingerprint_lock',
         ]
+
         read_only_fields = ('user', 'create_at', 'update_at', 'address', 'images', 'is_favorite')
 
     def get_is_favorite(self, obj):
@@ -189,8 +212,7 @@ class RentalPostFavoriteSerializer(DynamicFieldsModelSerializer):
         fields = [
             'id', 'user', 'home_type', 'title', 'information_detail',
             'address', 'total_occupancy', 'acreage', 'price', 
-            'create_at', 'update_at', 'has_toilet', 'private_rental',
-            'has_washing', 'curfew_time', 'images', 'is_favorite',
+            'create_at', 'update_at', 'images', 'is_favorite', 'is_public',
         ]
         read_only_fields = ('user', 'create_at', 'update_at')
     
