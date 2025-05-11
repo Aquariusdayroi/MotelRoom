@@ -92,6 +92,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     # CHỈ dùng AddressSerializer để đọc (read-only)
     address = AddressSerializer(read_only=True)
     user = serializers.SerializerMethodField()
+    fullname = serializers.CharField(source='user.fullname', read_only=True)
     images = ImageSerializer(source='image', many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
 
@@ -105,7 +106,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = RentalPost
         fields = [
-            'id', 'user', 'home_type', 'title', 'information_detail',
+            'id', 'user', 'fullname', 'home_type', 'title', 'information_detail',
             'address', 'description', 'latitude', 'longitude',
             'city', 'district', 'total_occupancy', 'acreage', 'price',
             'create_at', 'update_at',  'images', 'is_favorite', 'is_public',
@@ -159,7 +160,6 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         if None in (description, city_id, district_id):
             raise serializers.ValidationError("Thiếu thông tin địa chỉ.")
 
-        # ✅ Truy xuất instance của City và District
         try:
             city = City.objects.get(pk=city_id)
             district = District.objects.get(pk=district_id)
@@ -168,7 +168,6 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         except District.DoesNotExist:
             raise serializers.ValidationError("Quận/huyện không tồn tại.")
 
-        # ✅ Tạo Address với instance
         address = Address.objects.create(
             description=description,
             latitude=latitude,
