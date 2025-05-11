@@ -17,7 +17,7 @@ class ConversationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Conversation
-        fields = ['id', 'avatar', 'user_one', 'user_two', 'last_message','created_at']
+        fields = ['id',  'user_one', 'user_two', 'last_message','created_at']
 
     def get_last_message(self, obj):
         last_msg = Message.objects.filter(conversation=obj).order_by('-create_at').first()
