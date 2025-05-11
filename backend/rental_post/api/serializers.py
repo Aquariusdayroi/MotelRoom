@@ -92,6 +92,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     # CHỈ dùng AddressSerializer để đọc (read-only)
     address = AddressSerializer(read_only=True)
     user = serializers.SerializerMethodField()
+    fullname = serializers.CharField(write_only=True)
     images = ImageSerializer(source='image', many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
 
@@ -105,13 +106,13 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = RentalPost
         fields = [
-            'id', 'user', 'home_type', 'title', 'information_detail',
+            'id', 'user', 'fullname', 'home_type', 'title', 'information_detail',
             'address', 'description', 'latitude', 'longitude',
             'city', 'district', 'total_occupancy', 'acreage', 'price',
             'create_at', 'update_at', 'has_toilet', 'private_rental',
             'has_washing', 'curfew_time', 'images', 'is_favorite', 'create_at', 'update_at',
         ]
-        read_only_fields = ('user', 'create_at', 'update_at', 'address', 'images', 'is_favorite')
+        read_only_fields = ('user', 'fullname', 'create_at', 'update_at', 'address', 'images', 'is_favorite')
 
     def get_is_favorite(self, obj):
         favorite_ids = self.context.get('favorite_post_ids', set())
@@ -136,7 +137,6 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         if None in (description, city_id, district_id):
             raise serializers.ValidationError("Thiếu thông tin địa chỉ.")
 
-        # ✅ Truy xuất instance của City và District
         try:
             city = City.objects.get(pk=city_id)
             district = District.objects.get(pk=district_id)
@@ -145,7 +145,6 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         except District.DoesNotExist:
             raise serializers.ValidationError("Quận/huyện không tồn tại.")
 
-        # ✅ Tạo Address với instance
         address = Address.objects.create(
             description=description,
             latitude=latitude,
