@@ -338,7 +338,6 @@ const SearchBar = ({
 
             const rooms = response.data.results || [];
 
-            // Force a reset by using replace instead of push
             navigate("/detail-search", {
                 state: {
                     rooms,
@@ -347,9 +346,9 @@ const SearchBar = ({
                         rooms.length === 0
                             ? "Không có phòng theo nhu cầu"
                             : null,
-                    timestamp: new Date().getTime(), // Add timestamp to force state update
+                    timestamp: new Date().getTime(),
                 },
-                replace: true, // This will replace the current entry in history
+                replace: true,
             });
         } catch (error) {
             console.error("Search error:", error);

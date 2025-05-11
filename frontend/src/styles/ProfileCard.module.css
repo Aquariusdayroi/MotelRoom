@@ -1,6 +1,6 @@
 body {
-    font-family: 'Poppins', sans-serif;
-}  
+    font-family: "Poppins", sans-serif;
+}
 
 .profile-box {
     max-width: 450px;
@@ -9,7 +9,7 @@ body {
     border: 1px solid #ccc;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 10px 8px 20px rgba(0, 0, 0, 0.1); 
+    box-shadow: 10px 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 p {
@@ -35,4 +35,8 @@ p {
     font-style: italic;
 }
 
-  
+b {
+    font-size: 17px;
+    padding-right: 5px;
+    color: #363636;
+}
