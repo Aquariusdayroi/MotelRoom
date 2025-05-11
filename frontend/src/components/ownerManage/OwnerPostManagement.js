@@ -7,36 +7,82 @@ import styles from '../../styles/OwnerManagement.module.css';
 import { useEffect, useState } from "react";
 import ownerPostApi from '../../api/ownerPostApi';
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import axiosClient from "../../api/axiosClient";
+
 const OwnerPostManagement = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
+    const page = +searchParams.get("page") || 1;
+    const keywordParam = searchParams.get("keyword") || '';
+    const orderingParam = searchParams.get("ordering") || 'oldest';
+
+    const [searchTerm, setSearchTerm] = useState(keywordParam);
+    const [sortOrder, setSortOrder] = useState(orderingParam);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [sortOrder, setSortOrder] = useState('desc');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [searchParams] = useSearchParams();
-    const page = +searchParams.get("page") || 1;
     const [data, setData] = useState({ results: [], total_pages: 0 });
 
+    const fetchRooms = async (currentPage = 1, keyword = '', ordering = 'oldest') => {
+        setLoading(true);
+        try {
+            const response = await ownerPostApi.getAll({
+                page: currentPage,
+                keyword: keyword,
+                ordering: ordering
+            });
+            if (response?.data) {
+                setData({
+                    results: response.data.results.data,
+                    total_pages: Math.ceil(response.data.count / 9),
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchRooms(page, keywordParam, orderingParam);
+        setSearchTerm(keywordParam);
+        setSortOrder(orderingParam);
+    }, [page, keywordParam, orderingParam]);
+
     const handleSort = (order) => {
-        setSortOrder(order);
-        fetchRooms(page, searchTerm, order);
-    };
-
-    const handleSearch = (event) => {
-        setSearchTerm(event.target.value);
-    };
-
-    const handleSearchClick = () => {
-        fetchRooms(1, searchTerm, sortOrder);
+        const sortValue = order === 'asc' ? 'newest' : 'oldest';
+        setSortOrder(sortValue);
+        navigate(`?page=1&keyword=${searchTerm}&ordering=${sortValue}`);
+        fetchRooms(1, searchTerm, sortValue);
+    };    const handleSearchClick = async () => {
+        navigate(`?page=1&keyword=${searchTerm}&ordering=${sortOrder}`);
+        setLoading(true);
+        try {
+            const response = await ownerPostApi.getAll({
+                page: 1,
+                keyword: searchTerm,
+                ordering: sortOrder
+            });
+            console.log('Kết quả tìm kiếm:', response.data);
+            if (response?.data) {
+                setData({
+                    results: response.data.results.data,
+                    total_pages: Math.ceil(response.data.count / 9),
+                });
+            }
+        } catch (error) {
+            console.error('Lỗi khi tìm kiếm:', error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleHidePost = async (id) => {
         try {
             await ownerPostApi.hidePost(id);
             alert('Đã ẩn bài đăng thành công!');
-            // Refresh the posts list while maintaining search and sort
             fetchRooms(page, searchTerm, sortOrder);
         } catch (error) {
             console.error('Error hiding post:', error);
@@ -49,7 +95,6 @@ const OwnerPostManagement = () => {
             try {
                 await ownerPostApi.delete(id);
                 alert('Xóa bài đăng thành công!');
-                // Refresh the posts list while maintaining search and sort
                 fetchRooms(page, searchTerm, sortOrder);
             } catch (error) {
                 console.error('Error deleting post:', error);
@@ -57,30 +102,6 @@ const OwnerPostManagement = () => {
             }
         }
     };
-
-    const fetchRooms = async (currentPage = page, search = '', sort = sortOrder) => {
-        setLoading(true);
-        try {
-            const response = await axiosClient.get(
-                `/rental_post/api/my-posts/?page=${currentPage}&search=${search}&sort=${sort}`
-            );
-            if (response?.data) {
-                setData({
-                    results: response.data.results.data,
-                    total_pages: Math.ceil(response.data.count / 9),
-                });
-            }
-            setLoading(false);
-        } catch (error) {
-            console.error(error);
-            setError(error.message);
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchRooms(page, '', sortOrder);
-    }, []); // Chỉ chạy 1 lần khi component mount
 
     if (loading) return <div className="text-center p-5">Đang tải...</div>;
     if (error) return <div className="text-center text-danger p-5">{error}</div>;
@@ -101,11 +122,9 @@ const OwnerPostManagement = () => {
                                     className={`form-control ${styles.searchInput}`}
                                     placeholder="Tìm theo tên hoặc địa chỉ..."
                                     value={searchTerm}
-                                    onChange={handleSearch}
-                                    onKeyPress={(e) => {
-                                        if (e.key === 'Enter') {
-                                            handleSearchClick();
-                                        }
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleSearchClick();
                                     }}
                                 />
                             </div>
@@ -120,7 +139,7 @@ const OwnerPostManagement = () => {
                                     className={styles.sortButton}
                                 >
                                     Ngày đăng{' '}
-                                    {sortOrder === 'asc' ? (
+                                    {sortOrder === 'newest' ? (
                                         <FaChevronUp className={styles.arrow} />
                                     ) : (
                                         <FaChevronDown className={styles.arrow} />
@@ -131,7 +150,7 @@ const OwnerPostManagement = () => {
                                         Ngày đăng gần đây
                                     </Dropdown.Item>
                                     <Dropdown.Item onClick={() => handleSort('desc')}>
-                                        Ngày đăng xa nhất
+                                        Ngày đăng cũ nhất
                                     </Dropdown.Item>
                                 </Dropdown.Menu>
                             </Dropdown>
@@ -149,7 +168,6 @@ const OwnerPostManagement = () => {
                                     {...room}
                                     isOwnerView={true}
                                     onClick={() => navigate(`/detail/${room.id}`)}
-                                    onEdit={(id) => navigate(`/edit-post/${id}`)}
                                     onHide={(id) => handleHidePost(id)}
                                     onDelete={(id) => handleDeletePost(id)}
                                 />

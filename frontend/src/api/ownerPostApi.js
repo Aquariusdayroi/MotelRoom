@@ -7,20 +7,24 @@ const ownerPostApi = {
         return axiosClient.get(`/rental_post/api/my-posts/`, { params });
     },
 
-    // Tạo bài đăng mới
-    create: (data) => {
-        return axiosClient.post(`/rental_post/api/my-posts/`, data);
-    },
-
-    // Cập nhật bài đăng
-    update: (id, data) => {
-        return axiosClient.put(`/rental_post/api/my-posts/${id}/`, data);
+    hidePost: (id) => {
+        return axiosClient.post(`/rental_post/hide/${id}/`);
     },
 
     // Xoá bài đăng
     delete: (id) => {
         return axiosClient.delete(`/rental_post/api/my-posts/${id}/`);
     },
+    search: ({ page = 1, keyword = '', ordering = 'oldest' }) => {
+        return axiosClient.get('/rental_post/api/my-posts/search/', {
+            params: {
+                page,
+                keyword,
+                ordering,
+            },
+        });
+    },
+
 };
 
 export default ownerPostApi;
