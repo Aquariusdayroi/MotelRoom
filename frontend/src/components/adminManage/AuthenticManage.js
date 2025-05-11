@@ -5,6 +5,7 @@ import { AuthToken } from "../../authToken/index";
 import useOwnerRequestCount from "../../api/ownerApi/useOwnerRequestApi";
 import useUserStatistics from "../../api/ownerApi/totalUserStaticApi";
 import InforChart from "./components/InforChart";
+import TableRequest from "./components/TableRequest";
 
 const AuthenticManage = () => {
     const { user: token } = useContext(AuthToken);
@@ -12,7 +13,7 @@ const AuthenticManage = () => {
     const { ownerCount, userCount } = useUserStatistics(token);
 
     return (
-        <div className="container pt-5">
+        <div className="container pt-3">
             <div className="row">
                 <div className="row mb-4">
                     <div className="col-md-4">
@@ -39,11 +40,14 @@ const AuthenticManage = () => {
                 </div>
                 <div className="row mb-4">
                     <div className="col-12">
+                        {/* chưa gọi api */}
                         <InforChart />
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-12">table request</div>
+                    <div className="col-12">
+                        <TableRequest />
+                    </div>
                 </div>
             </div>
         </div>

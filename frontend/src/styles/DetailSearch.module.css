@@ -1,10 +1,11 @@
 .container {
     padding: 0 10vw;
+}
+.listRoom {
     height: 100vh;
     overflow-y: auto;
 }
-
-.container::-webkit-scrollbar {
+.listRoom::-webkit-scrollbar {
     display: none;
 }
 

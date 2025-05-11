@@ -2,7 +2,6 @@
 
 .container {
     text-align: left;
-    padding: 0px;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -13,7 +12,7 @@
     background-position: center;
     background-repeat: no-repeat;
     color: white;
-    padding: 136px;
+    padding: 0 10vw;
 }
 
 h1 {
@@ -21,14 +20,15 @@ h1 {
     font-family: "Noto Sans TC", sans-serif;
 }
 
-p {
+.container p {
     margin-top: 21px;
     font-size: 16px;
     font-family: "Noto Sans TC", sans-serif;
     font-weight: 100; /* Hoặc font-weight: 400; */
-    width: 510px;
+    width: 1000px;
     height: 95px;
     text-align: justify;
+    margin: 60px 0px;
 }
 
 .button {

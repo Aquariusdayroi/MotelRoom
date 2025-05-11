@@ -1,29 +1,32 @@
-import React, { createContext, useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
-import authApi from '../api/authApi';
-import decodeJwtPayload from './../until/decodeJwt';
+import React, { createContext, useEffect, useState } from "react";
+import Cookies from "js-cookie";
+import authApi from "../api/authApi";
+import decodeJwtPayload from "./../until/decodeJwt";
 
 export let AuthToken = createContext();
 
 const AuthProvider = ({ children }) => {
-    const authTokenCookie = Cookies.get('authToken');
+    const authTokenCookie = Cookies.get("authToken");
 
-    const decodedToken = authTokenCookie ? decodeJwtPayload(authTokenCookie) : null;
+    const decodedToken = authTokenCookie
+        ? decodeJwtPayload(authTokenCookie)
+        : null;
     const [user, setUser] = useState(authTokenCookie || null);
     const [role, setRole] = useState(decodedToken ? decodedToken.role : null);
     const [userInfo, setUserInfo] = useState(decodedToken || null);
 
     useEffect(() => {
-        const token = Cookies.get('authToken');
-        const userInfoCookie = Cookies.get('userInfo');
-
-        if (token && userInfoCookie) {
+        const token = Cookies.get("authToken");
+        const userInfoCookie = Cookies.get("userInfo");
+        if (token) {
             const decoded = decodeJwtPayload(token);
-            const parsedUser = JSON.parse(userInfoCookie);
+            const parsedUser = JSON.parse(userInfoCookie)
+                ? JSON.parse(Cookies.get("userInfo"))
+                : {};
 
             setUser(token);
-            setRole(parsedUser.role || (decoded && decoded.role) || null);
-            setUserInfo(parsedUser);
+            setRole(parsedUser.role);
+            setUserInfo({ ...parsedUser, user_id: decoded.user_id });
         }
     }, []);
 
@@ -35,12 +38,10 @@ const AuthProvider = ({ children }) => {
             const refreshToken = res.data.refresh;
             const userPayload = res.data.user;
 
-            // const decode = decodeJwtPayload(authToken);
-
             // Lưu token vào cookie
-            Cookies.set('authToken', authToken, { expires: 7 });
-            Cookies.set('refreshToken', refreshToken, { expires: 7 });
-            Cookies.set('userInfo', JSON.stringify(userPayload), {
+            Cookies.set("authToken", authToken, { expires: 7 });
+            Cookies.set("refreshToken", refreshToken, { expires: 7 });
+            Cookies.set("userInfo", JSON.stringify(userPayload), {
                 expires: 7,
             });
 
@@ -52,18 +53,24 @@ const AuthProvider = ({ children }) => {
     };
 
     const logout = async () => {
-        const refreshToken = Cookies.get('refreshToken');
+        const refreshToken = Cookies.get("refreshToken");
         if (refreshToken) {
-            const res = await authApi.logout({ refresh: refreshToken });
+            try {
+                const res = await authApi.logout({ refresh: refreshToken });
 
-            if (res.data.success) {
-                Cookies.remove('authToken');
-                Cookies.remove('refreshToken');
-                Cookies.remove('userInfo');
+                if (res.data.success) {
+                    Cookies.remove("authToken");
+                    Cookies.remove("refreshToken");
+                    Cookies.remove("userInfo");
 
-                setUser(null);
-                setRole(null);
-                setUserInfo(null);
+                    setUser(null);
+                    setRole(null);
+                    setUserInfo(null);
+
+                    window.location.href = "/login";
+                }
+            } catch (error) {
+                console.error("Logout thất bại:", error);
             }
         }
     };

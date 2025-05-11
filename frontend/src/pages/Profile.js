@@ -1,23 +1,39 @@
-import Footer from "../layout/components/Footer";
 import styles from "../styles/Profile.module.css";
 import UserCard from "../components/UserCard";
-import RoomCard from "../components/rooms/RoomCard";
-import { images } from "../assets/images";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import React, { useState, useEffect, useContext } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useContext } from "react";
 import ReviewCard from "../components/reviews/ReviewCard";
 import { useNavigate } from "react-router-dom";
 import ButtonPrimary from "../components/buttonUI/ButtonPrimary";
 import { AuthToken } from "../authToken";
 import axiosClient from "../api/axiosClient";
 import RoomProfile from "../components/rooms/RoomProfile";
+import {
+    CalendarDate,
+    EnvelopeFill,
+    GeoAltFill,
+    Pencil,
+    PersonCircle,
+    PersonFill,
+    PhoneFill,
+    SignpostSplitFill,
+    TelephoneInboundFill,
+} from "react-bootstrap-icons";
+import { Building } from "lucide-react";
+import decodeJwtPayload from "../until/decodeJwt";
+import { getUserInfoById } from "../api/userApi/getUserInfoById";
+import SettingProfileModal from "../components/modal/SettingProfileModal";
 
 function Profile() {
+    const [userInfo, setUserInfo] = useState(null);
     const { role } = useContext(AuthToken);
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { user } = useContext(AuthToken);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const handleOpenModal = () => setShowEditModal(true);
+    const handleCloseModal = () => setShowEditModal(false);
 
     const navigate = useNavigate();
     const handleBackToHome = () => {
@@ -68,15 +84,24 @@ function Profile() {
                 : prev - itemsPerPage
         );
     };
-    const [showAllReviews, setShowAllReviews] = useState(false); // State để kiểm soát hiển thị review
+    const [showAllReviews, setShowAllReviews] = useState(false);
 
     const toggleReviews = () => {
-        setShowAllReviews((prev) => !prev); // Đảo ngược trạng thái
+        setShowAllReviews((prev) => !prev);
     };
-    const reviewsToDisplay = showAllReviews ? reviews : reviews.slice(0, 3); // Hiển thị tất cả hoặc chỉ 3 review
+    const reviewsToDisplay = showAllReviews ? reviews : reviews.slice(0, 3);
 
     const handleNext = () => {
         setStartIndex((prev) => (prev + itemsPerPage) % rooms.length);
+    };
+
+    const formatDate = (dateStr) => {
+        if (!dateStr) return "Chưa cập nhật";
+        const date = new Date(dateStr);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
     };
 
     useEffect(() => {
@@ -89,8 +114,8 @@ function Profile() {
                     setRooms(response.data.results);
                 } else if (role === "owner") {
                     // có api thì đổi lại
-                    response = await axiosClient.get("/owner/api/my-posts/");
-                    setRooms(response.data.results);
+                    // response = await axiosClient.get("/owner/api/my-posts/");
+                    // setRooms(response.data.results);
                 }
                 setLoading(false);
             } catch (err) {
@@ -103,6 +128,23 @@ function Profile() {
             fetchRooms();
         }
     }, [role]);
+
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            if (user) {
+                try {
+                    const decoded = decodeJwtPayload(user);
+                    const info = await getUserInfoById(decoded.user_id);
+                    setUserInfo(info);
+                    console.log(info);
+                } catch (error) {
+                    console.error("Không thể lấy thông tin người dùng:", error);
+                }
+            }
+        };
+
+        fetchUserInfo();
+    }, [user]);
 
     const renderContent = () => (
         <RoomProfile
@@ -119,26 +161,97 @@ function Profile() {
         <div>
             <div className={styles.profileContainer}>
                 <div className={styles.profileContent}>
-                    <UserCard></UserCard>
+                    <UserCard
+                        avatar={userInfo?.avatar}
+                        name={userInfo?.fullname}
+                        start={"2.4"}
+                        totalComment={"12 đánh giá"}
+                        year={"2"}
+                    ></UserCard>
                     <div className="p-3 rounded mt-3">
-                        <h5 className="fw-bold mb-3">Thông tin về Đất</h5>
-                        <p
-                            style={{
-                                whiteSpace: "pre-wrap",
-                                fontSize: "14px",
-                                lineHeight: "1.6",
-                                marginBottom: "1rem",
-                                height: "100%",
-                            }}
-                        >
-                            Phần{"\n"}này{"\n"}tự{"\n"}mô{"\n"}tả{"\n"}bản{"\n"}
-                            thân
-                        </p>
-                        <div className="d-flex gap-2">
-                            <button className="btn btn-info text-white">
-                                Nhắn tin
-                            </button>
-                            <button className="btn btn-danger">Báo cáo</button>
+                        <div className=" ">
+                            <div className={`${styles.groupHover} d-flex`}>
+                                <h5
+                                    className="fw-bold mb-3 d-flex align-items-center"
+                                    style={{
+                                        color: "var(--text-primary-color)",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    <PersonCircle className="me-2 " /> Thông tin
+                                    cá nhân
+                                </h5>
+                                <div
+                                    className={styles.hoverIcon}
+                                    style={{
+                                        marginLeft: "10px",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    <Pencil onClick={handleOpenModal} />
+                                </div>
+                            </div>
+                            <ul className="list-unstyled mb-4 ps-3">
+                                <li className="mb-2 d-flex align-items-center">
+                                    <PersonFill className="me-2 text-secondary" />
+                                    <b>Họ và tên:</b>
+                                    {userInfo?.fullname || "Chưa cập nhật"}
+                                </li>
+                                <li className="mb-2 d-flex align-items-center">
+                                    <GeoAltFill className="me-2 text-secondary" />
+                                    <b>Địa chỉ: </b>
+                                    {userInfo?.address_name || "Chưa cập nhật"}
+                                </li>
+                                <li className="mb-2 d-flex align-items-center">
+                                    <SignpostSplitFill className="me-2 text-secondary" />
+                                    <b>Tên đường:</b>
+                                    {userInfo?.district_name || "Chưa cập nhật"}
+                                </li>
+                                <li className="mb-2 d-flex align-items-center">
+                                    <Building className="me-2 text-secondary" />
+                                    <b>Thành phố:</b>
+                                    {userInfo?.city_name || "Chưa cập nhật"}
+                                </li>
+                                <li className="mb-2 d-flex align-items-center">
+                                    <CalendarDate className="me-2 text-secondary" />
+                                    <b>Sinh nhật:</b>{" "}
+                                    {formatDate(userInfo?.birthday)}
+                                </li>
+                            </ul>
+
+                            <div className={`${styles.groupHover} d-flex`}>
+                                <h5
+                                    className="fw-bold mb-3 d-flex align-items-center"
+                                    style={{
+                                        color: "var(--text-primary-color)",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    <TelephoneInboundFill className="me-2" />
+                                    Thông tin liên hệ
+                                </h5>
+                                <div
+                                    className={styles.hoverIcon}
+                                    style={{
+                                        marginLeft: "10px",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    <Pencil onClick={handleOpenModal} />
+                                </div>
+                            </div>
+                            <ul className="list-unstyled ps-3">
+                                <li className="mb-2 d-flex align-items-center">
+                                    <EnvelopeFill className="me-2 text-secondary" />
+                                    <b>Email:</b>
+                                    {userInfo?.email}
+                                </li>
+                                <li className="mb-2 d-flex align-items-center">
+                                    <PhoneFill className="me-2 text-secondary" />
+                                    <b>SĐT:</b>
+                                    {userInfo?.phone_number || "Chưa cập nhật"}
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -191,7 +304,7 @@ function Profile() {
             </div>
             <div
                 className="d-flex align-items-center"
-                style={{ padding: "0 2%" }}
+                style={{ padding: "30px 2%" }}
             >
                 <h5 className="fw-bold text-dark m-0">
                     {role === "user"
@@ -237,8 +350,11 @@ function Profile() {
                     </div>
                 ))}
             </div>
-
-            <Footer></Footer>
+            <SettingProfileModal
+                show={showEditModal}
+                onHide={handleCloseModal}
+                userInfo={userInfo}
+            />
         </div>
     );
 }

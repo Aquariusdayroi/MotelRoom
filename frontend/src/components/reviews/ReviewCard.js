@@ -27,7 +27,7 @@ const ReviewCard = ({ rating, date, time, content, location }) => {
                     {date} &nbsp; {time}
                 </span>
             </div>
-            <p
+            <div
                 style={{
                     fontSize: "14px",
                     paddingRight: "5rem",
@@ -37,7 +37,7 @@ const ReviewCard = ({ rating, date, time, content, location }) => {
                 }}
             >
                 {content}
-            </p>
+            </div>
             <small className="text-muted d-block">Tại: {location}</small>
         </div>
     );
