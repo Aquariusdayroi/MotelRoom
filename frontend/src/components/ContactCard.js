@@ -12,7 +12,7 @@ function ContactCard({ price, onCall, onZalo, onMaps }) {
                 </div>
                 <button
                     type="button"
-                    className={`${styles.call} d-flex align-items-center justify-content-center gap-2 rounded-5 w-100`}
+                    className={`${styles.call} d-flex align-items-center justify-content-center gap-2 rounded-5 w-100 m-0`}
                     onClick={onCall}
                 >
                     <img src={callIcon} alt="Call" />
@@ -20,7 +20,7 @@ function ContactCard({ price, onCall, onZalo, onMaps }) {
                 </button>
                 <button
                     type="button"
-                    className={`${styles.zalo} d-flex align-items-center justify-content-center gap-2 rounded-5 w-100`}
+                    className={`${styles.zalo} d-flex align-items-center justify-content-center gap-2 rounded-5 w-100 m-0`}
                     onClick={onZalo}
                 >
                     <img src={zaloIcon} alt="Zalo" />
@@ -28,7 +28,7 @@ function ContactCard({ price, onCall, onZalo, onMaps }) {
                 </button>
                 <button
                     type="button"
-                    className={`${styles.maps} d-flex align-items-center justify-content-center gap-2 rounded-5 w-100`}
+                    className={`${styles.maps} d-flex align-items-center justify-content-center gap-2 rounded-5 w-100 m-0`}
                     onClick={onMaps}
                 >
                     <img src={mapsIcon} alt="Google Maps" />
