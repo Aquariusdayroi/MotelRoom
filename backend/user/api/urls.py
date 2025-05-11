@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import UserRetrieveUpdateDestroyAPIView, RegisterAPIView, GoogleLoginView, VerifyEmailView, OwnerRequestViewSet, AdminRequestViewSet
+from .views import UserRetrieveUpdateDestroyAPIView, RegisterAPIView, GoogleLoginView, VerifyEmailView, OwnerRequestViewSet, AdminRequestViewSet, UserDetailAPIView, UserLatestReviewsAPIView, MyLatestReviewsAPIView
 from .views import CustomTokenObtainPairView, LogoutView
 from rental_post.api.views import RentalPostFavoriteListAPIView
 
@@ -23,5 +23,8 @@ urlpatterns = [
     path('', include(owner_router.urls)), # api người dùng gửi yêu cầu làm chủ nhà
     path('admin/', include(admin_router.urls)), # api admin duyệt yêu cầu làm chủ nhà
     path('my-favorite/', RentalPostFavoriteListAPIView.as_view(), name = 'my-favorite'), #api lấy danh sách bài đăng người dùng yêu thích
+    path('user-info/<int:user_id>/', UserDetailAPIView.as_view(), name='user-info'), # api lấy thông tin người dùng khác
+    path('user-info/<int:user_id>/reviews/', UserLatestReviewsAPIView.as_view(), name='user-reviews'), # api lấy danh sách đánh giá của người dùng khác
+    path('user-info/my-reviews/', MyLatestReviewsAPIView.as_view(), name='my-reviews'), # api lấy danh sách đánh giá của người dùng hiện tại
 ]
 

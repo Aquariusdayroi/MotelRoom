@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import CityListCreateAPIView, CityDetailRetrieveUpdateDestroyAPIView
+from .views import CityListAPIView, CityDetailAPIView
 
 
 urlpatterns = [
-    path('get_all/', CityListCreateAPIView.as_view(), name='get_all_city'),
-    path("get/<int:id>/", CityDetailRetrieveUpdateDestroyAPIView.as_view(), name='get_city_id'),
+    path('get_all/', CityListAPIView.as_view(), name='get_all_city'),
+    path('<int:id>/', CityDetailAPIView.as_view(), name='city-detail'),
 ]
 

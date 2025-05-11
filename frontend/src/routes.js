@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Intro from './pages/Intro';
@@ -13,6 +14,28 @@ import AdminManagement from './pages/AdminManagement';
 import AnimatedPage from './animations/AnimatedPage';
 import AuthenticManage from './components/adminManage/AuthenticManage';
 import AddPost from './pages/AddPost';
+=======
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    useLocation,
+} from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import Intro from "./pages/Intro";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import Login from "./pages/Login";
+import Layout from "./layout/Layout";
+import DetailSearch from "./pages/DetailSearch";
+import Detail from "./pages/Detail";
+import ProtectedRoute from "./until/ProtectedRoute";
+import PostManagement from "./pages/PostManagement";
+import Chat from "./pages/Chat";
+import AdminManagement from "./pages/AdminManagement";
+import AnimatedPage from "./animations/AnimatedPage";
+import AuthenticManage from "./components/adminManage/AuthenticManage";
+>>>>>>> 5d79b37179d9a494595fb647a11d6a37a24c7828
 
 export default function AppRoutes() {
     return (
@@ -56,7 +79,6 @@ function AnimatedRoutes() {
                 />
                 <Route
                     path="/profile"
-                    enableScroll={false}
                     element={
                         <ProtectedRoute>
                             <Layout enableScroll={false} enableSearch={false}>
@@ -68,13 +90,21 @@ function AnimatedRoutes() {
                 <Route
                     path="/post"
                     element={
-                        <ProtectedRoute>
+                        <ProtectedRoute allowedRoles={["owner", "admin"]}>
                             <Layout enableScroll={false} enableSearch={false}>
                                 <PostManagement />
                             </Layout>
                         </ProtectedRoute>
                     }
                 />
+                <Route path="/chat" element={
+                    
+                    // <Layout enableScroll={false} enableSearch={false}>
+                        <Chat />
+                    // </Layout>
+                    }
+                 />
+
                 <Route
                     path="/add-post"
                     element={
@@ -88,21 +118,13 @@ function AnimatedRoutes() {
                 <Route
                     path="/admin-manage"
                     element={
-                        <ProtectedRoute>
+                        <ProtectedRoute allowedRoles={["admin"]}>
                             <Layout enableScroll={false} enableSearch={false}>
                                 <AdminManagement />
                             </Layout>
                         </ProtectedRoute>
                     }
                 >
-                    <Route
-                        index
-                        element={
-                            <AnimatedPage>
-                                <Navigate to="authentic" replace />
-                            </AnimatedPage>
-                        }
-                    />
                     <Route
                         path="authentic"
                         element={

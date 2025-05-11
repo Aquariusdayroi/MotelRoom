@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import StepWrapper from '../components/PostingProcess/StepWrapper';
-import Step1_SelectType from '../components/PostingProcess/Step1_SelectType';
-import Step2_UploadImages from '../components/PostingProcess/Step2_UploadImages';
-import Step3_ReviewAndSubmit from '../components/PostingProcess/Step3_ReviewAndSubmit';
+import Step1_Intro from '../components/PostingProcess/Step1/Step1_Intro';
+import Step1_SelectType from '../components/PostingProcess/Step1/Step1_SelectType';
+import Step1_AddressConfirm from '../components/PostingProcess/Step1/Step1_AddressConfirm'
 
-const steps = [Step1_SelectType, Step2_UploadImages, Step3_ReviewAndSubmit];
+import Step2_Intro from '../components/PostingProcess/Step2/Step2_Intro'
+import Step2_UploadImage from '../components/PostingProcess/Step2/Step2_UploadImage';
+import Step3_ReviewAndSubmit from '../components/PostingProcess/Step3/Step3_ReviewAndSubmit';
+
+const steps = [Step1_Intro, Step1_SelectType, Step1_AddressConfirm,Step2_Intro, Step2_UploadImage, Step3_ReviewAndSubmit];
 
 function AddPost() {
     const [currentStep, setCurrentStep] = useState(0);
@@ -29,7 +33,7 @@ function AddPost() {
 
     return (
         <div className="container py-4">
-            <StepWrapper key={currentStep} direction={direction}>
+            <StepWrapper key={currentStep} stepKey={currentStep} direction={direction}>
                 <StepComponent data={formData} onNext={handleNext} onBack={handleBack} onSubmit={handleSubmit} />
             </StepWrapper>
         </div>

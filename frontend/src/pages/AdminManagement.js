@@ -7,10 +7,14 @@ import {
     Clipboard,
     BarChart,
 } from "react-bootstrap-icons";
-import { NavLink, Outlet } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const AdminManagement = () => {
+    const location = useLocation();
+    if (location.pathname === "/admin-manage") {
+        return <Navigate to="/admin-manage/authentic" replace />;
+    }
     return (
         <div style={{ padding: "0 10vw" }}>
             <style>

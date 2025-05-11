@@ -1,0 +1,29 @@
+import React from 'react';
+import room from '../../../assets/img/room.png';
+import '../../../styles/Step1_Intro.css';
+import ProgressBar from '../ProgressBar';
+
+function Step1_Intro({ onNext, currentStep, totalSteps }) {
+    return (
+        <div className="basic-info-form">
+            <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+            
+            <div className="content">
+                <div className='box-content'>
+                    <h2>Bước 1</h2>
+                    <h1>Chia sẻ thông tin về chỗ ở của bạn cho chúng tôi</h1>
+                    <p>
+                        Trong bước này, chúng tôi sẽ hỏi xem bạn cho thuê loại chỗ ở nào và bạn muốn cho khách đặt toàn bộ nhà hay chỉ một phòng cụ thể. 
+                        Sau đó, hãy cho chúng tôi biết vị trí và số lượng khách có thể ở tại đó.
+                    </p>
+                </div>
+                <div className='box-img'><img src={room}></img></div>
+            </div>
+            <div className="buttons">
+                <button className="btn btn-info ms-auto next-btn" onClick={() => onNext({ introCompleted: true })}>Tiếp tục ➔</button>
+            </div>
+        </div>
+    );
+};
+
+export default Step1_Intro;

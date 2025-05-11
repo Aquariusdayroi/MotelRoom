@@ -143,7 +143,7 @@ function Desciption({ text }) {
     );
 }
 
-function Detail() {
+function Detail({ showAction = true, showReviews = true }) {
     const { roomId } = useParams();
     const [room, setRoom] = useState({});
 
@@ -165,16 +165,18 @@ function Detail() {
         <div className={styles.container}>
             <div className="d-flex align-items-center justify-content-between mb-2">
                 <h3>{room.title}</h3>
-                <div className="d-flex align-items-center gap-1">
-                    <ButtonAction
-                        icon={<IosShareOutlinedIcon />}
-                        text="Chia sẻ"
-                    />
-                    <ButtonAction
-                        icon={<FavoriteBorderOutlinedIcon />}
-                        text="Lưu"
-                    />
-                </div>
+                {showAction && (
+                    <div className="d-flex align-items-center gap-1">
+                        <ButtonAction
+                            icon={<IosShareOutlinedIcon />}
+                            text="Chia sẻ"
+                        />
+                        <ButtonAction
+                            icon={<FavoriteBorderOutlinedIcon />}
+                            text="Lưu"
+                        />
+                    </div>
+                )}
             </div>
             <RoomImageGallery gallery={room.images} />
             <div className="row mt-4">
@@ -208,11 +210,13 @@ function Detail() {
                 </div>
             </div>
             <Desciption text={room.description} />
-            <div className="row">
-                <div className="col-6">
-                    <Reviews data={room.reviews} />
+            {showReviews && (
+                <div className="row">
+                    <div className="col-6">
+                        <Reviews data={room.reviews} />
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }
