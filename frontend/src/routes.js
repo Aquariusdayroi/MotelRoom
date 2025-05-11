@@ -15,6 +15,7 @@ import DetailSearch from "./pages/DetailSearch";
 import Detail from "./pages/Detail";
 import ProtectedRoute from "./until/ProtectedRoute";
 import PostManagement from "./pages/PostManagement";
+import Chat from "./pages/Chat";
 import AdminManagement from "./pages/AdminManagement";
 import AnimatedPage from "./animations/AnimatedPage";
 import AuthenticManage from "./components/adminManage/AuthenticManage";
@@ -61,7 +62,6 @@ function AnimatedRoutes() {
                 />
                 <Route
                     path="/profile"
-                    enableScroll={false}
                     element={
                         <ProtectedRoute>
                             <Layout enableScroll={false} enableSearch={false}>
@@ -80,6 +80,14 @@ function AnimatedRoutes() {
                         </ProtectedRoute>
                     }
                 />
+                <Route path="/chat" element={
+                    
+                    // <Layout enableScroll={false} enableSearch={false}>
+                        <Chat />
+                    // </Layout>
+                    }
+                 />
+
                 <Route
                     path="/admin-manage"
                     element={
