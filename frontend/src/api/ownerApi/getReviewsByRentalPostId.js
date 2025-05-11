@@ -8,12 +8,12 @@ export const getReviewsByRentalPostId = async (rentalPostId, rating) => {
         }
 
         const response = await axiosClient.get(
-            `/user/api/user-info/my/reviews/`,
+            `/user/api/user-info/my-reviews/`,
             { params }
         );
 
         if (response?.data?.success) {
-            return response.data.data;
+            return response.data.reviews;
         } else {
             throw new Error(
                 response?.data?.message || "Không lấy được đánh giá."

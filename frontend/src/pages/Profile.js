@@ -49,9 +49,15 @@ function Profile() {
         const fetchReviews = async () => {
             try {
                 const res = await getReviewsByRentalPostId(1);
-                setReviews(res);
+                if (Array.isArray(res)) {
+                    setReviews(res);
+                } else {
+                    console.error("Dữ liệu đánh giá không phải mảng:", res);
+                    setReviews([]);
+                }
             } catch (err) {
                 console.error("Không thể lấy đánh giá:", err);
+                setReviews([]);
             }
         };
 
@@ -107,7 +113,12 @@ function Profile() {
     const toggleReviews = () => {
         setShowAllReviews((prev) => !prev);
     };
-    const reviewsToDisplay = showAllReviews ? reviews : reviews.slice(0, 3);
+    const reviewsToDisplay =
+        reviews && Array.isArray(reviews)
+            ? showAllReviews
+                ? reviews
+                : reviews.slice(0, 3)
+            : [];
 
     const handleNext = () => {
         setStartIndex((prev) => (prev + itemsPerPage) % rooms.length);
@@ -399,7 +410,6 @@ function Profile() {
                         const payload = prepareFormDataForAPI(pendingFormData);
                         console.log(payload);
                         const updatedUser = await updateUserProfile(payload);
-                        console.log("✅ updatedUser", updatedUser);
 
                         console.log(payload);
                         if (updatedUser?.id) {
