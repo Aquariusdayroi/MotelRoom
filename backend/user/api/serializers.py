@@ -226,7 +226,11 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
         # Update các trường cơ bản
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+            if value == None: continue
+            if value =="":
+                setattr(instance, attr, None)
+            else:
+                setattr(instance, attr, value)
 
         # Cập nhật địa chỉ nếu có
         if address_data:
