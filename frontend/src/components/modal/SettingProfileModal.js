@@ -1,32 +1,53 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Modal, Form, InputGroup } from "react-bootstrap";
 import { PencilSquare, CalendarDate } from "react-bootstrap-icons";
 import ButtonPrimary from "../buttonUI/ButtonPrimary";
 
 const SettingProfileModal = ({ show, onHide, userInfo, onSave }) => {
-    const firstNameRef = useRef(null);
+    const fullname = useRef(null);
     const phoneRef = useRef(null);
     const addressRef = useRef(null);
     const lastNameRef = useRef(null);
     const cityRef = useRef(null);
 
     const [formData, setFormData] = useState({
-        firstName: userInfo?.firstName || "",
-        lastName: userInfo?.lastName || "",
-        birthday: userInfo?.birthday || "",
-        email: userInfo?.email || "",
-        phone: userInfo?.phone || "",
-        address: userInfo?.address || "",
+        fullname: "",
+        birthday: "",
+        email: "",
+        phone: "",
+        address: "",
+        district: "",
+        city: "",
     });
-
-    const handleChange = (field, value) => {
-        setFormData({ ...formData, [field]: value });
-    };
 
     const formatDate = (dateStr) => {
         if (!dateStr) return "";
-        const [year, month, day] = dateStr.split("-");
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return "";
+
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = String(date.getFullYear()).slice(-4);
+
         return `${day}/${month}/${year}`;
+    };
+
+    useEffect(() => {
+        if (userInfo) {
+            setFormData({
+                fullname: userInfo.fullname || "",
+                birthday: formatDate(userInfo.birthday),
+                email: userInfo.email || "",
+                phone: userInfo.phone_number || "",
+                address: userInfo.address_name || "",
+                district: userInfo.district_name || "",
+                city: userInfo.city_name || "",
+            });
+        }
+    }, [userInfo]);
+
+    const handleChange = (field, value) => {
+        setFormData({ ...formData, [field]: value });
     };
 
     return (
@@ -39,15 +60,15 @@ const SettingProfileModal = ({ show, onHide, userInfo, onSave }) => {
                         </Form.Label>
                         <InputGroup>
                             <Form.Control
-                                ref={firstNameRef}
+                                ref={fullname}
                                 type="text"
-                                value={formData.firstName}
+                                value={formData.fullname}
                                 onChange={(e) =>
-                                    handleChange("firstName", e.target.value)
+                                    handleChange("fullname", e.target.value)
                                 }
                             />
                             <InputGroup.Text
-                                onClick={() => firstNameRef.current?.focus()}
+                                onClick={() => fullname.current?.focus()}
                                 style={{ cursor: "pointer" }}
                             >
                                 <PencilSquare />
@@ -146,9 +167,9 @@ const SettingProfileModal = ({ show, onHide, userInfo, onSave }) => {
                             <Form.Control
                                 ref={lastNameRef}
                                 type="text"
-                                value={formData.lastName}
+                                value={formData.district}
                                 onChange={(e) =>
-                                    handleChange("lastName", e.target.value)
+                                    handleChange("district", e.target.value)
                                 }
                             />
                             <InputGroup.Text
@@ -168,9 +189,9 @@ const SettingProfileModal = ({ show, onHide, userInfo, onSave }) => {
                             <Form.Control
                                 ref={cityRef}
                                 type="text"
-                                value={formData.lastName}
+                                value={formData.city}
                                 onChange={(e) =>
-                                    handleChange("lastName", e.target.value)
+                                    handleChange("city", e.target.value)
                                 }
                             />
                             <InputGroup.Text
@@ -184,8 +205,11 @@ const SettingProfileModal = ({ show, onHide, userInfo, onSave }) => {
 
                     <div className="text-center d-flex justify-content-center">
                         <ButtonPrimary
-                            des={"Lưu"}
-                            onClick={() => onSave(formData)}
+                            des="Lưu"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onSave(formData);
+                            }}
                         />
                     </div>
                 </Form>

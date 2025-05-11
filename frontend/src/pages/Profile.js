@@ -23,18 +23,19 @@ import { Building } from "lucide-react";
 import decodeJwtPayload from "../until/decodeJwt";
 import { getUserInfoById } from "../api/userApi/getUserInfoById";
 import SettingProfileModal from "../components/modal/SettingProfileModal";
+import ConfirmModal from "../components/modal/ComfirmModal";
+import { updateUserProfile } from "../api/userApi/updateUserProfile";
 
 function Profile() {
     const [userInfo, setUserInfo] = useState(null);
-    const { role } = useContext(AuthToken);
+    const { user, role } = useContext(AuthToken);
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const { user } = useContext(AuthToken);
     const [showEditModal, setShowEditModal] = useState(false);
-    const handleOpenModal = () => setShowEditModal(true);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [pendingFormData, setPendingFormData] = useState(null);
     const handleCloseModal = () => setShowEditModal(false);
-
     const navigate = useNavigate();
     const handleBackToHome = () => {
         navigate("/post");
@@ -85,6 +86,33 @@ function Profile() {
         );
     };
     const [showAllReviews, setShowAllReviews] = useState(false);
+
+    function prepareFormDataForAPI(data) {
+        // Chuyển birthday từ dd/mm/yyyy → yyyy-mm-dd
+        const [day, month, year] = data.birthday.split("/");
+        const birthdayAPI = `${year}-${month}-${day}`;
+
+        return {
+            fullname: data.fullname,
+            birthday: birthdayAPI,
+            email: data.email,
+            phone_number: data.phone,
+            address_name: data.address,
+            district_name: data.district,
+            city_name: data.city,
+        };
+    }
+
+    const handleOpenModal = async () => {
+        try {
+            const decoded = decodeJwtPayload(user);
+            const res = await getUserInfoById(decoded.user_id);
+            setUserInfo(res);
+            setShowEditModal(true);
+        } catch (error) {
+            console.error("Lỗi khi lấy thông tin người dùng:", error);
+        }
+    };
 
     const toggleReviews = () => {
         setShowAllReviews((prev) => !prev);
@@ -208,7 +236,10 @@ function Profile() {
                                     {userInfo?.district_name || "Chưa cập nhật"}
                                 </li>
                                 <li className="mb-2 d-flex align-items-center">
-                                    <Building className="me-2 text-secondary" />
+                                    <Building
+                                        className="me-2 text-secondary"
+                                        style={{ width: "1.2em" }}
+                                    />
                                     <b>Thành phố:</b>
                                     {userInfo?.city_name || "Chưa cập nhật"}
                                 </li>
@@ -354,6 +385,38 @@ function Profile() {
                 show={showEditModal}
                 onHide={handleCloseModal}
                 userInfo={userInfo}
+                onSave={(newData) => {
+                    setPendingFormData(newData);
+                    setShowEditModal(false);
+                    setShowConfirmModal(true);
+                }}
+            />
+            <ConfirmModal
+                show={showConfirmModal}
+                onHide={() => {
+                    setShowConfirmModal(false);
+                    setShowEditModal(true);
+                }}
+                title="Bạn đồng ý cập nhật thông tin này?"
+                onConfirm={async () => {
+                    try {
+                        const payload = prepareFormDataForAPI(pendingFormData);
+                        const updatedUser = await updateUserProfile(payload);
+                        if (updatedUser?.id) {
+                            setUserInfo(updatedUser);
+                            setPendingFormData(null);
+                            setShowConfirmModal(false);
+                        } else {
+                            alert("Không thể cập nhật thông tin.");
+                        }
+                    } catch (error) {
+                        console.error("Lỗi cập nhật:", error);
+                        alert(
+                            "Lỗi cập nhật: " +
+                                (error.response?.data?.message || error.message)
+                        );
+                    }
+                }}
             />
         </div>
     );
