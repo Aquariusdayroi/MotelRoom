@@ -101,7 +101,7 @@ class RentalPostListCreateAPIView(GenericAPIView):
                 "message": "Bạn phải là Owner để tạo bài đăng."
             }, status=status.HTTP_403_FORBIDDEN)
         
-        serializer = RentalPostSerializer(data=request.data)
+        serializer = RentalPostSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save(user=request.user)
 
