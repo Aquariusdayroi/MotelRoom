@@ -93,6 +93,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     address = AddressSerializer(read_only=True)
     user = serializers.SerializerMethodField()
     fullname = serializers.CharField(source='user.fullname', read_only=True)
+    avatar = serializers.ImageField(source='user.avatar', read_only=True)
     images = ImageSerializer(source='image', many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
 
@@ -106,7 +107,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = RentalPost
         fields = [
-            'id', 'user', 'fullname', 'home_type', 'title', 'information_detail',
+            'id', 'user', 'fullname', 'avatar', 'home_type', 'title', 'information_detail',
             'address', 'description', 'latitude', 'longitude',
             'city', 'district', 'total_occupancy', 'acreage', 'price',
             'create_at', 'update_at',  'images', 'is_favorite', 'is_public',
