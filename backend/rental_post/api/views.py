@@ -229,30 +229,22 @@ class MyRentalPostSearchKeyWordAPIView(ListAPIView):
             self.paginator.page_size = 6
         return super().paginate_queryset(queryset)
 
-    def get_queryset(self):
-        user = self.request.user
+    def list(self, request, *args, **kwargs):
+        user = request.user
         if not user.is_authenticated:
             return Response({
                 "success": False,
                 "message": "Bạn chưa đăng nhập."
             }, status=status.HTTP_401_UNAUTHORIZED)
-            
+
         if user.role != 'owner':
             return Response({
                 "success": False,
                 "message": "Bạn chưa là Owner để truy cập vào danh sách bài đăng."
             }, status=status.HTTP_403_FORBIDDEN)
-        queryset = RentalPost.objects.filter(user=user).select_related('address').prefetch_related('image')
-        search_query = self.request.query_params.get('keyword', None)
-        if search_query:
-            queryset = queryset.filter(title__icontains=search_query)
-        # Sắp xếp theo ngày
-        ordering = self.request.query_params.get('ordering', 'newest')
-        if ordering == 'newest':
-            queryset = queryset.order_by('-create_at')  # mới nhất trước
-        elif ordering == 'oldest':
-            queryset = queryset.order_by('create_at')   # cũ nhất trước
-        return queryset
+
+        return super().list(request, *args, **kwargs)
+
 
 #Api lấy danh sách bài đăng 
 class RentalPostListAPIView(ListAPIView):

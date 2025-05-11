@@ -10,7 +10,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.views import APIView
 from user.models import User, OwnerRequest
-from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer, OwnerRequestSerializer
+from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer, OwnerRequestSerializer, UpdateUserSerializer 
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 
 import os
@@ -158,7 +158,7 @@ class UserListCreateAPIViewSet(viewsets.ModelViewSet):
 # Api người dùng xem Chi tiết, cập nhật, xóa tài khoản
 class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
-    serializer_class = UserSerializer
+    serializer_class = UpdateUserSerializer 
     permission_classes = [IsAuthenticated]  # Chỉ cần đăng nhập
     
     def get_object(self):
@@ -174,18 +174,25 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         }, status=status.HTTP_200_OK)
         
     def update(self, request, *args, **kwargs):
-        # Cập nhật thông tin người dùng
         partial = kwargs.pop('partial', True)
-        instance = self.get_object()
+        instance = self.get_object()  # Lấy đối tượng người dùng hiện tại
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
+
+        # Tiến hành cập nhật đối tượng
         self.perform_update(serializer)
+
+        # Trả về dữ liệu người dùng đã cập nhật, sử dụng UpdateUserSerializer để lấy thông tin địa chỉ
+        read_serializer = UpdateUserSerializer(instance, context=self.get_serializer_context())
+
         return Response({
             "success": True,
             "message": "Cập nhật thông tin thành công.",
-            "user": serializer.data
+            "user": read_serializer.data  # Trả về dữ liệu đã cập nhật, bao gồm thông tin địa chỉ
         })
-    
+
+
+
     def destroy(self, request, *args, **kwargs):
         # Xóa tài khoản người dùng
         instance = self.get_object()
