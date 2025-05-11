@@ -68,7 +68,7 @@ function AnimatedRoutes() {
                 <Route
                     path="/post"
                     element={
-                        <ProtectedRoute>
+                        <ProtectedRoute allowedRoles={["owner", "admin"]}>
                             <Layout enableScroll={false} enableSearch={false}>
                                 <PostManagement />
                             </Layout>
@@ -97,21 +97,13 @@ function AnimatedRoutes() {
                 <Route
                     path="/admin-manage"
                     element={
-                        <ProtectedRoute>
+                        <ProtectedRoute allowedRoles={["admin"]}>
                             <Layout enableScroll={false} enableSearch={false}>
                                 <AdminManagement />
                             </Layout>
                         </ProtectedRoute>
                     }
                 >
-                    <Route
-                        index
-                        element={
-                            <AnimatedPage>
-                                <Navigate to="authentic" replace />
-                            </AnimatedPage>
-                        }
-                    />
                     <Route
                         path="authentic"
                         element={

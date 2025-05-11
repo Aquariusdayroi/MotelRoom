@@ -1,8 +1,8 @@
-from .views import DistrictListCreateAPIView, DistrictDetailRetrieveUpdateDestroyAPIView
 from django.urls import path
-from rest_framework.routers import DefaultRouter
+from .views import DistrictListAPIView, DistrictDetailAPIView, DistrictByCityAPIView
 
 urlpatterns = [
-    path('by-city/<int:city_id>/get_all/', DistrictListCreateAPIView.as_view(), name='get_all_district'),
-    path('by-city/<int:city_id>/get/<int:id>/', DistrictDetailRetrieveUpdateDestroyAPIView.as_view(), name='get_district_id'),
+    path('get-all/', DistrictListAPIView.as_view(), name='district-list'),
+    path('<int:id>/', DistrictDetailAPIView.as_view(), name='district-detail'),
+    path('by-city/<int:city_id>/', DistrictByCityAPIView.as_view(), name='district-by-city'),
 ]
