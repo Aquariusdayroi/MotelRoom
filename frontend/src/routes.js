@@ -13,6 +13,7 @@ import Chat from './pages/Chat';
 import AdminManagement from './pages/AdminManagement';
 import AnimatedPage from './animations/AnimatedPage';
 import AuthenticManage from './components/adminManage/AuthenticManage';
+import AddPost from './pages/AddPost';
 
 export default function AppRoutes() {
     return (
@@ -70,6 +71,16 @@ function AnimatedRoutes() {
                         <ProtectedRoute>
                             <Layout enableScroll={false} enableSearch={false}>
                                 <PostManagement />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/add-post"
+                    element={
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <AddPost />
                             </Layout>
                         </ProtectedRoute>
                     }

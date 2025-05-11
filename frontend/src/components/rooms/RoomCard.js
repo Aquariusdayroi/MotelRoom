@@ -88,7 +88,7 @@ const RoomCard = ({
                                 className={styles.image}
                                 onError={(e) => {
                                     e.target.onerror = null;
-                                    e.target.src = images.background;
+                                    e.target.src = images.emptyImg;
                                 }}
                             />
                         </div>
