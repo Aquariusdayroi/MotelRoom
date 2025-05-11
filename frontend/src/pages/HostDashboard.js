@@ -199,6 +199,7 @@ const HostDashboard = () => {
                                                         height={60}
                                                         className="me-2"
                                                         style={{ objectFit: 'cover' }}
+                                                        onError={e => { e.target.onerror = null; e.target.src = images.emptyImg; }}
                                                     />
                                                     <div>
                                                         <div className="fw-bold">{post.title}</div>

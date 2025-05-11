@@ -3,6 +3,7 @@ import {
     Routes,
     Route,
     useLocation,
+    Navigate,
 } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import Intro from "./pages/Intro";
@@ -14,7 +15,13 @@ import DetailSearch from "./pages/DetailSearch";
 import Detail from "./pages/Detail";
 import ProtectedRoute from "./until/ProtectedRoute";
 import PostManagement from "./pages/PostManagement";
-import HostDashboard from "./pages/HostDashboard";
+import AdminManagement from "./pages/AdminManagement";
+import AnimatedPage from "./animations/AnimatedPage";
+import AuthenticManage from "./components/adminManage/AuthenticManage";
+import OwnerManagement from "./pages/OwnerManagement";
+import OwnerDashboard from "./components/ownerManage/OwnerDashboard";
+import OwnerPostManagement from "./components//ownerManage/OwnerPostManagement";
+
 export default function AppRoutes() {
     return (
         <Router>
@@ -77,15 +84,101 @@ function AnimatedRoutes() {
                     }
                 />
                 <Route
-                    path="/host-dashboard"
+                    path="/admin-manage"
                     element={
                         <ProtectedRoute>
                             <Layout enableScroll={false} enableSearch={false}>
-                                <HostDashboard />
+                                <AdminManagement />
                             </Layout>
                         </ProtectedRoute>
                     }
-                />
+                >
+                    <Route
+                        index
+                        element={
+                            <AnimatedPage>
+                                <Navigate to="authentic" replace />
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="authentic"
+                        element={
+                            <AnimatedPage>
+                                <AuthenticManage />
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="post"
+                        element={
+                            <AnimatedPage>
+                                <div>Quản lý bài đăng</div>
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="comment"
+                        element={
+                            <AnimatedPage>
+                                <div>Quản lý đánh giá</div>
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="account"
+                        element={
+                            <AnimatedPage>
+                                <div>Quản lý tài khoản</div>
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="statistical"
+                        element={
+                            <AnimatedPage>
+                                <div>Thống kê hệ thống</div>
+                            </AnimatedPage>
+                        }
+                    />
+                </Route>
+                <Route
+                    path="/owner-manage"
+                    element={
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <OwnerManagement />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route
+                        index
+                        element={
+                            <AnimatedPage>
+                                <Navigate to="dashboard" replace />
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="dashboard"
+                        element={
+                            <AnimatedPage>
+                                <OwnerDashboard />
+                            </AnimatedPage>
+
+                        }
+                    />
+                    <Route
+                        path="posts"
+                        element={
+                            <AnimatedPage>
+                                <OwnerPostManagement />
+                            </AnimatedPage>
+
+                        }
+                    />
+                </Route>
             </Routes>
         </AnimatePresence>
     );

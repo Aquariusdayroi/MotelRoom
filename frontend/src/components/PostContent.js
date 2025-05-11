@@ -125,9 +125,9 @@ export default function PostContent() {
                     {posts
                         .filter((post) => !post.hidden)
                         .map((post) => (
-                            <div key={post.id} className="col-12 col-md-4 mb-4">
-                                <RoomCard
+                            <div key={post.id} className="col-12 col-md-4 mb-4">                                <RoomCard
                                     id={post.id}
+                                    images={post.images || []}
                                     title={post.title}
                                     address={post.address.description}
                                     price={post.price}

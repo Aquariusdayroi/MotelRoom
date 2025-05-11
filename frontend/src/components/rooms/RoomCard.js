@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import styles from '../../styles/RoomCard.module.css';
 import { images } from '../../assets/images';
 import { AuthToken } from '../../authToken';
@@ -16,21 +16,39 @@ const RoomCard = ({
     isNew,
     onClick,
     onLocationClick,
-    is_favorite,
+    is_favorite, onHide,
+    onDelete,
+    onEdit,
+    isOwnerView,
 }) => {
     let { user, role, logout } = useContext(AuthToken);
-
     const [isFavorite, setIsFavorite] = useState(is_favorite);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
+    const menuRef = useRef(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     const imageList =
         imgList.length > 0
             ? imgList
             : [
-                  {
-                      image_url: images.emptyImg,
-                  },
-              ];
+                {
+                    image_url: images.emptyImg,
+                },
+            ];
 
     const nextImage = (e) => {
         e.preventDefault();
@@ -208,11 +226,66 @@ const RoomCard = ({
                             />
                         )}
                         <span>Chủ nhà: {owner?.fullname}</span>
-                    </div>
-                    <div className={styles.details}>
+                    </div>                    <div className={styles.details}>
                         <div className={styles.price}>Từ: {price / 1000000} triệu/tháng</div>
-                        <div className={styles.info}>
-                            Loại hình: {type}, {Math.floor(area)}m²
+                        <div className={styles.infoRow}>
+                            <div className={styles.info}>
+                                Loại hình: {type}, {Math.floor(area)}m²
+                            </div>
+                            {isOwnerView && (
+                                <div className={styles.menuContainer} ref={menuRef}>
+                                    <button
+                                        className={styles.menuButton}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setIsMenuOpen(!isMenuOpen);
+                                        }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                            <circle cx="5" cy="12" r="2" />
+                                            <circle cx="12" cy="12" r="2" />
+                                            <circle cx="19" cy="12" r="2" />
+                                        </svg>
+                                    </button>                                {isMenuOpen && (
+                                        <div className={styles.menuDropdown}>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    onHide && onHide(id);
+                                                    setIsMenuOpen(false);
+                                                }}
+                                                className={styles.hideButton}
+                                            >
+                                                Ẩn
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    onEdit && onEdit(id);
+                                                    setIsMenuOpen(false);
+                                                }}
+                                                className={styles.editButton}
+                                            >
+                                                Chỉnh sửa
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    onDelete && onDelete(id);
+                                                    setIsMenuOpen(false);
+                                                }}
+                                                className={styles.deleteButton}
+                                            >
+                                                Xóa
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
