@@ -1,24 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaStar, FaCamera } from "react-icons/fa";
 import { images } from "../assets/images";
+import { updateUserProfile } from "../api/userApi/updateUserProfile";
+
 const UserCard = ({ name, avatar, start, totalComment, year }) => {
-    const [setAvatar] = useState(images.logo); // State để lưu ảnh đại diện
+    const [avatarPreview, setAvatarPreview] = useState(images.logo);
 
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setAvatar(e.target.result); // Cập nhật ảnh đại diện
-            };
-            reader.readAsDataURL(file);
+    useEffect(() => {
+        if (avatar) {
+            const isFullUrl = avatar.startsWith("http");
+            const finalUrl = isFullUrl
+                ? avatar
+                : `http://localhost:8000${avatar}`;
+            setAvatarPreview(finalUrl);
         }
+    }, [avatar]);
+
+    const handleFileChange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const base64Image = e.target.result;
+            setAvatarPreview(base64Image); // Hiển thị trước ảnh
+
+            const formData = new FormData();
+            formData.append("avatar", file);
+
+            try {
+                const updatedUser = await updateUserProfile(formData);
+                if (!updatedUser) {
+                    alert("Không thể cập nhật ảnh đại diện.");
+                }
+            } catch (error) {
+                console.error("Lỗi upload avatar:", error);
+                alert("Đã xảy ra lỗi khi cập nhật ảnh đại diện.");
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
-    const handleCameraClick = () => {
-        document.getElementById("fileInput").click(); // Kích hoạt input file
-    };
     return (
         <div
             className="d-flex border rounded-4 shadow-sm overflow-hidden"
@@ -34,13 +57,15 @@ const UserCard = ({ name, avatar, start, totalComment, year }) => {
                     style={{ width: "100px", height: "100px" }}
                 >
                     <img
-                        src={avatar}
+                        src={avatarPreview}
                         alt="Avatar"
                         className="img-fluid rounded-circle w-100 h-100 object-fit-cover"
                     />
                     <div
                         className="position-absolute bottom-0 start-50 translate-middle-x rounded-circle p-1"
-                        onClick={handleCameraClick} // Gắn sự kiện click
+                        onClick={() =>
+                            document.getElementById("fileInput").click()
+                        }
                         style={{ cursor: "pointer" }}
                     >
                         <FaCamera size={30} className="text-muted" />
@@ -49,8 +74,8 @@ const UserCard = ({ name, avatar, start, totalComment, year }) => {
                         id="fileInput"
                         type="file"
                         accept="image/*"
-                        style={{ display: "none" }} // Ẩn input file
-                        onChange={handleFileChange} // Xử lý khi chọn file
+                        style={{ display: "none" }}
+                        onChange={handleFileChange}
                     />
                 </div>
                 <div className="mt-2 fw-semibold text-center small">{name}</div>
