@@ -8,52 +8,71 @@ import { AuthToken } from "./../../authToken/index";
 import SearchBar from "../../components/SearchBar";
 import { AlignJustify } from "lucide-react";
 import LoginModal from "../../components/modal/LoginModal";
+import { getUserInfoById } from "../../api/userApi/getUserInfoById";
+import decodeJwtPayload from "../../until/decodeJwt";
 
-const Header = ({ enableScroll = true, showBigSearch = true }) => {
-    let { user, role, logout } = useContext(AuthToken);
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [showContent, setShowContent] = useState(true);
+const Header = ({
+    enableScroll = true,
+    showBigSearch = true,
+    enableSearch = true,
+}) => {
+    const { user, role } = useContext(AuthToken);
+    const [isScrolled, setIsScrolled] = useState(!enableScroll);
+    const [showContent, setShowContent] = useState(enableScroll);
+    const [isInitialized, setIsInitialized] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [timeoutId, setTimeoutId] = useState(null);
+    const [avatarUrl, setAvatarUrl] = useState(images.fallbackAvatar);
 
     useEffect(() => {
-        const handleScroll = () => {
-            if (!enableScroll) {
-                setIsScrolled(true);
-                setShowContent(false);
-                return;
-            }
-            setIsScrolled(window.scrollY > 50);
-            setShowContent(window.scrollY <= 50);
-        };
-
         if (!enableScroll) {
             setIsScrolled(true);
             setShowContent(false);
         }
+        setIsInitialized(true);
+
+        const handleScroll = () => {
+            if (!enableScroll) return;
+            setIsScrolled(window.scrollY > 50);
+            setShowContent(window.scrollY <= 50);
+        };
 
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, [enableScroll]);
 
     const handleMouseEnter = () => {
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-        }
+        if (timeoutId) clearTimeout(timeoutId);
         setShowLoginModal(true);
     };
 
     const handleMouseLeave = () => {
-        const id = setTimeout(() => {
-            setShowLoginModal(false);
-        }, 200);
+        const id = setTimeout(() => setShowLoginModal(false), 200);
         setTimeoutId(id);
     };
+
+    useEffect(() => {
+        const fetchAvatar = async () => {
+            try {
+                const decoded = decodeJwtPayload(user);
+                const res = await getUserInfoById(decoded.user_id);
+                setAvatarUrl(res.avatar || images.fallbackAvatar);
+            } catch (err) {
+                console.error("Lỗi khi lấy avatar:", err);
+                setAvatarUrl(images.fallbackAvatar);
+            }
+        };
+
+        if (user) fetchAvatar();
+    }, [user]);
+
+    if (!isInitialized) return null;
+
     return (
         <div
             className={`${styles.container} ${
                 !showContent ? styles.headerOnly : ""
-            }`}
+            } ${isInitialized ? "initialized" : ""}`}
         >
             <header
                 className={`${styles.header} ${
@@ -66,27 +85,36 @@ const Header = ({ enableScroll = true, showBigSearch = true }) => {
                             <img src={images.logo} className={styles.logo} />
                         </Link>
                     </div>
-                    {isScrolled && (
+
+                    {isScrolled && enableSearch && (
                         <SearchBar inHeader={true} isHeaderSearch={true} />
                     )}
+
                     <div className={styles.buttonGroup}>
                         {!isScrolled && (
                             <div className="d-flex items-center gap-2">
                                 {user && (
-                                    <ButtonLanguage
-                                        des={"Tiếng Việt"}
-                                        icon={true}
-                                    />
+                                    <ButtonLanguage des="Tiếng Việt" icon />
                                 )}
-                                <ButtonLanguage
-                                    des={"Cho thuê trọ qua Simi"}
-                                    icon={false}
-                                />
+                                {role === "owner" && (
+                                    <Link to="/post">
+                                        <ButtonLanguage des="Quản lý bài đăng" />
+                                    </Link>
+                                )}
+                                {role === "admin" && (
+                                    <Link to="/admin-manage">
+                                        <ButtonLanguage des="Quản lý" />
+                                    </Link>
+                                )}
+                                {role === "user" && (
+                                    <ButtonLanguage des="Cho thuê trọ qua Simi" />
+                                )}
                             </div>
                         )}
+
                         {!user ? (
-                            <Link to={"/login"}>
-                                <ButtonPrimary des={"Đăng nhập"} />
+                            <Link to="/login">
+                                <ButtonPrimary des="Đăng nhập" />
                             </Link>
                         ) : (
                             <div
@@ -97,7 +125,8 @@ const Header = ({ enableScroll = true, showBigSearch = true }) => {
                                 <ButtonPrimary
                                     icon={<AlignJustify size={34} />}
                                     avatar={true}
-                                    className={`${styles.buttonAvatar}`}
+                                    avatarUrl={avatarUrl}
+                                    className={styles.buttonAvatar}
                                 />
                                 {showLoginModal && <LoginModal />}
                             </div>
@@ -105,24 +134,23 @@ const Header = ({ enableScroll = true, showBigSearch = true }) => {
                     </div>
                 </div>
             </header>
-            {showContent && showBigSearch && (
+
+            {showContent && showBigSearch && enableSearch && (
                 <div className={`${styles.content} ${styles.fadeContent}`}>
                     <div className={styles.title}>
-                        Easy Way To Find <br /> Your Perfect Property{" "}
+                        Easy Way To Find <br /> Your Perfect Property
                     </div>
                     <div className={styles.description}>
                         Simi là dịch vụ hỗ trợ bạn tìm trọ phù hợp với nhu cầu
                         nhanh chóng, hiệu quả uy tín hàng đầu thế giới, là cầu
-                        nối giữa khách hàng với người cho thuê. Hiện nay chúng
-                        tôi là đối tác với hơn một triệu khách hàng và không
-                        ngừng lớn mạnh hơn nữa, luôn lắng nghe ý kiến từ người
-                        dùng để mang đến sự phục vụ tốt nhất.
+                        nối giữa khách hàng với người cho thuê...
                     </div>
-                    <ButtonLanguage des={"Learn more"} icon={false} />
+                    <ButtonLanguage des="Learn more" icon={false} />
                 </div>
             )}
+
             {!isScrolled && (
-                <div style={{ marginTop: "80px" }}>
+                <div style={{ marginTop: "120px" }}>
                     <SearchBar inHeader={false} isHeaderSearch={false} />
                 </div>
             )}

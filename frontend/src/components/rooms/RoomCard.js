@@ -1,12 +1,12 @@
-import React, { useContext, useState } from "react";
-import styles from "../styles/RoomCard.module.css";
-import { images } from "../assets/images";
-import { AuthToken } from "../authToken";
-import axiosClient from "../api/axiosClient";
+import React, { useContext, useEffect, useState } from "react";
+import styles from "../../styles/RoomCard.module.css";
+import { images } from "../../assets/images";
+import { AuthToken } from "../../authToken";
+import axiosClient from "../../api/axiosClient";
 
 const RoomCard = ({
     id,
-    images: imageList = [images.background],
+    images: imgList,
     title: address,
     address: location,
     user: owner,
@@ -23,6 +23,14 @@ const RoomCard = ({
     const [isFavorite, setIsFavorite] = useState(is_favorite);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
+    const imageList =
+        imgList.length > 0
+            ? imgList
+            : [
+                  {
+                      image_url: images.emptyImg,
+                  },
+              ];
 
     const nextImage = (e) => {
         e.preventDefault();
@@ -56,15 +64,9 @@ const RoomCard = ({
 
         try {
             if (isFavorite) {
-                const response = await axiosClient.delete(
-                    `/favorite/api/delete/${id}/`
-                );
-                console.log(response.data);
+                await axiosClient.delete(`/favorite/api/delete/${id}/`);
             } else {
-                const response = await axiosClient.post(
-                    `/favorite/api/add/${id}/`
-                );
-                console.log(response.data);
+                await axiosClient.post(`/favorite/api/add/${id}/`);
             }
 
             setIsFavorite(!isFavorite);

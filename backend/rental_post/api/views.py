@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rental_post.models import RentalPost
 from .serializers import RentalPostSerializer, RentalPostFavoriteSerializer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
@@ -101,7 +101,7 @@ class RentalPostListCreateAPIView(GenericAPIView):
                 "message": "Bạn phải là Owner để tạo bài đăng."
             }, status=status.HTTP_403_FORBIDDEN)
         
-        serializer = RentalPostSerializer(data=request.data)
+        serializer = RentalPostSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save(user=request.user)
 
@@ -202,6 +202,48 @@ class RentalPostDetailUpdateDeleteAPIView(APIView):
             "message": "Bài đăng đã được xóa."
         }, status=status.HTTP_204_NO_CONTENT)
 
+# API tìm kiếm bài đăng theo từ khóa
+class RentalPostSearchAPIView(ListAPIView):
+    serializer_class = RentalPostSerializer
+    pagination_class = SmartPagination
+
+    def paginate_queryset(self, queryset):
+        if self.paginator is not None:
+            self.paginator.page_size = 6
+        return super().paginate_queryset(queryset)
+
+    def get_queryset(self):
+        queryset = RentalPost.objects.select_related('address').prefetch_related('image')
+        search_query = self.request.query_params.get('keyword', None)
+        if search_query:
+            queryset = queryset.filter(title__icontains=search_query)
+        return queryset
+
+# #Api tìm kiếm bài đăng theo bộ lọc
+class MyRentalPostSearchKeyWordAPIView(ListAPIView):
+    serializer_class = RentalPostSerializer
+    pagination_class = SmartPagination
+
+    def paginate_queryset(self, queryset):
+        if self.paginator is not None:
+            self.paginator.page_size = 6
+        return super().paginate_queryset(queryset)
+
+    def list(self, request, *args, **kwargs):
+        user = request.user
+        if not user.is_authenticated:
+            return Response({
+                "success": False,
+                "message": "Bạn chưa đăng nhập."
+            }, status=status.HTTP_401_UNAUTHORIZED)
+
+        if user.role != 'owner':
+            return Response({
+                "success": False,
+                "message": "Bạn chưa là Owner để truy cập vào danh sách bài đăng."
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        return super().list(request, *args, **kwargs)
 
 
 #Api lấy danh sách bài đăng 
@@ -241,8 +283,55 @@ class RentalPostListAPIView(ListAPIView):
         kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
         return self.serializer_class(*args, **kwargs)        
 
+# API lấy danh sách bài đăng theo user_id
+class RentalPostListByUserAPIView(ListAPIView):
+    serializer_class = RentalPostSerializer
+    pagination_class = SmartPagination
 
-# #Api tìm kiếm bài đăng theo bộ lọc
+    def paginate_queryset(self, queryset):
+        if self.paginator is not None:
+            self.paginator.page_size = 20
+        return super().paginate_queryset(queryset)
+
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        queryset = RentalPost.objects.filter(user_id=user_id).prefetch_related('image')
+        return queryset
+    
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "success": True,
+            "message": "Lấy danh sách bài đăng thành công.",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
+# API lấy chi tiết bài đăng theo ID
+class RentalPostDetailAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, id):
+        """Xem chi tiết bài đăng theo ID"""
+        try:
+            post = RentalPost.objects.get(id=id)
+        except RentalPost.DoesNotExist:
+            raise NotFound(detail="Không tìm thấy bài đăng.")
+
+        serializer = RentalPostSerializer(post)
+        return Response({
+            "success": True,
+            "message": "Lấy thông tin bài đăng thành công.",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
+# Api tìm kiếm bài đăng theo bộ lọc
 class RentalPostSearchAPIView(ListAPIView):
     serializer_class = RentalPostSerializer
     pagination_class = SmartPagination

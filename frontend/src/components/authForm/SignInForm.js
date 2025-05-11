@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import styles from "../styles/SignIn.module.css";
+import styles from "../../styles/SignIn.module.css";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import authApi from "../api/authApi";
+import authApi from "../../api/authApi";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
-import NotifyModal from "./modal/NotifyModal";
+import NotifyModal from "../modal/NotifyModal";
 import { DotLoader } from "react-spinners";
+import ButtonPrimary from "../buttonUI/ButtonPrimary";
 
 function SignInForm({ onSwitch }) {
     const [useEmail, setUseEmail] = useState(true);
@@ -290,14 +291,12 @@ function SignInForm({ onSwitch }) {
                 </label>
 
                 {/* Nút Submit */}
-                <button
+                <ButtonPrimary
                     type="submit"
                     className={styles.btn_submit}
-                    disabled={isLoading}
+                    des={isLoading ? "Đang xử lý..." : "ĐĂNG KÝ"}
                     style={{ opacity: isLoading ? 0.7 : 1 }}
-                >
-                    {isLoading ? "Đang xử lý..." : "ĐĂNG KÝ"}
-                </button>
+                />
 
                 {/* Link chuyển về Login */}
                 <div className={styles.login_link}>

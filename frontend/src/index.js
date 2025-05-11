@@ -6,6 +6,17 @@ import reportWebVitals from "./reportWebVitals";
 import AuthProvider from "./authToken";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+const observerErr = window.console.error;
+window.console.error = (...args) => {
+    if (
+        args[0]?.includes?.(
+            "ResizeObserver loop completed with undelivered notifications"
+        )
+    ) {
+        return;
+    }
+    observerErr(...args);
+};
 root.render(
     <React.StrictMode>
         <AuthProvider>

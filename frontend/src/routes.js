@@ -12,6 +12,12 @@ import Login from "./pages/Login";
 import Layout from "./layout/Layout";
 import DetailSearch from "./pages/DetailSearch";
 import Detail from "./pages/Detail";
+import ProtectedRoute from "./until/ProtectedRoute";
+import PostManagement from "./pages/PostManagement";
+import Chat from "./pages/Chat";
+import AdminManagement from "./pages/AdminManagement";
+import AnimatedPage from "./animations/AnimatedPage";
+import AuthenticManage from "./components/adminManage/AuthenticManage";
 
 export default function AppRoutes() {
     return (
@@ -21,7 +27,6 @@ export default function AppRoutes() {
     );
 }
 
-// Component để quản lý các route với hiệu ứng chuyển đổi
 function AnimatedRoutes() {
     const location = useLocation();
 
@@ -56,9 +61,83 @@ function AnimatedRoutes() {
                 />
                 <Route
                     path="/profile"
-                    enableScroll={false}
-                    element={<Profile />}
+                    element={
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <Profile />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
                 />
+                <Route
+                    path="/post"
+                    element={
+                        <ProtectedRoute allowedRoles={["owner", "admin"]}>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <PostManagement />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="/chat" element={
+                    
+                    // <Layout enableScroll={false} enableSearch={false}>
+                        <Chat />
+                    // </Layout>
+                    }
+                 />
+
+                <Route
+                    path="/admin-manage"
+                    element={
+                        <ProtectedRoute allowedRoles={["admin"]}>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <AdminManagement />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route
+                        path="authentic"
+                        element={
+                            <AnimatedPage>
+                                <AuthenticManage />
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="post"
+                        element={
+                            <AnimatedPage>
+                                <div>Quản lý bài đăng</div>
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="comment"
+                        element={
+                            <AnimatedPage>
+                                <div>Quản lý đánh giá</div>
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="account"
+                        element={
+                            <AnimatedPage>
+                                <div>Quản lý tài khoản</div>
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="statistical"
+                        element={
+                            <AnimatedPage>
+                                <div>Thống kê hệ thống</div>
+                            </AnimatedPage>
+                        }
+                    />
+                </Route>
             </Routes>
         </AnimatePresence>
     );
