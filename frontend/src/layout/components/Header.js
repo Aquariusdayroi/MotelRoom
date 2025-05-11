@@ -8,13 +8,15 @@ import { AuthToken } from "./../../authToken/index";
 import SearchBar from "../../components/SearchBar";
 import { AlignJustify } from "lucide-react";
 import LoginModal from "../../components/modal/LoginModal";
+import { getUserInfoById } from "../../api/userApi/getUserInfoById";
+import decodeJwtPayload from "../../until/decodeJwt";
 
 const Header = ({
     enableScroll = true,
     showBigSearch = true,
     enableSearch = true,
 }) => {
-    let { user, role, logout } = useContext(AuthToken);
+    const { user, role } = useContext(AuthToken);
     const [isScrolled, setIsScrolled] = useState(!enableScroll);
     const [showContent, setShowContent] = useState(enableScroll);
     const [isInitialized, setIsInitialized] = useState(false);
@@ -30,11 +32,7 @@ const Header = ({
         setIsInitialized(true);
 
         const handleScroll = () => {
-            if (!enableScroll) {
-                setIsScrolled(true);
-                setShowContent(false);
-                return;
-            }
+            if (!enableScroll) return;
             setIsScrolled(window.scrollY > 50);
             setShowContent(window.scrollY <= 50);
         };
@@ -44,55 +42,40 @@ const Header = ({
     }, [enableScroll]);
 
     const handleMouseEnter = () => {
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-        }
+        if (timeoutId) clearTimeout(timeoutId);
         setShowLoginModal(true);
     };
 
     const handleMouseLeave = () => {
-        const id = setTimeout(() => {
-            setShowLoginModal(false);
-        }, 200);
+        const id = setTimeout(() => setShowLoginModal(false), 200);
         setTimeoutId(id);
     };
+
     useEffect(() => {
-        const fetchUserAvatar = async () => {
-            if (user && user.id) {
-                try {
-                    // có api thì đổi lại
-                    const response = await fetch(
-                        `/api/users/${user.id}/avatar`
-                    );
-                    if (response.ok) {
-                        const data = await response.json();
-                        setAvatarUrl(data.avatarUrl || images.fallbackAvatar);
-                    } else {
-                        setAvatarUrl(images.fallbackAvatar);
-                    }
-                } catch (error) {
-                    console.error("Error fetching avatar:", error);
-                    setAvatarUrl(images.fallbackAvatar);
-                }
+        const fetchAvatar = async () => {
+            try {
+                const decoded = decodeJwtPayload(user);
+                const res = await getUserInfoById(decoded.user_id);
+                setAvatarUrl(res.avatar || images.fallbackAvatar);
+            } catch (err) {
+                console.error("Lỗi khi lấy avatar:", err);
+                setAvatarUrl(images.fallbackAvatar);
             }
         };
 
-        fetchUserAvatar();
+        if (user) fetchAvatar();
     }, [user]);
 
-    if (!isInitialized) {
-        return null;
-    }
+    if (!isInitialized) return null;
+
     return (
         <div
-            className={`${styles.container} ${
-                !showContent ? styles.headerOnly : ""
-            } ${isInitialized ? "initialized" : ""}`}
+            className={`${styles.container} ${!showContent ? styles.headerOnly : ""
+                } ${isInitialized ? "initialized" : ""}`}
         >
             <header
-                className={`${styles.header} ${
-                    isScrolled ? styles.headerScrolled : ""
-                }`}
+                className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""
+                    }`}
             >
                 <div className={styles.headerContent}>
                     <div className={styles.logoWrapper}>
@@ -100,49 +83,36 @@ const Header = ({
                             <img src={images.logo} className={styles.logo} />
                         </Link>
                     </div>
+
                     {isScrolled && enableSearch && (
                         <SearchBar inHeader={true} isHeaderSearch={true} />
                     )}
+
                     <div className={styles.buttonGroup}>
                         {!isScrolled && (
                             <div className="d-flex items-center gap-2">
                                 {user && (
-                                    <ButtonLanguage
-                                        des={"Tiếng Việt"}
-                                        icon={true}
-                                    />
+                                    <ButtonLanguage des="Tiếng Việt" icon />
                                 )}
-                                {role === "owner" ? (
+                                {role === "owner" && (
                                     <Link to="/post">
-                                        <ButtonLanguage
-                                            des="Quản lý bài đăng"
-                                            icon={false}
-                                        />
+                                        <ButtonLanguage des="Quản lý bài đăng" />
                                     </Link>
-                                ) : role === "admin" ? (
+                                )}
+                                {role === "admin" && (
                                     <Link to="/admin-manage">
-                                        <ButtonLanguage
-                                            des="Quản lý"
-                                            icon={false}
-                                        />
+                                        <ButtonLanguage des="Quản lý" />
                                     </Link>
-                                ) : (
-                                    <ButtonLanguage
-                                        des={
-                                            !user
-                                                ? "Cho thuê trọ qua Simi"
-                                                : role === "user"
-                                                ? "Cho thuê trọ qua Simi"
-                                                : "Cho thuê trọ qua Simi"
-                                        }
-                                        icon={false}
-                                    />
+                                )}
+                                {role === "user" && (
+                                    <ButtonLanguage des="Cho thuê trọ qua Simi" />
                                 )}
                             </div>
                         )}
+
                         {!user ? (
-                            <Link to={"/login"}>
-                                <ButtonPrimary des={"Đăng nhập"} />
+                            <Link to="/login">
+                                <ButtonPrimary des="Đăng nhập" />
                             </Link>
                         ) : (
                             <div
@@ -154,7 +124,7 @@ const Header = ({
                                     icon={<AlignJustify size={34} />}
                                     avatar={true}
                                     avatarUrl={avatarUrl}
-                                    className={`${styles.buttonAvatar}`}
+                                    className={styles.buttonAvatar}
                                 />
                                 {showLoginModal && <LoginModal />}
                             </div>
@@ -162,24 +132,23 @@ const Header = ({
                     </div>
                 </div>
             </header>
+
             {showContent && showBigSearch && enableSearch && (
                 <div className={`${styles.content} ${styles.fadeContent}`}>
                     <div className={styles.title}>
-                        Easy Way To Find <br /> Your Perfect Property{" "}
+                        Easy Way To Find <br /> Your Perfect Property
                     </div>
                     <div className={styles.description}>
                         Simi là dịch vụ hỗ trợ bạn tìm trọ phù hợp với nhu cầu
                         nhanh chóng, hiệu quả uy tín hàng đầu thế giới, là cầu
-                        nối giữa khách hàng với người cho thuê. Hiện nay chúng
-                        tôi là đối tác với hơn một triệu khách hàng và không
-                        ngừng lớn mạnh hơn nữa, luôn lắng nghe ý kiến từ người
-                        dùng để mang đến sự phục vụ tốt nhất.
+                        nối giữa khách hàng với người cho thuê...
                     </div>
-                    <ButtonLanguage des={"Learn more"} icon={false} />
+                    <ButtonLanguage des="Learn more" icon={false} />
                 </div>
             )}
+
             {!isScrolled && (
-                <div style={{ marginTop: "80px" }}>
+                <div style={{ marginTop: "120px" }}>
                     <SearchBar inHeader={false} isHeaderSearch={false} />
                 </div>
             )}

@@ -7,10 +7,14 @@ import {
     Clipboard,
     BarChart,
 } from "react-bootstrap-icons";
-import { NavLink, Outlet } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const AdminManagement = () => {
+    const location = useLocation();
+    if (location.pathname === "/admin-manage") {
+        return <Navigate to="/admin-manage/authentic" replace />;
+    }
     return (
         <div style={{ padding: "0 10vw" }}>
             <style>
@@ -47,8 +51,7 @@ const AdminManagement = () => {
                             <NavLink
                                 to="authentic"
                                 className={({ isActive }) =>
-                                    `custom-tab-link d-flex align-items-center gap-4 ${
-                                        isActive ? "active" : ""
+                                    `custom-tab-link d-flex align-items-center gap-4 ${isActive ? "active" : ""
                                     }`
                                 }
                             >
@@ -60,8 +63,7 @@ const AdminManagement = () => {
                             <NavLink
                                 to="post"
                                 className={({ isActive }) =>
-                                    `custom-tab-link d-flex align-items-center gap-4 ${
-                                        isActive ? "active" : ""
+                                    `custom-tab-link d-flex align-items-center gap-4 ${isActive ? "active" : ""
                                     }`
                                 }
                             >
@@ -73,8 +75,7 @@ const AdminManagement = () => {
                             <NavLink
                                 to="comment"
                                 className={({ isActive }) =>
-                                    `custom-tab-link d-flex align-items-center gap-4 ${
-                                        isActive ? "active" : ""
+                                    `custom-tab-link d-flex align-items-center gap-4 ${isActive ? "active" : ""
                                     }`
                                 }
                             >
@@ -86,8 +87,7 @@ const AdminManagement = () => {
                             <NavLink
                                 to="account"
                                 className={({ isActive }) =>
-                                    `custom-tab-link d-flex align-items-center gap-4 ${
-                                        isActive ? "active" : ""
+                                    `custom-tab-link d-flex align-items-center gap-4 ${isActive ? "active" : ""
                                     }`
                                 }
                             >
@@ -99,8 +99,7 @@ const AdminManagement = () => {
                             <NavLink
                                 to="statistical"
                                 className={({ isActive }) =>
-                                    `custom-tab-link d-flex align-items-center gap-4 ${
-                                        isActive ? "active" : ""
+                                    `custom-tab-link d-flex align-items-center gap-4 ${isActive ? "active" : ""
                                     }`
                                 }
                             >

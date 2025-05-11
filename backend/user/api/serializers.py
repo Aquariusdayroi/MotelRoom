@@ -3,17 +3,25 @@ from user.models import User, OwnerRequest
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import update_last_login
 from django.contrib.auth import get_user_model
+from city.models import City
+from district.models import District
+from address.models import Address
 
 #JWT token
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
+#Exception
+from rest_framework.exceptions import ValidationError
+
 #Google
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
-
+#Address
+from address.api.serializers import AddressNestedSerializer
+from address.models import Address
 
 #Token Gmail
 from django.contrib.auth.tokens import default_token_generator
@@ -49,17 +57,14 @@ def send_verification_email(user, request):
 
 #Serializer Đăng nhập
 class UserSerializer(serializers.ModelSerializer):
-    city_name = serializers.CharField(source='address.name_city', read_only=True, default=None)
-    district_name = serializers.CharField(source='addres.name_district', read_only=True, default=None)
-    address_name = serializers.CharField(source='addres.name_address', read_only=True, default=None)
+    address = AddressNestedSerializer()
+
     class Meta:
         model = User
         fields = [
-            'id',
-            'email', 'fullname', 'phone_number',
-            'address_name', 'district_name', 'city_name',
-            'avatar', 'birthday', 'role'
+            'id', 'email', 'fullname', 'phone_number', 'birthday', 'avatar', 'address', 'role'
         ]
+
         read_only_fields = ['id', 'created', 'updated_at', 'is_active', 'registration_type', 'email_verified_at']
 
 
@@ -205,3 +210,37 @@ class OwnerRequestSerializer(serializers.ModelSerializer):
         if OwnerRequest.objects.filter(user=value).exists():
             raise serializers.ValidationError("Bạn đã gửi yêu cầu trước đó.")
         return value
+    
+# Serializer sửa thông tin người dùng
+class UpdateUserSerializer(serializers.ModelSerializer):
+    address = AddressNestedSerializer()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'fullname', 'phone_number', 'birthday', 'avatar', 'address', 'role'
+        ]
+
+    def update(self, instance, validated_data):
+        address_data = validated_data.pop("address", None)
+
+        # Update các trường cơ bản
+        for attr, value in validated_data.items():
+            if value == None: continue
+            if value =="":
+                setattr(instance, attr, None)
+            else:
+                setattr(instance, attr, value)
+
+        # Cập nhật địa chỉ nếu có
+        if address_data:
+            address_serializer = AddressNestedSerializer()
+            address = address_serializer.create_or_update_address(address_data)
+            instance.address = address
+
+        instance.save()
+        return instance
+
+
+
+
