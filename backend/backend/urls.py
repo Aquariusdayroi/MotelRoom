@@ -29,6 +29,8 @@ router_admin.register(r'requests', UserListCreateAPIViewSet, basename='admin-req
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('city/api/', include('city.api.urls')),
+    path('district/api/', include('district.api.urls')),
     path('user/api/', include('user.api.urls')), #api liên quan user 
     path('user-admin/api/', include(router_admin.urls)), # api admin quản lý người dùng
     path('rental_post/api/', include('rental_post.api.urls')), #api liên quan rental post
