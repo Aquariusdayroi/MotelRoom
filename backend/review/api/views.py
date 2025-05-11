@@ -166,3 +166,4 @@ class ReviewDetailAPIView(APIView):
             "message": "Lấy chi tiết đánh giá thành công.",
             "data": ReviewSerializer(review).data
         }, status=status.HTTP_200_OK)
+        

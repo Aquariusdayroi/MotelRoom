@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout, get_user_model
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -10,12 +10,16 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.views import APIView
 from user.models import User, OwnerRequest
-from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer, OwnerRequestSerializer
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer, OwnerRequestSerializer, UpdateUserSerializer 
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 
 import os
 from datetime import datetime, timedelta
 import time
+
+#Review
+from review.models import Review
+from review.api.serializers import ReviewSerializer
 
 #JWT Token
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -154,7 +158,7 @@ class UserListCreateAPIViewSet(viewsets.ModelViewSet):
 # Api người dùng xem Chi tiết, cập nhật, xóa tài khoản
 class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
-    serializer_class = UserSerializer
+    serializer_class = UpdateUserSerializer 
     permission_classes = [IsAuthenticated]  # Chỉ cần đăng nhập
     
     def get_object(self):
@@ -170,18 +174,25 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         }, status=status.HTTP_200_OK)
         
     def update(self, request, *args, **kwargs):
-        # Cập nhật thông tin người dùng
         partial = kwargs.pop('partial', True)
-        instance = self.get_object()
+        instance = self.get_object()  # Lấy đối tượng người dùng hiện tại
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
+
+        # Tiến hành cập nhật đối tượng
         self.perform_update(serializer)
+
+        # Trả về dữ liệu người dùng đã cập nhật, sử dụng UpdateUserSerializer để lấy thông tin địa chỉ
+        read_serializer = UpdateUserSerializer(instance, context=self.get_serializer_context())
+
         return Response({
             "success": True,
             "message": "Cập nhật thông tin thành công.",
-            "user": serializer.data
+            "user": read_serializer.data  # Trả về dữ liệu đã cập nhật, bao gồm thông tin địa chỉ
         })
-    
+
+
+
     def destroy(self, request, *args, **kwargs):
         # Xóa tài khoản người dùng
         instance = self.get_object()
@@ -446,4 +457,69 @@ class AdminRequestViewSet(viewsets.ModelViewSet):
             "success": True,
             "message": "Yêu cầu đã bị từ chối.",
             "user": UserSerializer(owner_request.user).data
+        }, status=status.HTTP_200_OK)
+        
+#---------------------------------------------------------------------------------------------------#
+# Api lấy thông tin người dùng theo id
+class UserDetailAPIView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]  # Bất kỳ ai
+
+    def get(self, request, *args, **kwargs):
+        user_id = kwargs.get('user_id')
+        try:
+            user = self.get_queryset().get(id=user_id)
+            serializer = self.get_serializer(user)
+            return Response({
+                "success": True,
+                "message": "Lấy thông tin người dùng thành công.",
+                "user": serializer.data
+            }, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({
+                "success": False,
+                "message": "Người dùng không tồn tại."
+            }, status=status.HTTP_404_NOT_FOUND)
+            
+            
+#---------------------------------------------------------------------------------------------------#
+# API lấy 10 review hàng đầu trong trang cá nhân của tôi
+class MyLatestReviewsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Lấy 10 review mới nhất của người dùng hiện tại"""
+        # Sắp xếp theo rating, lấy 10 review mới nhất
+        user = request.user
+        if user.role == 'owner':
+            reviews = Review.objects.filter(rental_post__owner=user).exclude(user=user).order_by('-rating', '-time')[:10]
+        else:
+            reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response({
+            "success": True,
+            "message": "Lấy danh sách review thành công.",
+            "reviews": serializer.data
+        }, status=status.HTTP_200_OK)   
+
+# API lấy 10 review của người dùng khác
+class UserLatestReviewsAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, user_id):
+        """Lấy 10 review của người dùng khác"""
+        target_user = get_object_or_404(User, id=user_id)
+        user = User.objects.filter(id=user_id).first()
+        if user.role == 'owner':
+        # Lấy các review của người khác viết cho bài đăng mà user là chủ
+            reviews = Review.objects.filter(rental_post__owner=user).exclude(user=user).order_by('-rating', '-time')[:10]
+        else:
+            # Người thường: lấy review mà chính họ viết
+            reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
+        
+        return Response({
+            "success": True,
+            "message": "Lấy danh sách review thành công.",
+            "reviews": ReviewSerializer(reviews, many=True).data
         }, status=status.HTTP_200_OK)
