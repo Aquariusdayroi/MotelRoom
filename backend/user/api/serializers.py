@@ -57,17 +57,14 @@ def send_verification_email(user, request):
 
 #Serializer Đăng nhập
 class UserSerializer(serializers.ModelSerializer):
-    city_name = serializers.CharField(source='address.name_city', read_only=True, default=None)
-    district_name = serializers.CharField(source='address.name_district', read_only=True, default=None)
-    address_name = serializers.CharField(source='address.name_address', read_only=True, default=None)
+    address = AddressNestedSerializer()
+
     class Meta:
         model = User
         fields = [
-            'id',
-            'email', 'fullname', 'phone_number',
-            'address_name', 'district_name', 'city_name',
-            'avatar', 'birthday', 'role'
+            'id', 'email', 'fullname', 'phone_number', 'birthday', 'avatar', 'address', 'role'
         ]
+
         read_only_fields = ['id', 'created', 'updated_at', 'is_active', 'registration_type', 'email_verified_at']
 
 
@@ -221,7 +218,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'email', 'fullname', 'phone_number', 'birthday', 'avatar', 'address'
+            'id', 'fullname', 'phone_number', 'birthday', 'avatar', 'address', 'role'
         ]
 
     def update(self, instance, validated_data):
@@ -229,7 +226,11 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
         # Update các trường cơ bản
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+            if value == None: continue
+            if value =="":
+                setattr(instance, attr, None)
+            else:
+                setattr(instance, attr, value)
 
         # Cập nhật địa chỉ nếu có
         if address_data:
