@@ -92,7 +92,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     # CHỈ dùng AddressSerializer để đọc (read-only)
     address = AddressSerializer(read_only=True)
     user = serializers.SerializerMethodField()
-    fullname = serializers.CharField(write_only=True)
+    fullname = serializers.CharField(source='user.fullname', read_only=True)
     images = ImageSerializer(source='image', many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
 
