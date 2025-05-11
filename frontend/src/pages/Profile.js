@@ -274,7 +274,7 @@ function Profile() {
                             <ul className="list-unstyled ps-3">
                                 <li className="mb-2 d-flex align-items-center">
                                     <EnvelopeFill className="me-2 text-secondary" />
-                                    <b>Email:</b>
+                                    <b>Email :</b>
                                     {userInfo?.email}
                                 </li>
                                 <li className="mb-2 d-flex align-items-center">
@@ -401,7 +401,9 @@ function Profile() {
                 onConfirm={async () => {
                     try {
                         const payload = prepareFormDataForAPI(pendingFormData);
+                        payload.birthday = null;
                         const updatedUser = await updateUserProfile(payload);
+                        console.log(payload);
                         if (updatedUser?.id) {
                             setUserInfo(updatedUser);
                             setPendingFormData(null);
