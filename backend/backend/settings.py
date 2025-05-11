@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-u7qa_pj66o6xvg+_-j3j@p!39pu%9(ec(#udo&!siz&4y3mn3u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -36,8 +36,6 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 SITE_ID = 2 
 
 INSTALLED_APPS = [
-    'daphne',
-    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -55,7 +53,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
-    'chat',
 ]
 
 
@@ -88,12 +85,9 @@ TEMPLATES = [
     },
 ]
 
-ASGI_APPLICATION = "backend.asgi.application"
 WSGI_APPLICATION = 'backend.wsgi.application'
 AUTH_USER_MODEL = 'user.User'
 CORS_ALLOW_ALL_ORIGINS = True
-
-
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -140,12 +134,6 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'TIMEOUT': 60 * 15,  # Thời gian cache trong 15 phút
-    }
-}
-
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
 }
 
