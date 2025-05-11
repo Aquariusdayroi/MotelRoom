@@ -11,25 +11,17 @@ const Chat = () => {
 
   return (
     <div className="d-flex flex-column" style={{ height: '100vh', backgroundColor: '#f5f5f5' }}>
-      {/* Header */}
-      <div className="p-3" style={{ backgroundColor: '#1976d2', color: 'white' }}>
-        <h5>Chat</h5>
-      </div>
-
-      
-
       {/* Main Grid */}
       <div className="d-flex flex-grow-1 overflow-hidden">
         {/* Sidebar: Conversation List */}
         <div
-            className="col-xl-4 col-sm-4 col-4 p-0 border-right"
+            className="col-xl-3 col-sm-3 col-3 p-0 border-right"
             style={{
               backgroundColor: 'white',
               overflowY: 'auto',
               height: '100%',
-              // Tạo bóng chỉ bên phải
-              boxShadow: '1.5px 0px 5px rgba(0, 0, 0, 0.1)', // Điều chỉnh bóng cho phù hợp
-              zIndex: 1, // đảm bảo bóng không bị lớp khác đè lên
+              boxShadow: '1.5px 0px 5px rgba(0, 0, 0, 0.1)', 
+              zIndex: 1, 
             }}
           >
           <ConversationList
@@ -39,7 +31,7 @@ const Chat = () => {
         </div>
 
         {/* Chat Window */}
-        <div className="col-xl-8 col-sm-8 col-8 p-0" style={{ height: '100%' }}>
+        <div className="col-xl-9 col-sm-9 col-9 p-0" style={{ height: '100%' }}>
           {selectedConversation && token ? (
             <ChatWindow token={token} conversation={selectedConversation} />
           ) : (

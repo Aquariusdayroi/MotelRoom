@@ -14,6 +14,9 @@ export default function ChatWindow({ token, conversation }) {
   const socketRef = useRef(null);
   const messageEndRef = useRef(null);
   const { userInfo } = useContext(AuthToken);
+  const receiverInfo = userInfo.fullname === conversation.user_one?.fullname 
+    ? conversation.user_two 
+    : conversation.user_one;
 
   useEffect(() => {
     if (!userInfo) {
@@ -29,10 +32,8 @@ export default function ChatWindow({ token, conversation }) {
         const res = await axiosClient.get('chat/api/messages/', {
           params: { conversation_id: conversation.id },
         });
-        console.log('Dữ liệu từ API:', res.data);
         setMessages(Array.isArray(res.data.results) ? res.data.results.reverse() : []);
       } catch (error) {
-        console.error('❌ Lỗi khi lấy tin nhắn:', error);
         setMessages([]);
         setError('Không thể tải tin nhắn');
       }
@@ -45,6 +46,17 @@ export default function ChatWindow({ token, conversation }) {
     };
   }, [conversation?.id]);
 
+
+const sendReadStatus = (message_id) => {
+  if (socketRef.current?.readyState === WebSocket.OPEN) {
+    console.log('send')
+    socketRef.current.send(JSON.stringify({
+      type: "read_message",
+      message_id
+    }));
+  }
+};
+
   useEffect(() => {
     if (!conversation?.id || !token) {
       console.warn('conversation.id hoặc token không hợp lệ:', { conversation, token });
@@ -55,8 +67,16 @@ export default function ChatWindow({ token, conversation }) {
     console.log('Token gửi qua WebSocket:', token);
     const socket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${conversation.id}/?token=${encodeURIComponent(token)}`);
 
+
     socket.onopen = () => {
+      console.log(userInfo)
       console.log('✅ WebSocket connected');
+      if(socket.readyState===WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          type: "check_online",
+          target_user_id: receiverInfo.id  
+        }));
+      }
       setConnectionStatus('Connected');
       setError('');
       const pingInterval = setInterval(() => {
@@ -70,6 +90,27 @@ export default function ChatWindow({ token, conversation }) {
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log('🔍 Dữ liệu WebSocket:', data);
+      if (data.type === "online_status") {
+        console.log(`User ${data.user_id} is online?`, data.online);
+        if (data.online)  {
+          setConnectionStatus('Connected');
+        }
+        else {
+          setConnectionStatus('UnConnected');
+        }
+        return
+      }
+
+      if (data.type === "read_status") {
+        const message_id = data.message_id
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === message_id ? { ...msg, status: 'read' } : msg
+          )
+        );
+        return;
+      }
+
       if (data.type === 'pong') {
         console.log('🏓 Nhận pong từ server');
         return;
@@ -84,17 +125,15 @@ export default function ChatWindow({ token, conversation }) {
       };
   
       if (formattedMessage.content && formattedMessage.sender) {
+        
         setMessages((prev) => [...prev, formattedMessage]);
+
         if (formattedMessage.sender !== userInfo?.user_id && formattedMessage.id) {
           axiosClient.post('chat/api/messages/update-status/', {
             message_id: formattedMessage.id,
             status: 'read',
           }).then(() => {
-            setMessages((prevMessages) =>
-              prevMessages.map((msg) =>
-                msg.id === formattedMessage.id ? { ...msg, status: 'read' } : msg
-              )
-            );
+              sendReadStatus(formattedMessage.id);
           }).catch((err) => console.error('Lỗi cập nhật trạng thái:', err));          
         }
       } else {
@@ -157,13 +196,16 @@ export default function ChatWindow({ token, conversation }) {
 
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'white' }}>
-      <Box sx={{ p: 2, bgcolor: 'white', color: 'black' }}>
-        <Typography variant="h6">
-          {conversation.user_two?.fullname || `Cuộc trò chuyện #${conversation.id}`}
-        </Typography>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'white', paddingX: '30px' }}>
+      <Box sx={{ p: 2, bgcolor: 'white', color: 'black', borderBottom: '1px solid silver' }}>
+
+    <Typography variant="h6">
+      {receiverInfo.fullname}
+    </Typography>
+
         <Typography variant="caption">
-          Trạng thái: {connectionStatus === 'Connected' ? 'Đã kết nối' : 'Hãy kết nối internet'}
+          <span style={{ color: connectionStatus === 'Connected' ? 'green' : 'gray', fontSize: '17px' }}>●</span> {connectionStatus === 'Connected' ? 'Đang hoạt động' : 'Tạm không hoạt động'}
+
         </Typography>
       </Box>
       <Divider />
@@ -178,52 +220,59 @@ export default function ChatWindow({ token, conversation }) {
         <List>
           {Array.isArray(messages) && messages.length > 0 ? (
             messages.map((msg, idx) => (
-              <ListItem
-                key={msg.id}
+            <ListItem
+              key={msg.id}
+              sx={{
+                display: 'flex',
+                justifyContent: msg.sender === userInfo?.user_id ? 'flex-end' : 'flex-start',
+                px: 1,
+                py: 0.5,
+              }}
+            >
+              <Box
                 sx={{
                   display: 'flex',
-                  justifyContent: msg.sender === userInfo?.user_id ? 'flex-end' : 'flex-start',
-                  px: 1,
-                  py: 0.5,
+                  flexDirection: 'column',
+                  alignItems: msg.sender === userInfo?.user_id ? 'flex-end' : 'flex-start',
                 }}
               >
                 <Box
                   sx={{
-                    maxWidth: '60%',
-                    bgcolor: msg.sender === userInfo?.user_id ? '#1976d2' : '#e0e0e0',
+                    bgcolor: msg.sender === userInfo?.user_id ? '#37C5E5' : '#F2F2F2',
                     color: msg.sender === userInfo?.user_id ? 'white' : 'black',
-                    borderRadius: msg.sender === userInfo?.user_id ? '16px 16px 0 16px' : '16px 16px 16px 0',
-                    p: 1.5,
-                    mb: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
+                    borderRadius: msg.sender === userInfo?.user_id ? '20px 20px 0 20px' : '20px 20px 20px 0',
+                    px: 2,
+                    py: 1,
+                    display: 'inline-block', 
                   }}
                 >
-                  <ListItemText
-                    primary={msg.content}
-                    primaryTypographyProps={{ variant: 'body2' }}
-                  />
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: msg.sender === userInfo?.user_id ? '#b3e5fc' : '#616161' }}
-                    >
-                      {new Date(msg.create_at).toLocaleTimeString()}
-                    </Typography>
-                    {msg.sender === userInfo?.user_id && (
-                      <Box sx={{ ml: 1, display: 'flex', alignItems: 'center' }}>
-                        {msg.status === 'read' ? (
-                          <DoneAllIcon sx={{ fontSize: 16, color: '#4fc3f7' }} />
-                        ) : msg.status === 'delivered' ? (
-                          <DoneAllIcon sx={{ fontSize: 16, color: '#b3e5fc' }} />
-                        ) : (
-                          <DoneIcon sx={{ fontSize: 16, color: '#b3e5fc' }} />
-                        )}
-                      </Box>
-                    )}
-                  </Box>
+                  <Typography
+                    variant="body2"
+                    component="span" 
+                    sx={{ wordBreak: 'break-word' }}
+                  >
+                    {msg.content}
+                  </Typography>
                 </Box>
-              </ListItem>
+
+                {/* Phần trạng thái */}
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: '#999',
+                    fontSize: '11px',
+                    mt: 0.5,
+                    pr: 1,
+                  }}
+                >
+                  {msg.sender === userInfo?.user_id
+                    ? (msg.status === 'read' ? 'Đã xem' : 'Đã gửi')
+                    : ''}
+                </Typography>
+              </Box>
+
+            </ListItem>
+
             ))
           ) : (
             <ListItem>
@@ -237,7 +286,7 @@ export default function ChatWindow({ token, conversation }) {
         </List>
       </Box>
 
-      <Box sx={{ display: 'flex', borderTop: '1px solid #ccc', p: 1, bgcolor: '#fafafa' }}>
+      {/* <Box sx={{ display: 'flex', borderTop: '1px solid #ccc', p: 1, bgcolor: '#fafafa' }}>
         <TextField
           fullWidth
           size="small"
@@ -247,10 +296,48 @@ export default function ChatWindow({ token, conversation }) {
             if (e.key === 'Enter') sendMessage();
           }}
           placeholder="Nhập tin nhắn..."
-          variant="outlined"
+         variant="outlined" 
           disabled={!userInfo}
         />
         <IconButton onClick={sendMessage} color="primary" sx={{ ml: 1 }} disabled={!userInfo}>
+          <SendIcon />
+        </IconButton>
+      </Box> */}
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        p: 0.8, 
+        bgcolor: '#F2F2F2', 
+        borderRadius: '20px',  // Làm cho phần nhập tin nhắn có góc bo tròn hoàn toàn
+        width: '98%', // Giảm độ rộng
+        margin: '30px auto', // Tạo khoảng cách & căn giữa
+        boxShadow: '0px 3px 3px rgba(0,0,0,0.1)' // Tạo hiệu ứng nổi nhẹ
+      }}>
+        <TextField
+          fullWidth
+          size="small"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') sendMessage();
+          }}
+          placeholder="Nhập tin nhắn..."
+          sx={{
+            borderRadius: '999px', 
+            '& .MuiOutlinedInput-notchedOutline': { border: 'none' }, // Xóa viền của outline mặc định
+            '& .MuiInputBase-root': { border: 'none' }, // Đảm bảo không có border bên ngoài
+            '& .MuiInputBase-input::placeholder': { color: 'black', opacity: 1 } // Đổi màu chữ placeholder thành đen
+          }}
+
+          
+          disabled={!userInfo}
+        />
+        <IconButton 
+          onClick={sendMessage} 
+          color="primary" 
+          sx={{ ml: 1 }}
+          disabled={!userInfo}
+        >
           <SendIcon />
         </IconButton>
       </Box>

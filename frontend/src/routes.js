@@ -80,7 +80,13 @@ function AnimatedRoutes() {
                         </ProtectedRoute>
                     }
                 />
-                <Route path="/chat" element={<Chat />} />
+                <Route path="/chat" element={
+                    
+                    // <Layout enableScroll={false} enableSearch={false}>
+                        <Chat />
+                    // </Layout>
+                    }
+                 />
 
                 <Route
                     path="/admin-manage"
