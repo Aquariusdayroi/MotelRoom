@@ -26,7 +26,7 @@ import SettingProfileModal from "../components/modal/SettingProfileModal";
 import ConfirmModal from "../components/modal/ComfirmModal";
 import {
     getMyProfile,
-    updateUserProfile,
+    updateUserProfileInfo,
 } from "../api/userApi/updateUserProfile";
 
 function Profile() {
@@ -234,7 +234,7 @@ function Profile() {
                                 <li className="mb-2 d-flex align-items-center">
                                     <SignpostSplitFill className="me-2 text-secondary" />
                                     <b>Tên đường:</b>
-                                    {userInfo?.address?.district ||
+                                    {userInfo?.address?.district_name ||
                                         "Chưa cập nhật"}
                                 </li>
                                 <li className="mb-2 d-flex align-items-center">
@@ -243,7 +243,8 @@ function Profile() {
                                         style={{ width: "1.2em" }}
                                     />
                                     <b>Thành phố:</b>
-                                    {userInfo?.address?.city || "Chưa cập nhật"}
+                                    {userInfo?.address?.city_name ||
+                                        "Chưa cập nhật"}
                                 </li>
                                 <li className="mb-2 d-flex align-items-center">
                                     <CalendarDate className="me-2 text-secondary" />
@@ -409,7 +410,9 @@ function Profile() {
                     try {
                         const payload = prepareFormDataForAPI(pendingFormData);
                         console.log(payload);
-                        const updatedUser = await updateUserProfile(payload);
+                        const updatedUser = await updateUserProfileInfo(
+                            payload
+                        );
 
                         console.log(payload);
                         if (updatedUser?.id) {
