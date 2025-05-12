@@ -58,7 +58,7 @@ def send_verification_email(user, request):
 #Serializer Đăng nhập
 class UserSerializer(serializers.ModelSerializer):
     address = AddressNestedSerializer()
-
+    
     class Meta:
         model = User
         fields = [
