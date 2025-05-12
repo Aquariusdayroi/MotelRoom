@@ -1,4 +1,4 @@
-.upload-container {
+.step2-container {
     max-width: 1000px;
     margin: auto;
     text-align: left;
@@ -7,34 +7,39 @@
     align-items: flex-start;
 }
 
-.upload-container h2 {
-    font-size: 28px;
-    color: #333;
-    margin-bottom: 10px;
+.step2-content-container {
     text-align: left;
+    margin-bottom: 20px;
 }
 
-.upload-container p {
-    color: #555;
+.step2-content p {
     margin-bottom: 30px;
     width: 500px;
-    text-align: left;
 }
 
-.upload-area {
+.step2-content h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.step2-gallery-container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
     width: 100%;
+    justify-content: center;
 }
 
-.upload-box {
-    width: 300px;
-    height: 300px;
-    background-color: #f8f8f8;
+.step2-gallery-container.has-images {
+    justify-content: flex-start;
+}
+
+.step2-upload-box {
+    width: 200px;
+    height: 200px;
+    background-color: #E8E8E8;
     border-radius: 15px;
-    border: 2px solid #ccc;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -42,16 +47,39 @@
     gap: 10px;
     cursor: pointer;
     transition: all 0.3s;
-    text-align: center;
     position: relative;
+    text-align: center;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
-.upload-box:hover {
-    background-color: #ffffff;
-    border-color: #17a2b8;
+.step2-upload-box.small {
+    width: 160px;
+    height: 160px;
 }
 
-.upload-box input {
+.step2-upload-box.center {
+    margin: auto;
+}
+
+.step2-icon {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 10px;
+}
+
+.step2-upload-box.small .step2-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 0;
+}
+
+.small-label {
+    font-size: 16px;
+    color: #555;
+}
+
+.step2-file-input {
     opacity: 0;
     position: absolute;
     top: 0;
@@ -61,51 +89,59 @@
     cursor: pointer;
 }
 
-.camera-icon {
-    width: 80px;
-    height: 80px;
-}
-
-.image-count {
-    margin-top: 15px;
-    color: #555;
-    font-weight: bold;
-}
-
-.buttons {
+.step2-gallery {
     display: flex;
-    justify-content: space-between;
-    margin-top: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+    flex: 1;
+}
+
+.step2-image-wrapper {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    overflow: hidden;
+    border-radius: 15px;
+    border: 2px solid #f0f0f0;
+    background-color: #f8f8f8;
+    flex-shrink: 0;
+}
+
+.step2-image {
     width: 100%;
-    max-width: 1000px;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
 }
 
-.back-btn {
-    background-color: #6D7677;
+.step2-overlay {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(0, 0, 0, 0.7);
     color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 10px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    font-size: 18px; 
 }
 
-.next-btn {
-    background-color: #17a2b8;
-    color: white;
+.step2-remove-btn {
+    background: none;
     border: none;
-    padding: 10px 20px;
-    font-size: 16px;
+    color: white;
+    font-size: 14px;
     cursor: pointer;
-    border-radius: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 5px;
-}
-
-.next-btn.disabled {
-    color: #678084;
+    justify-content: center;
+    padding: 0;
 }

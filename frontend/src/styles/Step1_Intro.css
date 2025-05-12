@@ -12,6 +12,25 @@
     display: flex;
     width: 100%;
     margin-left: auto;
+    margin-bottom: 40px;
+}
+
+.box-content {
+    margin-top: 40px;
+}
+
+.box-content h1,
+.box-content h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.box-content p {
+    margin-bottom: 30px;
+    font-size: 16px;
+    margin-bottom: 30px;
+    width: 600px;
 }
 
 .buttons {
