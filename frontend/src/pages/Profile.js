@@ -77,13 +77,17 @@ function Profile() {
     const [showAllReviews, setShowAllReviews] = useState(false);
 
     function prepareFormDataForAPI(data) {
-        let birthdayAPI = "";
+        let birthdayAPI = null;
 
-        if (data.birthday.includes("/")) {
-            const [day, month, year] = data.birthday.split("/");
-            birthdayAPI = `${year}-${month}-${day}T00:00:00Z`;
-        } else if (data.birthday.includes("T")) {
-            birthdayAPI = data.birthday;
+        if (data.birthday) {
+            if (data.birthday.includes("/")) {
+                const [day, month, year] = data.birthday.split("/");
+                birthdayAPI = `${year}-${month}-${day}T00:00:00Z`;
+            } else if (data.birthday.includes("T")) {
+                birthdayAPI = data.birthday;
+            } else if (/^\d{4}-\d{2}-\d{2}$/.test(data.birthday)) {
+                birthdayAPI = `${data.birthday}T00:00:00Z`;
+            }
         }
 
         return {
@@ -143,8 +147,10 @@ function Profile() {
                     setRooms(response.data.results);
                 } else if (role === "owner") {
                     // có api thì đổi lại
-                    // response = await axiosClient.get("/owner/api/my-posts/");
-                    // setRooms(response.data.results);
+                    response = await axiosClient.get(
+                        "/rental_post/api/my-posts/"
+                    );
+                    setRooms(response.data.results.data);
                 }
                 setLoading(false);
             } catch (err) {

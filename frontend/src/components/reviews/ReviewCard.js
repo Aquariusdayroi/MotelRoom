@@ -38,7 +38,6 @@ const ReviewCard = ({ rating, date, time, content, location }) => {
             >
                 {content}
             </div>
-            <small className="text-muted d-block">Tại: {location}</small>
         </div>
     );
 };
