@@ -95,7 +95,7 @@ const Header = ({
                                     <ButtonLanguage des="Tiếng Việt" icon />
                                 )}
                                 {role === "owner" && (
-                                    <Link to="/post">
+                                    <Link to="/owner-manage">
                                         <ButtonLanguage des="Quản lý bài đăng" />
                                     </Link>
                                 )}

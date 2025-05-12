@@ -3,9 +3,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { FaStar, FaCamera } from "react-icons/fa";
 import { images } from "../assets/images";
 import { updateUserProfile } from "../api/userApi/updateUserProfile";
+import { DotLoader } from "react-spinners";
 
 const UserCard = ({ name, avatar, start, totalComment, year }) => {
     const [avatarPreview, setAvatarPreview] = useState(images.logo);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (avatar) {
@@ -21,25 +23,28 @@ const UserCard = ({ name, avatar, start, totalComment, year }) => {
         const file = event.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const base64Image = e.target.result;
-            setAvatarPreview(base64Image); // Hiển thị trước ảnh
+        const previewUrl = URL.createObjectURL(file);
+        setAvatarPreview(previewUrl);
 
-            const formData = new FormData();
-            formData.append("avatar", file);
+        const formData = new FormData();
+        formData.append("avatar", file);
 
-            try {
-                const updatedUser = await updateUserProfile(formData);
-                if (!updatedUser) {
-                    alert("Không thể cập nhật ảnh đại diện.");
-                }
-            } catch (error) {
-                console.error("Lỗi upload avatar:", error);
-                alert("Đã xảy ra lỗi khi cập nhật ảnh đại diện.");
+        try {
+            setLoading(true);
+            const updatedUser = await updateUserProfile(formData);
+            if (updatedUser) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 800);
+            } else {
+                alert("Không thể cập nhật ảnh đại diện.");
+                setLoading(false);
             }
-        };
-        reader.readAsDataURL(file);
+        } catch (error) {
+            console.error("Lỗi upload avatar:", error);
+            alert("Đã xảy ra lỗi khi cập nhật ảnh đại diện.");
+            setLoading(false);
+        }
     };
 
     return (
@@ -94,6 +99,17 @@ const UserCard = ({ name, avatar, start, totalComment, year }) => {
                 <div className="fs-3 fw-bold mt-2">{year}</div>
                 <div className="text-muted small">năm kinh nghiệm</div>
             </div>
+            {loading && (
+                <div
+                    className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                    style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.7)",
+                        zIndex: 9999,
+                    }}
+                >
+                    <DotLoader size={60} color="var( --primary-color)" />
+                </div>
+            )}
         </div>
     );
 };

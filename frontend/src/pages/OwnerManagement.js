@@ -1,12 +1,15 @@
 import React from 'react';
 import { Col, Nav } from 'react-bootstrap';
 import { FaChartLine, FaUsers } from 'react-icons/fa';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import styles from '../styles/OwnerManagement.module.css';
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
+
 const OwnerManagement = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
     const page = +searchParams.get("page") || 1;
     const [data, setData] = useState({});
@@ -14,6 +17,13 @@ const OwnerManagement = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filteredRooms, setFilteredRooms] = useState([]);
+
+    useEffect(() => {
+        // Redirect to dashboard if at root path
+        if (location.pathname === '/owner-manage') {
+            navigate('dashboard');
+        }
+    }, [location.pathname, navigate]);
 
     useEffect(() => {
         const fetchRooms = async () => {
