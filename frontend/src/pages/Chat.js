@@ -1,14 +1,39 @@
-import React, { useState } from 'react';
-import Cookies from 'js-cookie';
-import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
+import React, { useEffect, useState } from 'react';
 
+import Cookies from 'js-cookie';
+import 'bootstrap/dist/css/bootstrap.min.css'; 
 import ConversationList from '../components/chat/ConversationList';
 import ChatWindow from '../components/chat/ChatWindow';
+import axiosClient from '../api/axiosClient';
+import { useSearchParams } from 'react-router-dom';
 
 const Chat = () => {
+  
+  
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [searchParams] = useSearchParams();
+  const recenId = searchParams.get('recenId'); 
   const token = Cookies.get('authToken');
 
+
+  useEffect(() => {
+    const fetchConversationData = async () => {
+      if (!recenId) {
+        console.log('Không có recenId trong URL');
+        return;
+      }
+      try {
+        const response = await axiosClient.post(`/chat/api/conversations/create/`, { user_two: recenId });
+        console.log('Dữ liệu API:', response.data);
+        setSelectedConversation(response.data.data);
+      } catch (error) {
+        console.error("Lỗi khi gọi API tạo cuộc trò chuyện", error);
+      }
+    };
+    fetchConversationData();
+  }, [recenId]);
+
+  
   return (
     <div className="d-flex flex-column" style={{ height: '100vh', backgroundColor: '#f5f5f5' }}>
       {/* Main Grid */}
@@ -39,7 +64,7 @@ const Chat = () => {
               className="d-flex align-items-center justify-content-center"
               style={{ height: '100%', backgroundColor: '#fafafa' }}
             >
-              <p style={{ color: '#757575' }}>Chọn một cuộc trò chuyện để bắt đầu</p> {/* Thay Typography bằng p */}
+              <p style={{ color: '#757575' }}>Chọn một cuộc trò chuyện để bắt đầu</p> 
             </div>
           )}
         </div>

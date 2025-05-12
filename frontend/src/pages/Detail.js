@@ -320,7 +320,7 @@ function Detail({ showAction = true, showReviews = true }) {
                 </div>
                 <div className="col">
                     <div className="d-flex justify-content-end mt-4">
-                        <ContactCard price={room?.price} />
+                        <ContactCard price={room?.price} onCall={room?.user?.id} />
                     </div>
                 </div>
             </div>

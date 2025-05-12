@@ -1,8 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Box, TextField, IconButton, List, ListItem, ListItemText, Typography, Divider } from '@mui/material';
+import { Box, TextField, IconButton, List, ListItem, ListItemText, Typography, Divider, Avatar } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import DoneIcon from '@mui/icons-material/Done';
-import DoneAllIcon from '@mui/icons-material/DoneAll';
 import axiosClient from '../../api/axiosClient';
 import { AuthToken } from '../../authToken';
 
@@ -49,7 +47,6 @@ export default function ChatWindow({ token, conversation }) {
 
 const sendReadStatus = (message_id) => {
   if (socketRef.current?.readyState === WebSocket.OPEN) {
-    console.log('send')
     socketRef.current.send(JSON.stringify({
       type: "read_message",
       message_id
@@ -62,16 +59,12 @@ const sendReadStatus = (message_id) => {
       console.warn('conversation.id hoặc token không hợp lệ:', { conversation, token });
       return;
     }
-
-    console.log('🔍 useEffect WebSocket chạy với conversation.id:', conversation.id);
-    console.log('Token gửi qua WebSocket:', token);
     const socket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${conversation.id}/?token=${encodeURIComponent(token)}`);
 
 
     socket.onopen = () => {
-      console.log(userInfo)
-      console.log('✅ WebSocket connected');
       if(socket.readyState===WebSocket.OPEN) {
+        console.log('check')
         socket.send(JSON.stringify({
           type: "check_online",
           target_user_id: receiverInfo.id  
@@ -92,7 +85,7 @@ const sendReadStatus = (message_id) => {
       console.log('🔍 Dữ liệu WebSocket:', data);
       if (data.type === "online_status") {
         console.log(`User ${data.user_id} is online?`, data.online);
-        if (data.online)  {
+        if (data.online && data.user_id === receiverInfo.id)  {
           setConnectionStatus('Connected');
         }
         else {
@@ -195,18 +188,24 @@ const sendReadStatus = (message_id) => {
   }, [messages]);
 
 
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'white', paddingX: '30px' }}>
-      <Box sx={{ p: 2, bgcolor: 'white', color: 'black', borderBottom: '1px solid silver' }}>
+      <Box sx={{ m: 1, p: 2, bgcolor: 'white', color: 'black', borderBottom: '1px solid silver', display: 'flex', alignItems: 'center', width: '100%',  }}>
 
-    <Typography variant="h6">
-      {receiverInfo.fullname}
-    </Typography>
-
-        <Typography variant="caption">
-          <span style={{ color: connectionStatus === 'Connected' ? 'green' : 'gray', fontSize: '17px' }}>●</span> {connectionStatus === 'Connected' ? 'Đang hoạt động' : 'Tạm không hoạt động'}
-
-        </Typography>
+        <Avatar
+          alt="Avatar"
+          src={receiverInfo.avatar}
+          sx={{ width: 56, height: 56, mr: 2 }}
+        />  
+        <Box sx = {{display: 'flex', flexDirection: 'column'}}>
+          <Typography variant="h6">
+            {receiverInfo.fullname}
+          </Typography>
+          <Typography variant="caption">
+            <span style={{ color: connectionStatus === 'Connected' ? 'green' : 'gray', fontSize: '17px' }}>●</span> {connectionStatus === 'Connected' ? 'Đang hoạt động' : 'Tạm không hoạt động'}
+          </Typography>
+        </Box>
       </Box>
       <Divider />
 
@@ -285,24 +284,6 @@ const sendReadStatus = (message_id) => {
           <div ref={messageEndRef} />
         </List>
       </Box>
-
-      {/* <Box sx={{ display: 'flex', borderTop: '1px solid #ccc', p: 1, bgcolor: '#fafafa' }}>
-        <TextField
-          fullWidth
-          size="small"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') sendMessage();
-          }}
-          placeholder="Nhập tin nhắn..."
-         variant="outlined" 
-          disabled={!userInfo}
-        />
-        <IconButton onClick={sendMessage} color="primary" sx={{ ml: 1 }} disabled={!userInfo}>
-          <SendIcon />
-        </IconButton>
-      </Box> */}
       <Box sx={{ 
         display: 'flex', 
         alignItems: 'center', 
