@@ -2,8 +2,11 @@ import styles from '../styles/ContactCard.module.css';
 import callIcon from '../assets/img/call_icon.png';
 import zaloIcon from '../assets/img/zalo_icon.png';
 import mapsIcon from '../assets/img/maps_icon.png';
+import { useNavigate } from "react-router-dom";
+
 
 function ContactCard({ price, onCall, onZalo, onMaps }) {
+    const navigate = useNavigate();
     return (
         <div className={`${styles.wrapper} rounded-4 border shadow-sm p-4 text-center`}>
             <div className="d-flex flex-column align-items-center gap-3">
@@ -13,7 +16,8 @@ function ContactCard({ price, onCall, onZalo, onMaps }) {
                 <button
                     type="button"
                     className={`${styles.call} d-flex align-items-center justify-content-center gap-2 rounded-5 w-100 m-0`}
-                    onClick={onCall}
+                    onClick={() => navigate(`/chat?recenId=${onCall}`)}
+                    
                 >
                     <img src={callIcon} alt="Call" />
                     <span>Liên hệ chủ trọ</span>
