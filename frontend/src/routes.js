@@ -1,23 +1,19 @@
-import {
-    BrowserRouter as Router,
-    Routes,
-    Route,
-    useLocation,
-} from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
-import Intro from "./pages/Intro";
-import Home from "./pages/Home";
-import Profile from "./pages/Profile";
-import Login from "./pages/Login";
-import Layout from "./layout/Layout";
-import DetailSearch from "./pages/DetailSearch";
-import Detail from "./pages/Detail";
-import ProtectedRoute from "./until/ProtectedRoute";
-import PostManagement from "./pages/PostManagement";
-import Chat from "./pages/Chat";
-import AdminManagement from "./pages/AdminManagement";
-import AnimatedPage from "./animations/AnimatedPage";
-import AuthenticManage from "./components/adminManage/AuthenticManage";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import Intro from './pages/Intro';
+import Home from './pages/Home';
+import Profile from './pages/Profile';
+import Login from './pages/Login';
+import Layout from './layout/Layout';
+import DetailSearch from './pages/DetailSearch';
+import Detail from './pages/Detail';
+import ProtectedRoute from './until/ProtectedRoute';
+import PostManagement from './pages/PostManagement';
+import Chat from './pages/Chat';
+import AdminManagement from './pages/AdminManagement';
+import AnimatedPage from './animations/AnimatedPage';
+import AuthenticManage from './components/adminManage/AuthenticManage';
+import AddPost from './pages/AddPost';
 
 export default function AppRoutes() {
     return (
@@ -79,13 +75,24 @@ function AnimatedRoutes() {
                         </ProtectedRoute>
                     }
                 />
-                <Route path="/chat" element={
-                    
-                    // <Layout enableScroll={false} enableSearch={false}>
-                        <Chat />
-                    // </Layout>
+                <Route
+                    path="/add-post"
+                    element={
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <AddPost />
+                            </Layout>
+                        </ProtectedRoute>
                     }
-                 />
+                />
+                <Route
+                    path="/chat"
+                    element={
+                        // <Layout enableScroll={false} enableSearch={false}>
+                        <Chat />
+                        // </Layout>
+                    }
+                />
 
                 <Route
                     path="/admin-manage"
