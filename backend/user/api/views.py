@@ -493,7 +493,7 @@ class MyLatestReviewsAPIView(APIView):
         # Sắp xếp theo rating, lấy 10 review mới nhất
         user = request.user
         if user.role == 'owner':
-            reviews = Review.objects.filter(rental_post__owner=user).exclude(user=user).order_by('-rating', '-time')[:10]
+            reviews = Review.objects.filter(rental_post__user=user).exclude(user=user).order_by('-rating', '-time')[:10]
         else:
             reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
         serializer = ReviewSerializer(reviews, many=True)
@@ -513,7 +513,7 @@ class UserLatestReviewsAPIView(APIView):
         user = User.objects.filter(id=user_id).first()
         if user.role == 'owner':
         # Lấy các review của người khác viết cho bài đăng mà user là chủ
-            reviews = Review.objects.filter(rental_post__owner=user).exclude(user=user).order_by('-rating', '-time')[:10]
+            reviews = Review.objects.filter(rental_post__user=user).exclude(user=user).order_by('-rating', '-time')[:10]
         else:
             # Người thường: lấy review mà chính họ viết
             reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
