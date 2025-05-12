@@ -2,7 +2,9 @@ from rest_framework import serializers
 
 
 from chat.models import Conversation, Message, MessageMedia
-from user.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class UserSimpleSerializer(serializers.ModelSerializer):

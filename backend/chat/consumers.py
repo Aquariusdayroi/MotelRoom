@@ -6,6 +6,7 @@ from chat.online_users import online_users
 from django.db.models import Q
 from asgiref.sync import sync_to_async
 
+
 @sync_to_async
 def get_friends_or_chat_users(user):
     return list(Conversation.objects.filter(
@@ -104,7 +105,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     #Data dạng read_mesage
     async def read_status(self, event):
-        print('he')
         await self.send(text_data=json.dumps({
             "type": "read_status",
             "message_id": event["message_id"]
@@ -123,7 +123,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Lấy danh sách user cần được thông báo
         user = self.scope['user']
         related_user_ids = await get_friends_or_chat_users(user)  # Bạn cần implement
-        
         for uid in related_user_ids:
             await self.channel_layer.group_send(
                 f"chat_{uid}",
@@ -140,6 +139,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def save_message(self, sender_id, conversation_id, message):
         sender = User.objects.get(id=sender_id)
         conversation = Conversation.objects.get(id=conversation_id)
+        conversation.save()
         return Message.objects.create(
             conversation=conversation,
             sender=sender,
