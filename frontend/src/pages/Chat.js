@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import 'bootstrap/dist/css/bootstrap.min.css'; 
 import ConversationList from '../components/chat/ConversationList';
@@ -7,14 +6,27 @@ import ChatWindow from '../components/chat/ChatWindow';
 import axiosClient from '../api/axiosClient';
 import { useSearchParams } from 'react-router-dom';
 
+
+
 const Chat = () => {
-  
-  
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [conversations, setConversations] = useState([]);
   const [searchParams] = useSearchParams();
   const recenId = searchParams.get('recenId'); 
   const token = Cookies.get('authToken');
+  const socketRef = useRef(null);
 
+  const fetchConversations = async () => {
+      try {
+        const res = await axiosClient.get('chat/api/conversations/list/');
+        console.log(res.data);
+        console.log("===");
+        setConversations(res.data);
+      } catch (err) {
+        console.error('Lỗi khi lấy danh sách hội thoại:', err);
+        setConversations([]);
+      }
+  };
 
   useEffect(() => {
     const fetchConversationData = async () => {
@@ -33,7 +45,66 @@ const Chat = () => {
     fetchConversationData();
   }, [recenId]);
 
+    
+  useEffect(() => {
+    fetchConversations();
+  }, []);
+
+  useEffect(() => {
+    if (!token) {
+      console.log('Không có token, không tạo kết nối WebSocket');
+      return;
+    }
+    // Đóng kết nối cũ nếu tồn tại
+    if (socketRef.current && socketRef.current.readyState !== WebSocket.CLOSED) {
+      socketRef.current.close();
+    }
+
+    // Tạo kết nối WebSocket mới
+    const socket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/?token=${encodeURIComponent(token)}`); 
+    socket.onopen = () => {
+        const pingInterval = setInterval(() => {
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({ type: 'ping' }));
+          }
+        }, 120000);
+        socket.pingInterval = pingInterval;
+    }
+    
+    socketRef.current = socket;
+    
+    const handleMessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log('🔍 Dữ liệu WebSocket:', {data});
+            console.log("dữ liệu chat.js")
+            console.log(data.type)
+            if (data.type === "chat_message" || data.type === "read_status") {
+              fetchConversations();
+              return
+            }
+                // return;
+            // }
+         
+        };
   
+    socket.addEventListener('message', handleMessage);
+    // Dọn dẹp khi component unmount hoặc token thay đổi
+    return () => {
+      if (socket.readyState !== WebSocket.CLOSED) {
+        socket.close();
+      }
+    };
+  }, [token]); // Thêm token vào dependency
+  
+
+// Sử dụng useCallback để ổn định hàm onSelect
+const handleSelectConversation = useCallback((conversation) => {
+    setSelectedConversation((prev) => {
+      if (prev?.id === conversation.id) return prev;
+      return conversation;
+    });
+}, []);
+
   return (
     <div className="d-flex flex-column" style={{ height: '100vh', backgroundColor: '#f5f5f5' }}>
       {/* Main Grid */}
@@ -50,15 +121,17 @@ const Chat = () => {
             }}
           >
           <ConversationList
-            onSelect={setSelectedConversation}
+            socket = {socketRef.current}
+            onSelect={handleSelectConversation}
             selectedId={selectedConversation?.id}
+            conversations={conversations}
           />
         </div>
 
         {/* Chat Window */}
         <div className="col-xl-9 col-sm-9 col-9 p-0" style={{ height: '100%' }}>
           {selectedConversation && token ? (
-            <ChatWindow token={token} conversation={selectedConversation} />
+            <ChatWindow token={token} conversation={selectedConversation} socket = {socketRef.current} />
           ) : (
             <div
               className="d-flex align-items-center justify-content-center"
