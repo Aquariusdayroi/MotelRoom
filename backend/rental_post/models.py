@@ -2,7 +2,7 @@ from django.db import models
 from city.models import City
 from district.models import District
 from address.models import Address
-from user.models import User
+
 # Create your models here.
 class RentalPost(models.Model):
     HOME_TYPES = [
@@ -13,7 +13,7 @@ class RentalPost(models.Model):
     ]
 
     #ForeignKey
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rental_post')
+    user = models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='rental_post')
     home_type = models.CharField(max_length=20, choices=HOME_TYPES, default="phòng trọ")
     title = models.CharField(max_length=255)
 
