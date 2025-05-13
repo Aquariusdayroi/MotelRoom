@@ -404,7 +404,7 @@ class OwnerRequestAdminAPIViewSet(viewsets.ViewSet):
     queryset = OwnerRequest.objects.all()
     permission_classes = [IsAdminUser]
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='list-request')
     def list_request(self, request):
         requests = OwnerRequest.objects.filter(status='pending')
         serializer = OwnerRequestAdminSerializer(requests, many=True)
@@ -688,3 +688,5 @@ class UserLatestReviewsAPIView(APIView):
             "message": "Lấy danh sách review thành công.",
             "reviews": ReviewSerializer(reviews, many=True).data
         }, status=status.HTTP_200_OK)
+        
+# API thống kê số lượng người dùng đang đăng nhập
