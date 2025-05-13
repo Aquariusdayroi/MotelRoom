@@ -21,6 +21,7 @@ import AnimatedPage from "./animations/AnimatedPage";
 import AuthenticManage from "./components/adminManage/AuthenticManage";
 import AddPost from "./pages/AddPost";
 import ScrollToTop from "./until/ScrollToTop";
+import Statistical from "./components/adminManage/Statistical";
 
 export default function AppRoutes() {
     return (
@@ -155,7 +156,7 @@ function AnimatedRoutes() {
                         path="statistical"
                         element={
                             <AnimatedPage>
-                                <div>Thống kê hệ thống</div>
+                                <Statistical />
                             </AnimatedPage>
                         }
                     />
