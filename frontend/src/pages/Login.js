@@ -9,6 +9,7 @@ import LoginForm from "../components/authForm/LoginForm";
 import SignInForm from "../components/authForm/SignInForm";
 import Footer from "../layout/components/Footer";
 import { images } from "../assets/images";
+import HeaderWhite from "../layout/components/HeaderWhite";
 
 function Login() {
     const { register, handleSubmit } = useForm();
@@ -41,11 +42,6 @@ function Login() {
     };
     return (
         <div>
-            <header className={styles.header}>
-                <Link to="/home">
-                    <img src={images.logo} className={styles.logo} />
-                </Link>
-            </header>
             <div className={styles.container}>
                 <div className={styles.sectionForm}>
                     <AnimatePresence mode="wait">
