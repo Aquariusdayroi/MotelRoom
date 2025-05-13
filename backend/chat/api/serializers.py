@@ -24,7 +24,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     def get_last_message(self, obj):
         last_msg = Message.objects.filter(conversation=obj).order_by('-create_at').first()
         if last_msg:
-            return {'content': last_msg.content, 'create_at': last_msg.create_at}
+            return {'content': last_msg.content, 'create_at': last_msg.create_at, 'status': last_msg.status, 'sender': last_msg.sender.id}
         return None
 
 class MessageMediaSerializer(serializers.ModelSerializer):
@@ -37,4 +37,4 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ['id', 'sender', 'content', 'status', 'create_at', 'media']
+        fields = ['id', 'conversation',  'sender', 'content', 'status', 'create_at', 'media']

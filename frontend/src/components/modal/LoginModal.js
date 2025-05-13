@@ -8,7 +8,7 @@ const LoginModal = () => {
     const menuItems = [
         { to: '/profile', label: 'Tài khoản' },
         { to: '/notifications', label: 'Thông báo' },
-        { to: '/messages', label: 'Tin nhắn' },
+        { to: '/chat', label: 'Tin nhắn' },
         { to: '/favorites', label: 'Yêu thích' },
         { to: '/partners', label: 'Đối tác' },
         { to: '/room-search', label: 'Tìm phòng' },

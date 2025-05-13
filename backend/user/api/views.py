@@ -1,18 +1,32 @@
+#Django 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout, get_user_model
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from django.db.models import Count
+from django.db.models import Count, Avg
 
+#Rest frame work
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework import generics, serializers, status, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.views import APIView
-from user.models import User, OwnerRequest
-from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer, OwnerRequestSerializer, UpdateUserSerializer 
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 
+#Model
+from user.models import User, OwnerRequest
+from rental_post.models import RentalPost
+from review.models import Review
+
+
+
+#Serializers
+from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer
+from .serializers import OwnerRequestSerializer, UpdateUserSerializer, OwnerRequestAdminSerializer
+from rental_post.api.serializers import RentalPostSerializer
+from review.api.serializers import ReviewSerializer
+
+#Python
 import os
 from datetime import datetime, timedelta
 import time
@@ -31,8 +45,10 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import get_user_model
 
+
+#---------------------------------------------------------------------------------------------------#
 # Api admin lấy danh sách user
-class UserListCreateAPIViewSet(viewsets.ModelViewSet):
+class AdminManagerUserAPIViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
@@ -153,6 +169,50 @@ class UserListCreateAPIViewSet(viewsets.ModelViewSet):
             "filtered_users": filtered_count,
             "statistics": statistics
         }, status=status.HTTP_200_OK)
+        
+    @action(detail=False, methods=['get'])
+    def stat_review(self, request, *args, **kwargs):
+        if not request.user.is_superuser and request.user.role != 'admin':
+            return Response({"success": False, 
+                             "message": "Permission denied."
+                            }, 
+                            status=status.HTTP_403_FORBIDDEN)
+            
+        # Thống kê số lượt đánh giá của người dùng
+        users = User.objects.all()
+        user_ids = users.values_list("id", flat=True)
+        
+        stats = (
+            Review.objects.filter(user_id__in=user_ids) 
+            .values("user_id")
+            .annotate(
+                total_reviews=Count("id")
+            )
+            .order_by("-total_reviews")        
+        )
+        
+        if not stats:
+            return Response({
+               "success": False,
+               "message": "Không có người dùng nào đánh giá."
+           }, status=status.HTTP_404_NOT_FOUND) 
+        
+        results = []
+        for stat in stats:
+            user = users.get(id=stat['user_id'])
+            results.append({
+                "fullname": user.fullname,
+                "total_reviews": stat["total_reviews"]
+            })
+            
+        total_user_reviewed = stats.count()
+        
+        return Response({
+            "success": True,
+            "message": "Thống kê lượt đánh giá thành công.",
+            "total_user_reviewed": total_user_reviewed,
+            "results": results
+        }, status=status.HTTP_200_OK)
 
 #---------------------------------------------------------------------------------------------------#
 # Api người dùng xem Chi tiết, cập nhật, xóa tài khoản
@@ -245,7 +305,6 @@ class LogoutView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
             
 
-
 #---------------------------------------------------------------------------------------------------#
 # Api xác thực email
 class VerifyEmailView(APIView):
@@ -305,158 +364,261 @@ class GoogleLoginView(APIView):
 
 
 #---------------------------------------------------------------------------------------------------#
-# Xử lý ảnh: xóa sau khi duyệt
-def delete_image_file(image_field):
-    if image_field and os.path.isfile(image_field.path):
-        os.remove(image_field.path)
-
-# API tạo yêu cầu thành Owner
-class OwnerRequestViewSet(viewsets.ModelViewSet):
+# API người dùng gửi yêu cầu đăng ký owner
+class OwnerRequestAPIViewSet(viewsets.ViewSet):
     queryset = OwnerRequest.objects.all()
-    serializer_class = OwnerRequestSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return OwnerRequest.objects.filter(user=user)
-
-    def create(self, request, *args, **kwargs):
-        user = request.user
-        existing_request = OwnerRequest.objects.filter(user=user).first()
-
-        if existing_request:
-            if existing_request.status == 'pending':
-                return Response({
-                    "success": False,
-                    "message": "Yêu cầu đang chờ xử lý."
-                }, status=status.HTTP_400_BAD_REQUEST)
-            elif existing_request.status == 'approved':
-                return Response({
-                    "success": False,
-                    "message": "Bạn đã được xác minh là chủ phòng."
-                }, status=status.HTTP_400_BAD_REQUEST)
-            elif existing_request.status == 'rejected':
-                cooldown_days = 3
-                if existing_request.reviewed_at and timezone.now() < existing_request.reviewed_at + timedelta(days=cooldown_days):
-                    remaining = (existing_request.reviewed_at + timedelta(days=cooldown_days)) - timezone.now()
-                    return Response({
-                        "success": False,
-                        "message": f"Bạn cần chờ thêm {remaining.days} ngày và {remaining.seconds // 3600} giờ trước khi gửi lại yêu cầu."
-                    }, status=status.HTTP_400_BAD_REQUEST)
-                    
-                # Cho phép gửi lại -> cập nhật yêu cầu cũ
-                serializer = self.get_serializer(existing_request, data=request.data, partial=True)
-                serializer.is_valid(raise_exception=True)
-                serializer.save(status='pending', reviewed_at=None, rejection_reason=None)
-                return Response({
-                    "success": True,
-                    "message": "Yêu cầu đã được gửi lại.",
-                    "user": UserSerializer(user).data
-                }, status=status.HTTP_200_OK)
-        
-        # Nếu chưa từng gửi yêu cầu
-        serializer = self.get_serializer(data=request.data)
+    @action(detail=False, methods=['post'])
+    def send_request(self, request):
+        serializer = OwnerRequestSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        serializer.save(user=user)
+        serializer.save()
         return Response({
-            "success": True,
-            "message": "Yêu cầu đã được gửi thành công.",
-            "user": UserSerializer(user).data
+            'success': True,
+            'message': 'Yêu cầu đăng ký chủ phòng đã được gửi.'  
         }, status=status.HTTP_201_CREATED)
 
-    @action(detail=False, methods=['get'], url_path='my-request')
+    @action(detail=False, methods=['get'])
     def my_request(self, request):
-        user = request.user
         try:
-            owner_request = OwnerRequest.objects.get(user=user)
-            serializer = self.get_serializer(owner_request)
-            return Response({
-                "success": True,
-                "message": "Lấy thông tin yêu cầu thành công.",
-                "request": serializer.data
-            }, status=status.HTTP_200_OK)
+            req = request.user.ownerrequest
         except OwnerRequest.DoesNotExist:
             return Response({
                 "success": False,
-                "message": "Bạn chưa gửi yêu cầu nào."
+                "message": "Bạn chưa gửi yêu cầu trở thành chủ phòng."
             }, status=status.HTTP_404_NOT_FOUND)
-        
-class AdminRequestViewSet(viewsets.ModelViewSet):
+
+        return Response({
+            "success": True,
+            "message": "Lấy thông tin yêu cầu thành công.",
+            "status": req.status,
+            "reviewed_at": req.reviewed_at,
+            "rejection_reason": req.rejection_reason
+        }, status=status.HTTP_200_OK)
+
+
+#---------------------------------------------------------------------------------------------------#        
+# API admin xem và xử lý yêu cầu
+class OwnerRequestAdminAPIViewSet(viewsets.ViewSet):
     queryset = OwnerRequest.objects.all()
-    serializer_class = OwnerRequestSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.role == 'admin':
-            return OwnerRequest.objects.all()
-
-    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser], url_path='list-requests')
-    def get_list(self, request):
-        # Lấy danh sách yêu cầu chủ phòng
-        if not request.user.is_superuser and request.user.role != 'admin':
-            return Response({"success": False, 
-                             "message": "Permission denied."
-                            }, 
-                            status=status.HTTP_403_FORBIDDEN)
-        
-        owner_requests = OwnerRequest.objects.all()
-        serializer = self.get_serializer(owner_requests, many=True)
+    @action(detail=False, methods=['get'])
+    def list_request(self, request):
+        requests = OwnerRequest.objects.filter(status='pending')
+        serializer = OwnerRequestAdminSerializer(requests, many=True)
         return Response({
             "success": True,
             "message": "Lấy danh sách yêu cầu thành công.",
             "requests": serializer.data
         }, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+    @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
-        owner_request = self.get_object()
+        try:
+            owner_request = OwnerRequest.objects.get(pk=pk, status='pending')
+        except OwnerRequest.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': "Không tìm thấy yêu cầu phù hợp."
+            }, status=status.HTTP_404_NOT_FOUND)
+            
+        user = owner_request.user
+        user.role = 'owner'
+        user.cccd = owner_request.cccd
+        user.image_front_cccd = owner_request.image_front_cccd
+        user.image_back_cccd = owner_request.image_back_cccd
+        user.save()    
+
         owner_request.status = 'approved'
         owner_request.reviewed_at = timezone.now()
         owner_request.save()
 
-        # Cập nhật role user
-        owner_request.user.role = 'owner'
-        owner_request.user.save()
-        
-        # Xóa ảnh
-        delete_image_file(owner_request.image_front_cccd)
-        delete_image_file(owner_request.image_back_cccd)
-
-        owner_request.image_front_cccd.delete(save=True)
-        owner_request.image_back_cccd.delete(save=True)
-
         return Response({
-            "success": True,
-            "message": "Yêu cầu đã được duyệt.",
-            "user": UserSerializer(owner_request.user).data
+            'success': True,
+            'message': 'Yêu cầu đã được chấp nhận.'
         }, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+    @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
-        owner_request = self.get_object()
+        try:
+            owner_request = OwnerRequest.objects.get(pk=pk, status='pending')
+        except OwnerRequest.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': "Không tìm thấy yêu cầu phù hợp."
+            }, status=status.HTTP_404_NOT_FOUND)
+
         reason = request.data.get('reason')
         if not reason:
             return Response({
-                "success": False,
-                "message": "Lý do từ chối là bắt buộc."
+                'success': False,
+                'message': 'Phải có lý do từ chối.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         owner_request.status = 'rejected'
-        owner_request.reviewed_at = timezone.now()
         owner_request.rejection_reason = reason
+        owner_request.reviewed_at = timezone.now()
         owner_request.save()
 
-        # Xóa ảnh
-        delete_image_file(owner_request.image_front_cccd)
-        delete_image_file(owner_request.image_back_cccd)
+        return Response({
+            'success': True,
+            'message': 'Yêu cầu bị từ chối.'
+        }, status=status.HTTP_200_OK)
 
-        owner_request.image_front_cccd.delete(save=True)
-        owner_request.image_back_cccd.delete(save=True)
+
+#---------------------------------------------------------------------------------------------------#      
+# API admin thống kê số bài đăng theo tiêu chí
+class AdminStatsRentalPostAPIViewSet(viewsets.ModelViewSet):
+    queryset = RentalPost.objects.all()
+    permission_classes = [IsAdminUser]
+    
+    @action(detail=False, methods=['get'])
+    def stat(self, request, *args, **kwargs):
+        # Thống kê số lượng bài đăng theo tiêu chí
+        total_rentalposts = RentalPost.objects.count()
+        
+        fields_param = request.query_params.get('fields')
+        if not fields_param:
+            return Response({
+                "success": False,
+                "message": "Thiếu tham số fields. Ví dụ: ?fields=title,address."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        fields = [f.strip() for f in fields_param.split(',')]
+                
+        # Lọc dữ liệu đầu vào trước khi thống kê
+        filterable_fields = [f.name for f in RentalPost._meta.fields]  # tất cả field hợp lệ
+        filters = {}
+
+        # Hỗ trợ lọc create_at, create_at__gte, create_at__lte
+        for key in request.query_params:
+            if key == 'fields':
+                continue
+            if key.startswith('create_at'):
+                date_value = parse_date(request.query_params.get(key))
+                if date_value:
+                    filters[key] = date_value
+            elif key in filterable_fields:
+                filters[key] = request.query_params.get(key)
+
+        filtered_rentals = RentalPost.objects.filter(**filters)
+        filtered_count = filtered_rentals.count()
+        
+        statistics = {}
+
+        for field in fields:
+            if field not in filterable_fields:
+                continue
+
+            stats = RentalPost.objects.values(field).annotate(count=Count('id')).order_by(field)
+            statistics[field] = list(stats)
 
         return Response({
             "success": True,
-            "message": "Yêu cầu đã bị từ chối.",
-            "user": UserSerializer(owner_request.user).data
+            "message": "Thống kê số lượng bài đăng thành công.",
+            "total_rentalposts": total_rentalposts,
+            "filtered_rentals": filtered_count,
+            "statistics": statistics
+        }, status=status.HTTP_200_OK)
+        
+    @action(detail=False, methods=['get'])
+    def stat_rental(self, request, *args, **kwargs):
+        # Thống kê số bài đăng của chủ trọ
+        owners = User.objects.filter(role='owner')
+        owner_ids = owners.values_list("id", flat=True)
+        
+        stats = (
+            RentalPost.objects.filter(user_id__in=owner_ids) 
+            .values("user_id")
+            .annotate(
+                total_rental_posts=Count("id")
+            )
+            .order_by("-total_rental_posts")        
+        )
+        
+        if not stats:
+           return Response({
+               "success": False,
+               "message": "Không có chủ trọ nào có bài đăng."
+           }, status=status.HTTP_404_NOT_FOUND) 
+        
+        results = []
+        for stat in stats:
+            user = owners.get(id=stat['user_id'])
+            results.append({
+                "fullname": user.fullname,
+                "total_rental_posts": stat["total_rental_posts"]
+            })
+            
+        total_owner = stats.count()
+        
+        return Response({
+            "success": True,
+            "message": "Thống kê số bài đăng thành công.",
+            "total_owner": total_owner,
+            "results": results
+        }, status=status.HTTP_200_OK)
+        
+# API chủ bài đăng thống kê lượt đánh giá
+class OwnerStatAPIViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def stat_review(self, request, *args, **kwargs):
+        if request.user.role != 'owner':
+            return Response({
+                                "success": False,
+                                "message": "Permission denied.",
+                            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Lấy bài đăng của người dùng hiện tại
+        posts = RentalPost.objects.filter(user=request.user)
+                
+        if not posts.exists():
+            return Response({"success": False,
+                             "message": "Không tìm thấy bài đăng."
+                            }, 
+                            status=status.HTTP_404_NOT_FOUND)
+            
+        post_ids = posts.values_list("id", flat=True)
+        
+        stats = (
+            Review.objects.filter(rental_post_id__in=post_ids) 
+            .values("rental_post_id")
+            .annotate(
+                avg_rating=Avg("rating"),
+                total_reviews=Count("id")
+            )
+            # .order_by("-total_reviews")        
+        )
+        
+        if not stats:
+            return Response({
+               "success": False,
+               "message": "Không có bài đăng nào có review."
+           }, status=status.HTTP_404_NOT_FOUND) 
+        
+        stats_dict = {s["rental_post_id"]: s for s in stats}
+        
+        results = []
+        for post in posts:
+            stat = stats_dict.get(post.id)
+            avg = round(float(stat["avg_rating"]), 2) if stat else 0
+            total = stat["total_reviews"] if stat else 0
+
+            results.append({
+                "post_id": post.id,
+                "title": post.title,
+                "avg_rating": avg,
+                "total_reviews": total
+            })
+        
+        return Response({
+            "success": True,
+            "message": "Thống kê lượt đánh giá thành công.",
+            "results": results
         }, status=status.HTTP_200_OK)
         
 #---------------------------------------------------------------------------------------------------#
@@ -503,6 +665,9 @@ class MyLatestReviewsAPIView(APIView):
             "reviews": serializer.data
         }, status=status.HTTP_200_OK)   
 
+
+
+#---------------------------------------------------------------------------------------------------#
 # API lấy 10 review của người dùng khác
 class UserLatestReviewsAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]

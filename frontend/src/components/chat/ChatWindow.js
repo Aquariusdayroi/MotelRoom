@@ -1,321 +1,445 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Box, TextField, IconButton, List, ListItem, ListItemText, Typography, Divider, Avatar } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
-import axiosClient from '../../api/axiosClient';
-import { AuthToken } from '../../authToken';
+import React, { useContext, useEffect, useRef, useState, useCallback } from "react";
+import {
+  Box,
+  TextField,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+  Divider,
+  Avatar,
+  CircularProgress,
+} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import axiosClient from "../../api/axiosClient";
+import { AuthToken } from "../../authToken";
 
-export default function ChatWindow({ token, conversation }) {
+export default function ChatWindow({ token, conversation, socket }) {
   const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState('');
-  const [connectionStatus, setConnectionStatus] = useState('Connecting');
-  const [error, setError] = useState('');
-  const socketRef = useRef(null);
-  const messageEndRef = useRef(null);
+  const [message, setMessage] = useState("");
+  const [connectionStatus, setConnectionStatus] = useState("Connecting");
+  const [error, setError] = useState("");
   const { userInfo } = useContext(AuthToken);
-  const receiverInfo = userInfo.fullname === conversation.user_one?.fullname 
-    ? conversation.user_two 
-    : conversation.user_one;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const shouldScrollRef = useRef(false); // không bị reset sau render
 
-  useEffect(() => {
-    if (!userInfo) {
-      setError('Vui lòng đăng nhập để nhắn tin');
-    } else {
-      setError('');
-    }
-  }, [userInfo]);
+  // Refs để scroll và track container
+  const messageEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const isUserNearBottom = useRef(true); // Theo dõi xem người dùng có gần cuối danh sách không
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const res = await axiosClient.get('chat/api/messages/', {
-          params: { conversation_id: conversation.id },
-        });
-        setMessages(Array.isArray(res.data.results) ? res.data.results.reverse() : []);
-      } catch (error) {
-        setMessages([]);
-        setError('Không thể tải tin nhắn');
+  const receiverInfo =
+    userInfo?.fullname === conversation.user_one?.fullname
+      ? conversation.user_two
+      : conversation.user_one;
+
+  const sendReadStatus = useCallback(
+    (message_id) => {
+      if (socket?.readyState === WebSocket.OPEN) {
+        socket.send(
+          JSON.stringify({
+            type: "read_message",
+            conversation_id: conversation.id,
+            message_id,
+          })
+        );
       }
-    };
+    },
+    [socket, conversation.id]
+  );
 
-    if (conversation?.id) fetchMessages();
+  const checkOnline = useCallback(() => {
+    if (
+      socket?.readyState === WebSocket.OPEN &&
+      receiverInfo?.id &&
+      conversation?.id
+    ) {
+      socket.send(
+        JSON.stringify({
+          type: "check_online",
+          target_user_id: receiverInfo.id,
+          conversation_id: conversation.id,
+        })
+      );
+    }
+  }, [socket, receiverInfo?.id, conversation?.id]);
 
-    return () => {
-      setMessages([]);
-    };
+  // --- Hàm load trang đầu tiên ---
+  const loadInitialMessages = useCallback(async () => {
+    if (!conversation?.id) return;
+    setLoading(true);
+    try {
+      const res = await axiosClient.get("chat/api/messages/", {
+        params: { conversation_id: conversation.id, page: 1 },
+      });
+      const msgs = Array.isArray(res.data.results)
+        ? res.data.results.reverse()
+        : [];
+      setMessages(msgs);
+      setCurrentPage(1);
+      setHasMoreMessages(res.data.next !== null);
+      // Scroll xuống cuối
+      messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      isUserNearBottom.current = true;
+    } catch (err) {
+      console.error(err);
+      setError("Không thể tải tin nhắn");
+    } finally {
+      setLoading(false);
+    }
   }, [conversation?.id]);
 
+  // --- Hàm fetch các trang cũ hơn ---
+  const fetchMoreMessages = useCallback(async () => {
+    if (loading || !hasMoreMessages || !messagesContainerRef.current) return;
+    const container = messagesContainerRef.current;
+    const previousHeight = container.scrollHeight;
 
-const sendReadStatus = (message_id) => {
-  if (socketRef.current?.readyState === WebSocket.OPEN) {
-    socketRef.current.send(JSON.stringify({
-      type: "read_message",
-      message_id
-    }));
-  }
-};
+    setLoading(true);
+    try {
+      const nextPage = currentPage + 1;
+      const res = await axiosClient.get("chat/api/messages/", {
+        params: { conversation_id: conversation.id, page: nextPage },
+      });
+      const newMsgs = Array.isArray(res.data.results)
+        ? res.data.results.reverse()
+        : [];
 
+      if (newMsgs.length) {
+        setMessages((prev) => [...newMsgs, ...prev]);
+        setCurrentPage(nextPage);
+        setHasMoreMessages(res.data.next !== null);
+        // Giữ vị trí scroll
+        container.scrollTop = container.scrollHeight - previousHeight;
+      } else {
+        setHasMoreMessages(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Không thể tải thêm tin nhắn");
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, hasMoreMessages, currentPage, conversation.id]);
+
+  // Check đăng nhập & online
   useEffect(() => {
-    if (!conversation?.id || !token) {
-      console.warn('conversation.id hoặc token không hợp lệ:', { conversation, token });
+    if (!userInfo || !conversation?.id || !receiverInfo?.id) {
+      setError("Vui lòng đăng nhập hoặc chọn cuộc trò chuyện");
       return;
     }
-    const socket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${conversation.id}/?token=${encodeURIComponent(token)}`);
+    setError("");
+    checkOnline();
+  }, [userInfo, conversation?.id, receiverInfo?.id, checkOnline]);
 
+  // Load initial messages khi chọn conversation mới
+  useEffect(() => {
+    setMessages([]);
+    setHasMoreMessages(true);
+    setCurrentPage(1);
+    loadInitialMessages();
+  }, [conversation?.id, loadInitialMessages]);
 
-    socket.onopen = () => {
-      if(socket.readyState===WebSocket.OPEN) {
-        console.log('check')
-        socket.send(JSON.stringify({
-          type: "check_online",
-          target_user_id: receiverInfo.id  
-        }));
+  // Lắng nghe scroll để fetch thêm và theo dõi vị trí
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      // Kiểm tra nếu kéo lên đầu để tải thêm
+      if (container.scrollTop === 0 && hasMoreMessages && !loading) {
+        fetchMoreMessages();
       }
-      setConnectionStatus('Connected');
-      setError('');
-      const pingInterval = setInterval(() => {
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.send(JSON.stringify({ type: 'ping' }));
-        }
-      }, 120000);
-      socketRef.current.pingInterval = pingInterval;
+      // Kiểm tra xem người dùng có gần cuối danh sách không
+      const isNearBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      isUserNearBottom.current = isNearBottom;
     };
 
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log('🔍 Dữ liệu WebSocket:', data);
-      if (data.type === "online_status") {
-        console.log(`User ${data.user_id} is online?`, data.online);
-        if (data.online && data.user_id === receiverInfo.id)  {
-          setConnectionStatus('Connected');
-        }
-        else {
-          setConnectionStatus('UnConnected');
-        }
-        return
-      }
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [fetchMoreMessages, hasMoreMessages, loading]);
 
+  // WebSocket message handling
+  const [loadmessage, setloadmessage] = useState(false)
+  useEffect(() => {
+    if (!socket) return;
+    
+    const handleMessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "online_status" && data.user_id === receiverInfo.id) {
+        setConnectionStatus(data.online ? "Connected" : "UnConnected");
+        return;
+      }
       if (data.type === "read_status") {
-        const message_id = data.message_id
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) =>
-            msg.id === message_id ? { ...msg, status: 'read' } : msg
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === data.message_id ? { ...msg, status: "read" } : msg
           )
         );
         return;
       }
+      if (data.type === "pong") return;
 
-      if (data.type === 'pong') {
-        console.log('🏓 Nhận pong từ server');
-        return;
-      }
-      const formattedMessage = {
+      const formatted = {
         id: data.id || Date.now(),
         sender: data.sender || data.sender_id,
+        conversation_id: data.conversation_id,
         content: data.content || data.message,
         create_at: data.create_at || new Date().toISOString(),
-        status: data.status || 'sent',
+        status: data.status || "sent",
         media: data.media || [],
       };
-  
-      if (formattedMessage.content && formattedMessage.sender) {
-        
-        setMessages((prev) => [...prev, formattedMessage]);
-
-        if (formattedMessage.sender !== userInfo?.user_id && formattedMessage.id) {
-          axiosClient.post('chat/api/messages/update-status/', {
-            message_id: formattedMessage.id,
-            status: 'read',
-          }).then(() => {
-              sendReadStatus(formattedMessage.id);
-          }).catch((err) => console.error('Lỗi cập nhật trạng thái:', err));          
+      if (
+        formatted.content &&
+        formatted.sender &&
+        formatted.conversation_id === conversation.id
+      ) {
+        setMessages((prev) => [...prev, formatted]);
+        shouldScrollRef.current = true
+        if (formatted.sender !== userInfo?.user_id) {
+          axiosClient
+            .post("chat/api/messages/update-status/", {
+              message_id: formatted.id,
+              status: "read",
+            })
+            .then(() => sendReadStatus(formatted.id))
+            .catch((err) => console.error(err));
         }
-      } else {
-        console.warn('Dữ liệu WebSocket không hợp lệ:', data);
+        // Chỉ scroll xuống nếu người dùng đang ở gần cuối
+        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        isUserNearBottom.current = true;
       }
     };
 
-    socket.onerror = (e) => {
-      setConnectionStatus('Disconnected');
-      setError('Lỗi kết nối WebSocket');
-    };
+    socket.addEventListener("message", handleMessage);
+    socket.onerror = () => setConnectionStatus("Disconnected");
+    socket.onclose = () => setConnectionStatus("Disconnected");
+    return () => socket.removeEventListener("message", handleMessage);
+  }, [socket, conversation?.id, receiverInfo.id, userInfo?.user_id, sendReadStatus]);
 
-    socket.onclose = (e) => {
-      setConnectionStatus('Disconnected');
-      setError('Kết nối WebSocket bị ngắt');
-      if (socketRef.current) {
-        clearInterval(socketRef.current.pingInterval);
-      }
-    };
+  // Gửi tin nhắn
+  const sendMessage = useCallback(async () => {
+    if (!message.trim()) return setError("Tin nhắn không được để trống");
+    if (socket?.readyState !== WebSocket.OPEN)
+      return setError("Kết nối WebSocket bị ngắt");
+    if (!userInfo?.user_id) return setError("Vui lòng đăng nhập");
 
-    socketRef.current = socket;
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.close(1000, 'Component unmounted');
-      }
-    };
-  }, [conversation?.id, token]);
-
-  const sendMessage = () => {
-    if (!message.trim()) {
-      setError('Tin nhắn không được để trống');
-      return;
+    socket.send(
+      JSON.stringify({
+        message,
+        sender_id: userInfo.user_id,
+        conversation_id: conversation.id,
+      })
+    );
+    setMessage("");
+    setError("");
+    
+    // Scroll xuống cuối khi gửi tin nhắn
+    if(loadmessage) {
+        
+        setloadmessage(false);
     }
-    if (socketRef.current?.readyState !== WebSocket.OPEN) {
-      setError('Không thể gửi tin nhắn: Kết nối WebSocket bị ngắt');
-      return;
-    }
-    if (!userInfo?.user_id) {
-      setError('Không thể gửi tin nhắn: Vui lòng đăng nhập');
-      return;
-    }
+    isUserNearBottom.current = true;
+  }, [message, socket, userInfo?.user_id, conversation.id]);
 
-    const payload = {
-      message: message,
-      sender_id: userInfo.user_id,
-    };
-    try {
-      socketRef.current.send(JSON.stringify(payload));
-      setMessage('');
-      setError('');
-    } catch (err) {
-      setError('Không thể gửi tin nhắn');
+    useEffect(() => {
+    if (shouldScrollRef.current) {
+        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });    
+        shouldScrollRef.current = false;
     }
-  };
-
-  useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
+    }, [messages]);
 
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'white', paddingX: '30px' }}>
-      <Box sx={{ m: 1, p: 2, bgcolor: 'white', color: 'black', borderBottom: '1px solid silver', display: 'flex', alignItems: 'center', width: '100%',  }}>
-
+    <Box
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "white",
+        paddingX: "30px",
+      }}
+    >
+      {/* Header window chat */}
+      <Box
+        sx={{
+          m: 1,
+          p: 2,
+          bgcolor: "white",
+          color: "black",
+          borderBottom: "1px solid silver",
+          display: "flex",
+          alignItems: "center",
+          width: "100%",
+        }}
+      >
         <Avatar
           alt="Avatar"
           src={receiverInfo.avatar}
           sx={{ width: 56, height: 56, mr: 2 }}
-        />  
-        <Box sx = {{display: 'flex', flexDirection: 'column'}}>
-          <Typography variant="h6">
-            {receiverInfo.fullname}
-          </Typography>
+        />
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography variant="h6">{receiverInfo.fullname}</Typography>
           <Typography variant="caption">
-            <span style={{ color: connectionStatus === 'Connected' ? 'green' : 'gray', fontSize: '17px' }}>●</span> {connectionStatus === 'Connected' ? 'Đang hoạt động' : 'Tạm không hoạt động'}
+            <span
+              style={{
+                color: connectionStatus === "Connected" ? "green" : "gray",
+                fontSize: "17px",
+              }}
+            >
+              ●
+            </span>{" "}
+            {connectionStatus === "Connected"
+              ? "Đang hoạt động"
+              : "Tạm không hoạt động"}
           </Typography>
         </Box>
       </Box>
       <Divider />
 
       {error && (
-        <Box sx={{ p: 1, bgcolor: '#ffebee', color: '#d32f2f', textAlign: 'center' }}>
+        <Box
+          sx={{
+            p: 1,
+            bgcolor: "#ffebee",
+            color: "#d32f2f",
+            textAlign: "center",
+          }}
+        >
           {error}
         </Box>
       )}
-
-      <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
+      {/* Messages List */}
+      <Box ref={messagesContainerRef} sx={{ flex: 1, overflowY: "auto", height:"100%" }}>
         <List>
+          {/* Hiệu ứng loading khi kéo lên */}
+          {loading && hasMoreMessages && (
+            <ListItem sx={{ justifyContent: "center" }}>
+              <CircularProgress size={24} />
+            </ListItem>
+          )}
           {Array.isArray(messages) && messages.length > 0 ? (
             messages.map((msg, idx) => (
-            <ListItem
-              key={msg.id}
-              sx={{
-                display: 'flex',
-                justifyContent: msg.sender === userInfo?.user_id ? 'flex-end' : 'flex-start',
-                px: 1,
-                py: 0.5,
-              }}
-            >
-              <Box
+              <ListItem
+                key={msg.id}
                 sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: msg.sender === userInfo?.user_id ? 'flex-end' : 'flex-start',
+                  display: "flex",
+                  justifyContent:
+                    msg.sender === userInfo?.user_id
+                      ? "flex-end"
+                      : "flex-start",
+                  px: 1,
+                  py: 0.5,
                 }}
               >
                 <Box
                   sx={{
-                    bgcolor: msg.sender === userInfo?.user_id ? '#37C5E5' : '#F2F2F2',
-                    color: msg.sender === userInfo?.user_id ? 'white' : 'black',
-                    borderRadius: msg.sender === userInfo?.user_id ? '20px 20px 0 20px' : '20px 20px 20px 0',
-                    px: 2,
-                    py: 1,
-                    display: 'inline-block', 
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems:
+                      msg.sender === userInfo?.user_id
+                        ? "flex-end"
+                        : "flex-start",
                   }}
                 >
-                  <Typography
-                    variant="body2"
-                    component="span" 
-                    sx={{ wordBreak: 'break-word' }}
+                  <Box
+                    sx={{
+                      bgcolor:
+                        msg.sender === userInfo?.user_id
+                          ? "#37C5E5"
+                          : "#F2F2F2",
+                      color:
+                        msg.sender === userInfo?.user_id ? "white" : "black",
+                      borderRadius:
+                        msg.sender === userInfo?.user_id
+                          ? "20px 20px 0 20px"
+                          : "20px 20px 20px 0",
+                      px: 2,
+                      py: 1,
+                      display: "inline-block",
+                    }}
                   >
-                    {msg.content}
+                    <Typography
+                      variant="body2"
+                      component="span"
+                      sx={{ wordBreak: "break-word" }}
+                    >
+                      {msg.content}
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "#999",
+                      fontSize: "11px",
+                      mt: 0.5,
+                      pr: 1,
+                    }}
+                  >
+                    {msg.sender === userInfo?.user_id &&
+                    messages.length - 1 === idx
+                      ? msg.status === "read"
+                        ? "Đã xem"
+                        : "Đã gửi"
+                      : ""}
                   </Typography>
                 </Box>
-
-                {/* Phần trạng thái */}
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: '#999',
-                    fontSize: '11px',
-                    mt: 0.5,
-                    pr: 1,
-                  }}
-                >
-                  {msg.sender === userInfo?.user_id
-                    ? (msg.status === 'read' ? 'Đã xem' : 'Đã gửi')
-                    : ''}
-                </Typography>
-              </Box>
-
-            </ListItem>
-
+              </ListItem>
             ))
           ) : (
             <ListItem>
               <ListItemText
                 primary="Chưa có tin nhắn"
-                primaryTypographyProps={{ color: 'text.secondary', textAlign: 'center' }}
+                primaryTypographyProps={{
+                  color: "text.secondary",
+                  textAlign: "center",
+                }}
               />
             </ListItem>
           )}
-          <div ref={messageEndRef} />
         </List>
+        <div ref={messageEndRef} />
       </Box>
-      <Box sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        p: 0.8, 
-        bgcolor: '#F2F2F2', 
-        borderRadius: '20px',  // Làm cho phần nhập tin nhắn có góc bo tròn hoàn toàn
-        width: '98%', // Giảm độ rộng
-        margin: '30px auto', // Tạo khoảng cách & căn giữa
-        boxShadow: '0px 3px 3px rgba(0,0,0,0.1)' // Tạo hiệu ứng nổi nhẹ
-      }}>
+      
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          p: 0.8,
+          bgcolor: "#F2F2F2",
+          borderRadius: "20px",
+          width: "98%",
+          margin: "30px auto",
+          boxShadow: "0px 3px 3px rgba(0,0,0,0.1)",
+        }}
+      >
         <TextField
           fullWidth
           size="small"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') sendMessage();
+            if (e.key === "Enter") sendMessage();
           }}
           placeholder="Nhập tin nhắn..."
           sx={{
-            borderRadius: '999px', 
-            '& .MuiOutlinedInput-notchedOutline': { border: 'none' }, // Xóa viền của outline mặc định
-            '& .MuiInputBase-root': { border: 'none' }, // Đảm bảo không có border bên ngoài
-            '& .MuiInputBase-input::placeholder': { color: 'black', opacity: 1 } // Đổi màu chữ placeholder thành đen
+            borderRadius: "999px",
+            "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+            "& .MuiInputBase-root": { border: "none" },
+            "& .MuiInputBase-input::placeholder": {
+              color: "black",
+              opacity: 1,
+            },
           }}
-
-          
           disabled={!userInfo}
         />
-        <IconButton 
-          onClick={sendMessage} 
-          color="primary" 
+        <IconButton
+          onClick={sendMessage}
+          color="primary"
           sx={{ ml: 1 }}
           disabled={!userInfo}
         >

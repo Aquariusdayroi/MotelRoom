@@ -4,7 +4,6 @@ from city.models import City
 from district.models import District
 from address.models import Address
 
-
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -30,7 +29,6 @@ class CustomUserManager(BaseUserManager):
 
 
 
-
 class User(AbstractBaseUser, PermissionsMixin):
     REGISTRATION_TYPES = [('local', 'Local'), ('google', 'Google')]
     ROLES = [('user', 'User'), ('owner', 'Owner'), ('admin', 'Admin')]
@@ -42,12 +40,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     registration_type = models.CharField(max_length=10, choices=REGISTRATION_TYPES, default='local')
     fullname = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=255, null=True, blank=True, unique=True)
+    
+    # Các trường của user đăng ký thành owner
+    cccd = models.CharField(max_length=12, null=True, blank=True) 
+    image_front_cccd = models.ImageField(upload_to='cccd/front/', null=True, blank=True)
+    image_back_cccd = models.ImageField(upload_to='cccd/back/', null=True, blank=True)
 
     # ForeignKey
     city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True, related_name='user')
     district = models.ForeignKey(District, on_delete=models.SET_NULL, null=True, blank=True, related_name='user')
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True, related_name='user')
-    
 
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='avatars/default.jpg')
     birthday = models.DateTimeField(null=True, blank=True)
