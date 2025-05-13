@@ -523,16 +523,13 @@ class AdminStatsRentalPostAPIViewSet(viewsets.ModelViewSet):
             "statistics": statistics
         }, status=status.HTTP_200_OK)
         
-    @action(detail=False, methods=['get'])
-    def stat_rental(self, request, *args, **kwargs):
-        # Thống kê số bài đăng của chủ trọ
+    @action(detail=False, methods=['get'], url_path="static-owner-rentalpost")
+    def stat_rental(self, request, *args, **kwargs): # Api thống kê số bài đăng và chủ trọ và bài đăng của từng  chủ trọ
         owners = User.objects.filter(role='owner')
         owner_ids = owners.values_list("id", flat=True)
         
         stats = (
-            RentalPost.objects.filter(user_id__in=owner_ids) 
-            .values("user_id")
-            .annotate(
+            RentalPost.objects.filter(user_id__in=owner_ids) .values("user_id").annotate(
                 total_rental_posts=Count("id")
             )
             .order_by("-total_rental_posts")        
@@ -544,11 +541,13 @@ class AdminStatsRentalPostAPIViewSet(viewsets.ModelViewSet):
                "message": "Không có chủ trọ nào có bài đăng."
            }, status=status.HTTP_404_NOT_FOUND) 
         
+        # Tổng số bài đăng
+        total_rentalpost = sum(stat["total_rental_posts"] for stat in stats)
+
         results = []
         for stat in stats:
-            user = owners.get(id=stat['user_id'])
             results.append({
-                "fullname": user.fullname,
+                "owner_id": stat['user_id'],
                 "total_rental_posts": stat["total_rental_posts"]
             })
             
@@ -558,6 +557,7 @@ class AdminStatsRentalPostAPIViewSet(viewsets.ModelViewSet):
             "success": True,
             "message": "Thống kê số bài đăng thành công.",
             "total_owner": total_owner,
+            "total_rentalposts": total_rentalpost, 
             "results": results
         }, status=status.HTTP_200_OK)
         
