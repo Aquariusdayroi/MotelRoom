@@ -7,10 +7,15 @@ from user.models import User
 class Conversation(models.Model):
     user_one = models.ForeignKey(User, related_name='conversations_one', on_delete=models.CASCADE)
     user_two = models.ForeignKey(User, related_name='conversations_two', on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now=True)
 
-
-
+    unique_together = [
+            ('user_one', 'user_two'),
+            ('user_two', 'user_one'),  
+        ]
+    def __str__(self):
+        return f"Conversation between {self.user_one} and {self.user_two}"
+    
 class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE)

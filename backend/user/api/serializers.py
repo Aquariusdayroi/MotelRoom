@@ -1,11 +1,16 @@
+#Serialzier
 from rest_framework import serializers
-from user.models import User, OwnerRequest
+
+#Django
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import update_last_login
 from django.contrib.auth import get_user_model
+
+#Model
 from city.models import City
 from district.models import District
 from address.models import Address
+from user.models import User, OwnerRequest
 
 #JWT token
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -36,7 +41,7 @@ from django.conf import settings
 #Time delay
 import time
 
-
+#---------------------------------------------------------------------------------------------------#
 #Xác thực mail 
 def send_verification_email(user, request):
     token = default_token_generator.make_token(user)
@@ -54,7 +59,7 @@ def send_verification_email(user, request):
         fail_silently=False,
     )
 
-
+#---------------------------------------------------------------------------------------------------#
 #Serializer Đăng nhập
 class UserSerializer(serializers.ModelSerializer):
     address = AddressNestedSerializer()
@@ -67,7 +72,8 @@ class UserSerializer(serializers.ModelSerializer):
 
         read_only_fields = ['id', 'created', 'updated_at', 'is_active', 'registration_type', 'email_verified_at']
 
-
+#---------------------------------------------------------------------------------------------------#
+#Serial xác thực người dùng
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         User = get_user_model()
@@ -82,7 +88,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if not user.check_password(attrs["password"]):
             raise AuthenticationFailed("Email hoặc mật khẩu không đúng.")
         if not user.is_active:
-            raise AuthenticationFailed("Tài khoản chưa xác thực Email")
+            raise AuthenticationFailed("Tài khoản chưa xác thực Email.")
         
         refresh = self.get_token(user)
         return {
@@ -200,17 +206,91 @@ class GoogleLoginSerializer(serializers.Serializer):
             }
         }
 
+
+#---------------------------------------------------------------------------------------------------#
+    # address = Address.objects.create(
+    #         description=description,
+    #         latitude=latitude,
+    #         longitude=longitude,
+    #         city=city,
+    #         district=district
+    #     )
+# Serializer người dùng đăng ký thành owner
 class OwnerRequestSerializer(serializers.ModelSerializer):
     class Meta:
-        model = OwnerRequest
-        fields = ['id', 'user', 'cccd', 'image_front_cccd', 'image_back_cccd', 'status', 'rejection_reason', 'created_at', 'reviewed_at']
-        read_only_fields = ['user', 'status', 'rejection_reason', 'created_at', 'reviewed_at']
+        model = OwnerRequest 
+        fields = ['rental_post_data', 'cccd', 'image_front_cccd', 'image_back_cccd']
+        
+    def validate(self, attrs):
+        user = self.context['request'].user
+        
+        if hasattr(user, 'ownerrequest'):
+            if user.ownerrequest.status == 'pending':
+                raise serializers.ValidationError('Yêu cầu của bạn đang được xử lý.')
+            elif user.ownerrequest.status == 'approved':
+                raise serializers.ValidationError('Bạn đã là chủ phòng.')
+            elif user.ownerrequest.status == 'rejected':
+                raise serializers.ValidationError('Yêu cầu đã bị từ chối.')
+        
+        # Lấy giá trị rental_post_data từ dữ liệu request
+        rental_post_data = attrs.get('rental_post_data')
+        # Kiểm tra rental_post_data có tồn tại và hợp lệ không
+                # Kiểm tra từng field bắt buộc
+        if not rental_post_data.get('title'):
+            raise serializers.ValidationError({'title': 'Tiêu đề bài đăng không được để trống.'})
+        if not rental_post_data.get('information_detail'):
+            raise serializers.ValidationError({'information_detail': 'Mô tả chi tiết không được để trống.'})
+        if not rental_post_data.get('home_type'):
+            raise serializers.ValidationError({'home_type': 'Loại phòng không được để trống.'})
+        
+        if not rental_post_data.get('address'):
+            raise serializers.ValidationError({'address': 'Địa chỉ không được để trống.'})
+        else: 
+            address = rental_post_data.get('address', {})
+            if not address.get('city'): 
+                raise serializers.ValidationError({'address': 'Thành phố không được để trống'})
+            if not address.get('district'): 
+                raise serializers.ValidationError({'address': 'Quận huyện không được để trống'})
+            if not address.get('description'): 
+                raise serializers.ValidationError({'address': 'Địa chỉ chi tiết không được để trống'})
+            
+        if not rental_post_data.get('total_occupancy'):
+            raise serializers.ValidationError({'total_occupancy': 'Sức chứa không được để trống.'})
+        if not rental_post_data.get('acreage'):
+            raise serializers.ValidationError({'acreage': 'Diện tích không được để trống.'})
+        if not rental_post_data.get('price'):
+            raise serializers.ValidationError({'price': 'Giá phòng không được để trống.'})
 
+        return attrs
+    
+    def create(self, validated_data):
+        
+        rental_post_data = validated_data.pop('rental_post_data')
+        owner_request = OwnerRequest.objects.create(
+            user=self.context['request'].user,
+            rental_post_data=rental_post_data,
+            **validated_data
+        )
+        return owner_request
+
+#---------------------------------------------------------------------------------------------------#   
+# Serializer admin xem danh sách các yêu cầu
+class OwnerRequestAdminSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source='user.email')
+    fullname = serializers.CharField(source='user.fullname')
+    phone_number = serializers.CharField(source='user.phone_number')
+
+    class Meta:
+        model = OwnerRequest
+        fields = ['id', 'email', 'fullname', 'phone_number', 'cccd', 'image_front_cccd',
+                  'image_back_cccd', 'status', 'reviewed_at', 'rejection_reason']
     def validate_user(self, value):
         if OwnerRequest.objects.filter(user=value).exists():
             raise serializers.ValidationError("Bạn đã gửi yêu cầu trước đó.")
         return value
-    
+
+
+#---------------------------------------------------------------------------------------------------#
 # Serializer sửa thông tin người dùng
 class UpdateUserSerializer(serializers.ModelSerializer):
     address = AddressNestedSerializer()
