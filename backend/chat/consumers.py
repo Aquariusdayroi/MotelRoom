@@ -20,31 +20,39 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close(code=4001, reason="Unauthorized")
             return
 
-        self.conversation_id = self.scope['url_route']['kwargs']['conversation_id']
-        self.room_group_name = f'chat_{self.conversation_id}'
-
-        try:
-            conversation = await database_sync_to_async(Conversation.objects.get)(id=self.conversation_id)
-        except Conversation.DoesNotExist:
-            await self.close(code=4002, reason="Conversation not found")
-            return
-
-        try:
-            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        except Exception as e:
-            await self.close(code=4003, reason="Failed to join group")
-            return
+        self.conversation_ids = await get_friends_or_chat_users(user)
+        self.room_group_names = []
         
+        for conversation_id in self.conversation_ids:
+            room_group_name = f'chat_{conversation_id}'
+            # Kiểm tra tồn tại hội thoại
+            try:
+                conversation = await database_sync_to_async(Conversation.objects.get)(id=conversation_id)
+            except Conversation.DoesNotExist:
+                print('Không tìm thấy cuộc hoại thoại')
+                continue  
+
+            # Thêm người dùng vào group
+            try:
+                await self.channel_layer.group_add(room_group_name, self.channel_name)
+                self.room_group_names.append(room_group_name)
+            except Exception as e:
+                print(e)
+                continue  # có thể log lỗi nếu muốn
+
+        # Đăng ký người dùng online
         online_users[user.id] = self.channel_name
-        await self.accept()
-        await self.broadcast_online_status(True) 
+
+        await self.accept() 
+        await self.broadcast_online_status(True)
 
     async def disconnect(self, close_code):
-        if hasattr(self, 'room_group_name'):
-            user = self.scope["user"]
-            online_users.pop(user.id, None)
-            await self.broadcast_online_status(False)   # Thông báo offline
-            await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        for room_group_name in getattr(self, 'room_group_names', []):
+            await self.channel_layer.group_discard(room_group_name, self.channel_name)
+        
+        user = self.scope["user"]
+        online_users.pop(user.id, None)
+        await self.broadcast_online_status(False)   # Thông báo offline
 
 
     # Nhận và gửi data  chat đến các user trong kenh và ping-pong
@@ -57,17 +65,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if data.get("type") == "check_online":
             target_user_id = data["target_user_id"]
             is_online = target_user_id in online_users
-            await self.send(text_data=json.dumps({
-                "type": "online_status",
-                "user_id": target_user_id,
-                "online": is_online
-            }))
+        
+            await self.send(
+                text_data=json.dumps(
+                    {
+                        "type": "online_status",
+                        "user_id": target_user_id,
+                        "online": is_online
+                    }
+                )
+            )
             return
          
+        conversation_id = data['conversation_id']
+        room_group_name = f'chat_{conversation_id}'
+
+        
         if data.get("type") == "read_message": 
             message_id = data["message_id"]
             await self.channel_layer.group_send(
-                self.room_group_name,
+                room_group_name,
                 {
                     "type": "read_status",
                     "message_id": message_id
@@ -78,12 +95,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = data['message']
         sender_id = data['sender_id']
 
-        msg_obj = await self.save_message(sender_id, self.conversation_id, message)
+        msg_obj = await self.save_message(sender_id, conversation_id, message)
 
         await self.channel_layer.group_send(
-            self.room_group_name,
+            room_group_name,
             {
                 'type': 'chat_message',
+                'conversation_id': conversation_id,
                 'id': msg_obj.id,
                 'message': message,
                 'sender_id': sender_id,
@@ -91,17 +109,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'status': msg_obj.status,
             }
         )
-
+        
 
     #Data dạng chat
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({
+            'type': 'chat_message',
+            'conversation_id': event['conversation_id'],
             'id': event['id'],
             'content': event['message'],
             'sender': event['sender_id'],
             'create_at': event['create_at'],
             'status': event['status'],
         }, ensure_ascii=False))
+
 
     #Data dạng read_mesage
     async def read_status(self, event):
@@ -122,8 +143,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def broadcast_online_status(self, is_online):
         # Lấy danh sách user cần được thông báo
         user = self.scope['user']
-        related_user_ids = await get_friends_or_chat_users(user)  # Bạn cần implement
-        for uid in related_user_ids:
+        for uid in self.conversation_ids:
             await self.channel_layer.group_send(
                 f"chat_{uid}",
                 {

@@ -7,6 +7,9 @@ from django.db import models, IntegrityError, transaction
 from rest_framework.views import APIView
 from rest_framework import generics
 from django.db.models import Q
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 #---------------------------------------------------------------------------------------------------#
 #Api lấy danh sách cuộc trò chuyện
 class ConversationListView(APIView):
@@ -28,69 +31,82 @@ class ConversationCreateView(APIView):
 
     def post(self, request):
         user = request.user
-        user_two = request.data.get("user_two")
-        print(f"Yêu cầu tạo cuộc trò chuyện: user={user.id}, user_two={user_two}")
+        user_two_id = request.data.get("user_two")
+    
 
-        if user_two is None:
+        if user_two_id is None:
+        
             return Response({
                 "status": False,
-                "message": "Không có dữ liệu truyền vào."
+                "message": "Không có dữ liệu user_two truyền vào."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        if str(user.id) == str(user_two):
+        if str(user.id) == str(user_two_id):
             return Response({
                 "status": False,
                 "message": "Không thể tạo cuộc trò chuyện với chính mình."
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            user_two = User.objects.get(id=user_two_id)
+        except User.DoesNotExist:
+            return Response({
+                "status": False,
+                "message": f"User với id {user_two_id} không tồn tại."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        try:
             with transaction.atomic():
                 # Kiểm tra cuộc trò chuyện hiện có
                 conversation = Conversation.objects.filter(
-                    Q(user_one=user, user_two_id=user_two) |
-                    Q(user_one_id=user_two, user_two=user)
+                    Q(user_one=user, user_two=user_two) |
+                    Q(user_one=user_two, user_two=user)
                 ).first()
 
-                if conversation is not None:
-                    conversation.save()
+                if conversation:
+                    conversation.save()  # Cập nhật timestamp nếu cần
                     return Response({
                         "status": True,
                         "message": "Cuộc trò chuyện đã tồn tại.",
-                        'data': ConversationSerializer(conversation, context={'request': request}).data
+                        "data": ConversationSerializer(conversation, context={'request': request}).data
                     }, status=status.HTTP_200_OK)
 
-                conversation = Conversation.objects.create(user_one=user, user_two_id=user_two)
+                # Tạo cuộc trò chuyện mới
+                conversation = Conversation.objects.create(user_one=user, user_two=user_two)
                 serializer = ConversationSerializer(conversation, context={'request': request})
-
                 return Response({
-                    'status': True,
-                    'message': 'Tạo cuộc trò chuyện mới thành công',
-                    'data': serializer.data
+                    "status": True,
+                    "message": "Tạo cuộc trò chuyện mới thành công",
+                    "data": serializer.data
                 }, status=status.HTTP_201_CREATED)
 
-        except IntegrityError:
-            print(f"Lỗi IntegrityError: Thử lấy lại cuộc trò chuyện")
+        except IntegrityError as e:
+            # Thử lấy lại cuộc trò chuyện
             conversation = Conversation.objects.filter(
-                Q(user_one=user, user_two_id=user_two) |
-                Q(user_one_id=user_two, user_two=user)
+                Q(user_one=user, user_two=user_two) |
+                Q(user_one=user_two, user_two=user)
             ).first()
             if conversation:
-                print(f"Tìm thấy cuộc trò chuyện sau lỗi: ID={conversation.id}")
                 return Response({
                     "status": True,
                     "message": "Cuộc trò chuyện đã tồn tại.",
-                    'data': ConversationSerializer(conversation, context={'request': request}).data
+                    "data": ConversationSerializer(conversation, context={'request': request}).data
                 }, status=status.HTTP_200_OK)
-            print(f"Không tìm thấy cuộc trò chuyện sau lỗi")
             return Response({
                 "status": False,
-                "message": "Lỗi khi tạo cuộc trò chuyện."
+                "message": f"Lỗi khi tạo cuộc trò chuyện: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response({
+                "status": False,
+                "message": f"Lỗi không xác định: {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #---------------------------------------------------------------------------------------------------#
 #Api lấy tin nhắn cũ
 class MessageListView(generics.ListAPIView):
     serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         conversation_id = self.request.query_params.get('conversation_id')
