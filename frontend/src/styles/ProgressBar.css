@@ -6,11 +6,11 @@
     margin: 40px 0;
 }
 
-.progress-bar{
+.progress-bar {
     padding: 10px;
 }
 
-.box-progress{
+.box-progress {
     display: flex;
     gap: 40px;
 }
@@ -39,7 +39,7 @@
 }
 
 .step-circle::before {
-    content: "";
+    content: '';
     position: absolute;
     top: -8px;
     left: -8px;
@@ -52,21 +52,21 @@
 }
 
 .step-circle.active {
-    background-color: #17a2b8;
-    border-color: #17a2b8;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .step-circle.active::before {
-    border-color: #17a2b8;
+    border-color: var(--primary-color);
 }
 
 .step-circle.completed {
-    background-color: #17a2b8;
-    border-color: #17a2b8;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .step-circle.completed::before {
-    border-color: #17a2b8;
+    border-color: var(--primary-color);
 }
 
 .step-line {
@@ -83,8 +83,9 @@
 .step-label {
     color: #6c757d;
     font-size: 14px;
-    margin-top: 15px;
+    margin-top: 16px;
     width: 120px;
+    text-align: center;
 }
 
 .step-label.active-label {
@@ -92,5 +93,5 @@
 }
 
 .step-label.completed-label {
-    color: #17a2b8;
+    color: var(--primary-color);
 }

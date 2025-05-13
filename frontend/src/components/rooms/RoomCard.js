@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import styles from '../../styles/RoomCard.module.css';
 import { images } from '../../assets/images';
 import { AuthToken } from '../../authToken';
@@ -17,6 +17,7 @@ const RoomCard = ({
     onClick,
     onLocationClick,
     is_favorite,
+    showFavoriteButton = true,
 }) => {
     let { user } = useContext(AuthToken);
 
@@ -95,7 +96,7 @@ const RoomCard = ({
                     ))}
                 </div>
                 {isNew && <span className={styles.newBadge}>Mới</span>}
-                {user && (
+                {user && showFavoriteButton && (
                     <button className={styles.favoriteButton} onClick={handleSetFavorite}>
                         {isFavorite ? (
                             <svg
