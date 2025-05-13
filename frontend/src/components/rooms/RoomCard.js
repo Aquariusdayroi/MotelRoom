@@ -55,6 +55,7 @@ const RoomCard = ({
         if (isTransitioning) return;
         setIsTransitioning(true);
         setCurrentImageIndex((prevIndex) => (prevIndex === imageList.length - 1 ? 0 : prevIndex + 1));
+        setCurrentImageIndex((prevIndex) => (prevIndex === imageList.length - 1 ? 0 : prevIndex + 1));
         setTimeout(() => setIsTransitioning(false), 500);
     };
 
@@ -62,6 +63,7 @@ const RoomCard = ({
         e.preventDefault();
         if (isTransitioning) return;
         setIsTransitioning(true);
+        setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? imageList.length - 1 : prevIndex - 1));
         setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? imageList.length - 1 : prevIndex - 1));
         setTimeout(() => setIsTransitioning(false), 500);
     };
@@ -107,13 +109,13 @@ const RoomCard = ({
                                 onError={(e) => {
                                     e.target.onerror = null;
                                     e.target.src = images.emptyImg;
+                                    e.target.src = images.emptyImg;
                                 }}
                             />
                         </div>
                     ))}
                 </div>
-                {isNew && <span className={styles.newBadge}>Mới</span>}
-                {user && (
+                {isNew && <span className={styles.newBadge}>Mới</span>}                {user && (
                     <button className={styles.favoriteButton} onClick={handleSetFavorite}>
                         {isFavorite ? (
                             <svg
@@ -161,6 +163,7 @@ const RoomCard = ({
                                 height="20"
                             >
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                             </svg>
                         </button>
                         <button
@@ -178,14 +181,13 @@ const RoomCard = ({
                                 height="20"
                             >
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                             </svg>
                         </button>
                         <div className={styles.dots}>
                             {imageList.map((_, index) => (
                                 <span
-                                    key={index}
-                                    className={`${styles.dot} ${index === currentImageIndex ? styles.activeDot : ''}`}
-                                    className={`${styles.dot} ${index === currentImageIndex ? styles.activeDot : ''}`}
+                                    key={index} className={`${styles.dot} ${index === currentImageIndex ? styles.activeDot : ''}`}
                                     onClick={(e) => {
                                         e.preventDefault();
                                         goToImage(index);
@@ -197,16 +199,14 @@ const RoomCard = ({
                 )}
             </div>
             <div className={styles.content}>
-                <h3 className={styles.address}>{address}</h3>
-                <div className={`${styles.location} ${styles.clickable}`} onClick={onLocationClick}>
+                <h3 className={styles.address}>{address}</h3>                <div className={`${styles.location} ${styles.clickable}`} onClick={onLocationClick}>
                     <div>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                             fill="currentColor"
                             width="18px"
-                            height="18px"
-                            style={{ marginBottom: '7px' }}
+                            height="18px" style={{ marginBottom: '7px' }}
                         >
                             <path
                                 fillRule="evenodd"

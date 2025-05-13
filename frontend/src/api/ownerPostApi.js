@@ -6,16 +6,12 @@ const ownerPostApi = {
     getAll: (params) => {
         return axiosClient.get(`/rental_post/api/my-posts/`, { params });
     },
-
-    hidePost: (id) => {
-        return axiosClient.post(`/rental_post/hide/${id}/`);
-    },
-
+    
     // Xoá bài đăng
     delete: (id) => {
         return axiosClient.delete(`/rental_post/api/my-posts/${id}/`);
     },
-    search: ({ page = 1, keyword = '', ordering = 'oldest' }) => {
+    search: ({ page = 1, keyword = '', ordering = 'newest' }) => {
         return axiosClient.get('/rental_post/api/my-posts/search/', {
             params: {
                 page,
@@ -23,6 +19,11 @@ const ownerPostApi = {
                 ordering,
             },
         });
+    },
+
+    // Cập nhật bài đăng
+    update: (id, data) => {
+        return axiosClient.put(`/rental_post/api/my-posts/${id}/`, data);
     },
 
 };

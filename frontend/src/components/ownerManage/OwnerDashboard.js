@@ -7,7 +7,6 @@ import 'chart.js/auto';
 import { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
 import { Link, useSearchParams } from "react-router-dom";
-import { images } from '../../assets/images';
 const OwnerDashboard = () => {
     const [searchParams] = useSearchParams();
     const page = +searchParams.get("page") || 1;
@@ -132,21 +131,66 @@ const OwnerDashboard = () => {
                                 key={i}
                                 to={`/detail/${post.id}`}
                                 className="text-decoration-none"
-                            >
-                                <div className="d-flex mb-3 p-2 hover-card" style={{ cursor: 'pointer' }}>
-                                    <Image
-                                        src={post.images && post.images.length > 0 ? post.images[0].image_url : images.emptyImg}
-                                        rounded
-                                        width={60}
-                                        height={60}
-                                        className="me-2"
-                                        style={{ objectFit: 'cover' }}
-                                        onError={e => { e.target.onerror = null; e.target.src = images.emptyImg; }}
-                                    />
-                                    <div>
-                                        <div className="fw-bold">{post.title}</div>
-                                        <div className="text-primary">{post.price}</div>
-                                        <small className="text-muted">{post.address.description}</small>
+                            >                                <div className="d-flex mb-2 p-2" 
+                                    style={{ 
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        borderRadius: '8px',
+                                        backgroundColor: '#ffffff',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                        border: '1px solid #eef0f2'
+                                    }}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.transform = 'translateY(-3px)';
+                                        e.currentTarget.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+                                        e.currentTarget.style.backgroundColor = '#f8f9fa';
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
+                                        e.currentTarget.style.backgroundColor = '#ffffff';
+                                    }}
+                                >                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        minWidth: '60px',
+                                        position: 'relative',
+                                        marginRight: '10px',
+                                        borderRadius: '6px',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <Image
+                                            src={post.images?.[0]?.image_url}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0
+                                            }}
+                                            onError={e => { e.target.onerror = null; e.target.src = "" }}
+                                        />
+                                    </div>                                    <div>                                        <div style={{ 
+                                            fontSize: '13px', 
+                                            fontWeight: '600',
+                                            color: '#1a365d',
+                                            marginBottom: '4px',
+                                            lineHeight: '1.3'
+                                        }}>{post.title}</div>
+                                        <div style={{ 
+                                            color: '#e53e3e', 
+                                            fontSize: '14px', 
+                                            fontWeight: '600',
+                                            marginBottom: '4px'
+                                        }}>{post.price}</div>
+                                        <div style={{ 
+                                            color: '#718096', 
+                                            fontSize: '12px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '4px'
+                                        }}>{post.address.description}</div>
                                     </div>
                                 </div>
                             </Link>

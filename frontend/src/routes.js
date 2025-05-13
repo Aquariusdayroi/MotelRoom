@@ -78,12 +78,23 @@ function AnimatedRoutes() {
                         </ProtectedRoute>
                     }
                 />
-                <Route path="/chat" element={
-
-                    // <Layout enableScroll={false} enableSearch={false}>
-                    <Chat />
-                    // </Layout>
-                }
+                <Route
+                    path="/add-post"
+                    element={
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <AddPost />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/chat"
+                    element={
+                        // <Layout enableScroll={false} enableSearch={false}>
+                        <Chat />
+                        // </Layout>
+                    }
                 />
 
                 <Route

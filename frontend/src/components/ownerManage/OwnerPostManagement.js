@@ -21,21 +21,34 @@ const OwnerPostManagement = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [data, setData] = useState({ results: [], total_pages: 0 });
-
-    const fetchRooms = async (currentPage = 1, keyword = '', ordering = 'oldest') => {
+    const fetchRooms = async (currentPage = 1) => {
         setLoading(true);
         try {
             const response = await ownerPostApi.getAll({
-                page: currentPage,
-                keyword: keyword,
-                ordering: ordering
+                page: currentPage
             });
             if (response?.data) {
-                setData({
-                    results: response.data.results.data,
-                    total_pages: Math.ceil(response.data.count / 9),
-                });
+                const rawRooms = response.data.results.data || [];
+
+                const formattedRooms = rawRooms.map(room => ({
+                    ...room,
+                    user: {
+                        fullname: room.fullname,
+                        avatar: room.avatar?.startsWith('http')
+                            ? room.avatar
+                            : `http://localhost:8000${room.avatar}`,
+                    }
+                }));
+
+                const responseData = {
+                    results: formattedRooms,
+                    total_pages: Math.ceil(response.data.count / 9) || 1,
+                };
+
+                console.log('Data being set:', responseData);
+                setData(responseData);
             }
+
         } catch (error) {
             console.error(error);
             setError(error.message);
@@ -43,32 +56,47 @@ const OwnerPostManagement = () => {
             setLoading(false);
         }
     };
-
     useEffect(() => {
-        fetchRooms(page, keywordParam, orderingParam);
+        // Ban đầu vào trang dùng getAll
+        fetchRooms(page);
         setSearchTerm(keywordParam);
         setSortOrder(orderingParam);
-    }, [page, keywordParam, orderingParam]);
-
-    const handleSort = (order) => {
+    }, [page]); const handleSort = (order) => {
         const sortValue = order === 'asc' ? 'newest' : 'oldest';
         setSortOrder(sortValue);
         navigate(`?page=1&keyword=${searchTerm}&ordering=${sortValue}`);
-        fetchRooms(1, searchTerm, sortValue);
-    };    const handleSearchClick = async () => {
+
+        // Dùng search API với ordering
+        ownerPostApi.search({
+            page: 1,
+            keyword: searchTerm,
+            ordering: sortValue
+        }).then(response => {
+            if (response?.data) {
+                setData({
+                    results: response.data.results,
+                    total_pages: response.data.total_pages,
+                });
+            }
+        }).catch(error => {
+            console.error(error);
+            setError(error.message);
+        }).finally(() => {
+            setLoading(false);
+        });
+    }; const handleSearchClick = async () => {
         navigate(`?page=1&keyword=${searchTerm}&ordering=${sortOrder}`);
         setLoading(true);
         try {
-            const response = await ownerPostApi.getAll({
+            const response = await ownerPostApi.search({
                 page: 1,
                 keyword: searchTerm,
                 ordering: sortOrder
             });
-            console.log('Kết quả tìm kiếm:', response.data);
-            if (response?.data) {
+            console.log('Kết quả tìm kiếm:', response.data); if (response?.data) {
                 setData({
-                    results: response.data.results.data,
-                    total_pages: Math.ceil(response.data.count / 9),
+                    results: response.data.results,
+                    total_pages: response.data.total_pages,
                 });
             }
         } catch (error) {
@@ -83,7 +111,7 @@ const OwnerPostManagement = () => {
         try {
             await ownerPostApi.hidePost(id);
             alert('Đã ẩn bài đăng thành công!');
-            fetchRooms(page, searchTerm, sortOrder);
+            fetchRooms(page);
         } catch (error) {
             console.error('Error hiding post:', error);
             alert('Có lỗi xảy ra khi ẩn bài đăng. Vui lòng thử lại sau!');
@@ -95,7 +123,7 @@ const OwnerPostManagement = () => {
             try {
                 await ownerPostApi.delete(id);
                 alert('Xóa bài đăng thành công!');
-                fetchRooms(page, searchTerm, sortOrder);
+                fetchRooms(page);
             } catch (error) {
                 console.error('Error deleting post:', error);
                 alert('Có lỗi xảy ra khi xóa bài đăng. Vui lòng thử lại sau!');
@@ -131,8 +159,7 @@ const OwnerPostManagement = () => {
                             <Button className={styles.btnFind} onClick={handleSearchClick}>
                                 Tìm
                             </Button>
-                        </div>
-                        <div className={`d-flex align-items-center ${styles.searchRight}`} style={{ gap: '10px' }}>
+                        </div>                        <div className={`d-flex align-items-center ${styles.searchRight}`} style={{ gap: '10px' }}>
                             <Dropdown>
                                 <Dropdown.Toggle
                                     variant="outline-secondary"
