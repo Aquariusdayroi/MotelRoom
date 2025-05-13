@@ -369,10 +369,13 @@ class OwnerRequestAPIViewSet(viewsets.ViewSet):
     queryset = OwnerRequest.objects.all()
     permission_classes = [IsAuthenticated]
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], url_path='send-request')
     def send_request(self, request):
+        
         serializer = OwnerRequestSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
+        print(request.data)
+        print("="*20)
         serializer.save()
         return Response({
             'success': True,
