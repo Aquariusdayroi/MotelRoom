@@ -208,13 +208,6 @@ class GoogleLoginSerializer(serializers.Serializer):
 
 
 #---------------------------------------------------------------------------------------------------#
-    # address = Address.objects.create(
-    #         description=description,
-    #         latitude=latitude,
-    #         longitude=longitude,
-    #         city=city,
-    #         district=district
-    #     )
 # Serializer người dùng đăng ký thành owner
 class OwnerRequestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -253,6 +246,10 @@ class OwnerRequestSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({'address': 'Quận huyện không được để trống'})
             if not address.get('description'): 
                 raise serializers.ValidationError({'address': 'Địa chỉ chi tiết không được để trống'})
+            if not address.get('latitude'): 
+                raise serializers.ValidationError({'address': 'Địa chỉ không có vĩ độ'})
+            if not address.get('longitude'): 
+                raise serializers.ValidationError({'address': 'Địa chỉ không có kinh độ'})
             
         if not rental_post_data.get('total_occupancy'):
             raise serializers.ValidationError({'total_occupancy': 'Sức chứa không được để trống.'})
@@ -283,7 +280,7 @@ class OwnerRequestAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = OwnerRequest
         fields = ['id', 'email', 'fullname', 'phone_number', 'cccd', 'image_front_cccd',
-                  'image_back_cccd', 'status', 'reviewed_at', 'rejection_reason']
+                  'image_back_cccd', 'status', 'reviewed_at', 'rejection_reason', 'rental_post_data']
     def validate_user(self, value):
         if OwnerRequest.objects.filter(user=value).exists():
             raise serializers.ValidationError("Bạn đã gửi yêu cầu trước đó.")
