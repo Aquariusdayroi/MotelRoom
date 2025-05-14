@@ -25,6 +25,7 @@ from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPa
 from .serializers import OwnerRequestSerializer, UpdateUserSerializer, OwnerRequestAdminSerializer
 from rental_post.api.serializers import RentalPostSerializer
 from review.api.serializers import ReviewSerializer
+from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
 
 #Python
 import os
@@ -53,7 +54,7 @@ class AdminManagerUserAPIViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     
-    @action(detail=False, methods=['get'], url_path='get-list')
+    @action(detail=False, methods=['get'], url_path='get-list') #Api lấy danh sách người dùng
     def get_list(self, request):
         # Lấy danh sách người dùng
         if not request.user.is_superuser and request.user.role != 'admin':
@@ -97,7 +98,7 @@ class AdminManagerUserAPIViewSet(viewsets.ModelViewSet):
             "users": serializer.data
         }, status=status.HTTP_200_OK)
         
-    @action(detail=True, methods=['delete'])
+    @action(detail=True, methods=['delete']) #Api xóa người dùng
     def delete(self, request, *args, **kwargs):
         # Xóa người dùng
         user_to_delete = self.get_object()
@@ -121,9 +122,8 @@ class AdminManagerUserAPIViewSet(viewsets.ModelViewSet):
             "message": "Xóa tài khoản thành công."
         }, status=status.HTTP_204_NO_CONTENT)
         
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get']) # Api thống kê số lượng người dùng theo tiêu chí
     def stat(self, request, *args, **kwargs):
-        # Thống kê số lượng người dùng theo tiêu chí
         total_users = User.objects.count()
         
         fields_param = request.query_params.get('fields')
@@ -170,7 +170,7 @@ class AdminManagerUserAPIViewSet(viewsets.ModelViewSet):
             "statistics": statistics
         }, status=status.HTTP_200_OK)
         
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get']) #Api Thống kê số lượt đánh giá của người dùng
     def stat_review(self, request, *args, **kwargs):
         if not request.user.is_superuser and request.user.role != 'admin':
             return Response({"success": False, 
@@ -214,6 +214,258 @@ class AdminManagerUserAPIViewSet(viewsets.ModelViewSet):
             "results": results
         }, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=['get'], url_path='static-owner-request-bytime') #Api thống kê số lượng yêu cầu đăng trong khoảng thời gian [day, week, month, total]
+    def get_static_owner_request(self, request, *args, **kwargs):
+        filter_type = request.query_params.get('filter', 'day')  # default: day
+        queryset = OwnerRequest.objects.all()
+        today = timezone.now().date()
+        if filter_type == 'day':
+            queryset = queryset.filter(created_at__date= today)
+
+        elif filter_type == 'week':
+            start_of_week = today - timedelta(days=today.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+            queryset = queryset.filter(created_at__date__range=(start_of_week, end_of_week))
+
+        elif filter_type == 'month':
+            start_of_month = today.replace(day=1)
+            next_month = (start_of_month + timedelta(days=32)).replace(day=1)
+            end_of_month = next_month - timedelta(days=1)
+            queryset = queryset.filter(created_at__date__range=(start_of_month, end_of_month))
+        elif filter_type =='all': 
+            pass
+        else:
+            return Response({'error': 'Tham số filter không hợp lệ (day, week, month, all)'}, status=400)
+
+        return Response({'success': True, 'type': filter_type, 'total_owner_request': queryset.count()}, status=status.HTTP_200_OK)
+
+
+    @action(detail=False, methods=['get'], url_path='static-owner-by-time-group') #Api thống kê số lượng yêu cầu theo thời gian [day in weeak, week in month, month in yeah, all yeah]
+    def statistic_owner_by_time_group(self, request, *args, **kwargs):
+        group_by = request.query_params.get('group_by', 'all_year')  # default: all_year
+        queryset = OwnerRequest.objects.all()
+        today = timezone.now().date()
+        if group_by == 'day': # Các ngày trong tuần này
+            start_of_week = today - timedelta(days=today.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+            queryset = queryset.filter(created_at__date__range=(start_of_week, end_of_week))
+            queryset = queryset.annotate(date=TruncDay('created_at')).values('date').annotate(total=Count('id')).order_by('date')
+            
+        elif group_by == 'week':
+            # Các tuần trong tháng này
+            start_of_month = today.replace(day=1)
+            next_month = (start_of_month + timedelta(days=32)).replace(day=1)
+            end_of_month = next_month - timedelta(days=1)
+            queryset = queryset.filter(created_at__date__range=(start_of_month, end_of_month))
+            queryset = queryset.annotate(week=TruncWeek('created_at')).values('week').annotate(total=Count('id')).order_by('week')
+
+        elif group_by == 'month':
+            # Các tháng trong năm này
+            start_of_year = today.replace(month=1, day=1)
+            end_of_year = today.replace(month=12, day=31)
+            queryset = queryset.filter(created_at__date__range=(start_of_year, end_of_year))
+            queryset = queryset.annotate(month=TruncMonth('created_at')).values('month').annotate(total=Count('id')).order_by('month')
+
+        elif group_by == 'all_year':
+            queryset = queryset.annotate(year=TruncYear('created_at')).values('year').annotate(total=Count('id')).order_by('year')
+
+        else:
+            return Response({"succes": False, 'error': 'Tham số group_by không hợp lệ. Các giá trị hợp lệ: day, week, month, year.'}, status=400)
+
+        return Response({
+            'success': True,
+            'group_by': group_by,
+            'data': list(queryset)
+        }, status=status.HTTP_200_OK)
+
+
+    @action(detail=False, methods=['get'], url_path='static-rental-post-bytime') #Api thống kê số lượng bài đăng trong khoảng thời gian [day, week, month, total]
+    def get_static_rental_post(self, request, *args, **kwargs):
+        filter_type = request.query_params.get('filter', 'day')  # default: day
+        queryset = RentalPost.objects.all()
+        today = timezone.now().date()
+        if filter_type == 'day':
+            queryset = queryset.filter(create_at__date= today)
+
+        elif filter_type == 'week':
+            start_of_week = today - timedelta(days=today.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+            queryset = queryset.filter(create_at__date__range=(start_of_week, end_of_week))
+
+        elif filter_type == 'month':
+            start_of_month = today.replace(day=1)
+            next_month = (start_of_month + timedelta(days=32)).replace(day=1)
+            end_of_month = next_month - timedelta(days=1)
+            queryset = queryset.filter(create_at__date__range=(start_of_month, end_of_month))
+        elif filter_type =='all': 
+            pass
+        else:
+            return Response({'error': 'Tham số filter không hợp lệ (day, week, month, all)'}, status=400)
+
+        return Response({'success': True, 'type': filter_type, 'total_rental_post': queryset.count()}, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get'], url_path='static-rental-post-group') #Api thống kê số lượng bài đăng thời gian [day in weeak, week in month, month in yeah, all yeah]
+    def statistic_rental_post_by_time_group(self, request, *args, **kwargs):
+        group_by = request.query_params.get('group_by', 'all_year')  # default: all_year
+        queryset = RentalPost.objects.all()
+        today = timezone.now().date()
+        if group_by == 'day': # Các ngày trong tuần này
+            start_of_week = today - timedelta(days=today.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+            queryset = queryset.filter(create_at__date__range=(start_of_week, end_of_week))
+            queryset = queryset.annotate(date=TruncDay('create_at')).values('date').annotate(total=Count('id')).order_by('date')
+            
+        elif group_by == 'week':
+            # Các tuần trong tháng này
+            start_of_month = today.replace(day=1)
+            next_month = (start_of_month + timedelta(days=32)).replace(day=1)
+            end_of_month = next_month - timedelta(days=1)
+            queryset = queryset.filter(create_at__date__range=(start_of_month, end_of_month))
+            queryset = queryset.annotate(week=TruncWeek('create_at')).values('week').annotate(total=Count('id')).order_by('week')
+
+        elif group_by == 'month':
+            # Các tháng trong năm này
+            start_of_year = today.replace(month=1, day=1)
+            end_of_year = today.replace(month=12, day=31)
+            queryset = queryset.filter(create_at__date__range=(start_of_year, end_of_year))
+            queryset = queryset.annotate(month=TruncMonth('create_at')).values('month').annotate(total=Count('id')).order_by('month')
+
+        elif group_by == 'all_year':
+            queryset = queryset.annotate(year=TruncYear('create_at')).values('year').annotate(total=Count('id')).order_by('year')
+
+        else:
+            return Response({"succes": False, 'error': 'Tham số group_by không hợp lệ. Các giá trị hợp lệ: day, week, month, year.'}, status=400)
+
+        return Response({
+            'success': True,
+            'group_by': group_by,
+            'data': list(queryset)
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='static-user-owner') #Api thống kê số lượng người dùng và số lượng chủ trọ
+    def static_user_owner(self, request, *args, **kwargs):
+        queryset = User.objects.all()
+        user_count = queryset.count()
+        owner_count = queryset.filter(role = 'owner').count()
+
+        return Response({
+            'success': True,
+            'total_user': user_count,
+            'total_owner': owner_count,
+        }, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get'], url_path='static-user-register-bytime') #Api thống kê số lượng người đăng ký trong khoảng thời gian [day, week, month, total]
+    def get_static_user_register(self, request, *args, **kwargs):
+        filter_type = request.query_params.get('filter', 'day')  # default: day
+        queryset = User.objects.all()
+        today = timezone.now().date()
+        if filter_type == 'day':
+            queryset = queryset.filter(created__date= today)
+
+        elif filter_type == 'week':
+            start_of_week = today - timedelta(days=today.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+            queryset = queryset.filter(created__date__range=(start_of_week, end_of_week))
+
+        elif filter_type == 'month':
+            start_of_month = today.replace(day=1)
+            next_month = (start_of_month + timedelta(days=32)).replace(day=1)
+            end_of_month = next_month - timedelta(days=1)
+            queryset = queryset.filter(created__date__range=(start_of_month, end_of_month))
+        elif filter_type =='all': 
+            pass
+        else:
+            return Response({'error': 'Tham số filter không hợp lệ (day, week, month, all)'}, status=400)
+
+        return Response({'success': True, 'type': filter_type, 'total_user_register': queryset.count()}, status=status.HTTP_200_OK)
+        
+    @action(detail=False, methods=['get'], url_path='static-user-register-group') #Api thống kê số lượng người đăng ký thời gian [day in weeak, week in month, month in yeah, all yeah]
+    def statistic_user_register_by_time_group(self, request, *args, **kwargs):
+        group_by = request.query_params.get('group_by', 'all_year')  # default: all_year
+        queryset = User.objects.all()
+        today = timezone.now().date()
+        if group_by == 'day': # Các ngày trong tuần này
+            start_of_week = today - timedelta(days=today.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+            queryset = queryset.filter(created__date__range=(start_of_week, end_of_week))
+            queryset = queryset.annotate(date=TruncDay('created')).values('date').annotate(total=Count('id')).order_by('date')
+            
+        elif group_by == 'week':
+            # Các tuần trong tháng này
+            start_of_month = today.replace(day=1)
+            next_month = (start_of_month + timedelta(days=32)).replace(day=1)
+            end_of_month = next_month - timedelta(days=1)
+            queryset = queryset.filter(created__date__range=(start_of_month, end_of_month))
+            queryset = queryset.annotate(week=TruncWeek('created')).values('week').annotate(total=Count('id')).order_by('week')
+
+        elif group_by == 'month':
+            # Các tháng trong năm này
+            start_of_year = today.replace(month=1, day=1)
+            end_of_year = today.replace(month=12, day=31)
+            queryset = queryset.filter(created__date__range=(start_of_year, end_of_year))
+            queryset = queryset.annotate(month=TruncMonth('created')).values('month').annotate(total=Count('id')).order_by('month')
+
+        elif group_by == 'all_year':
+            queryset = queryset.annotate(year=TruncYear('created')).values('year').annotate(total=Count('id')).order_by('year')
+
+        else:
+            return Response({"succes": False, 'error': 'Tham số group_by không hợp lệ. Các giá trị hợp lệ: day, week, month, year.'}, status=400)
+
+        return Response({
+            'success': True,
+            'group_by': group_by,
+            'data': list(queryset)
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='count-users-by-date') #Api thống kê số lượng người đăng ký theo 1 ngày nhất định 
+    def count_users_by_date(self, request, *args, **kwargs): 
+        date_str = request.query_params.get('date')  
+        if not date_str:
+            return Response({'error': 'Bạn cần truyền ngày dạng YYYY-MM-DD'}, status=400)
+        try:
+            date = parse_date(date_str)
+            count = User.objects.filter(created__date=date).count()
+            return Response({
+                'success': True,
+                'date': date_str,
+                'total_users': count
+            }, status=status.HTTP_200_OK)
+        except:
+            return Response({'error': 'Ngày không hợp lệ'}, status=400)
+    
+    @action(detail=False, methods=['get'], url_path='count-owner-request-by-date') #Api thống kê số lượng người yêu cầu làm owner theo 1 ngày nhất định
+    def count_owner_request_by_date(self, request, *args, **kwargs): 
+        date_str = request.query_params.get('date')  
+        if not date_str:
+            return Response({'error': 'Bạn cần truyền ngày dạng YYYY-MM-DD'}, status=400)
+        try:
+            date = parse_date(date_str)
+            count = OwnerRequest.objects.filter(created_at__date=date).count()
+            return Response({
+                'success': True,
+                'date': date_str,
+                'total_owner_request': count
+            }, status=status.HTTP_200_OK)
+        except:
+            return Response({'error': 'Ngày không hợp lệ'}, status=400)
+        
+
+    @action(detail=False, methods=['get'], url_path='count-owner-request-accept-by-date') #Api thống kê số lượng người yêu cầu làm owner được duyệt theo 1 ngày nhất định
+    def count_owner_request_accpep_by_date(self, request, *args, **kwargs): 
+        date_str = request.query_params.get('date')  
+        if not date_str:
+            return Response({'error': 'Bạn cần truyền ngày dạng YYYY-MM-DD'}, status=400)
+        try:
+            date = parse_date(date_str)
+            queryset = OwnerRequest.objects.filter(status='approved')
+            count = queryset.filter(reviewed_at__date=date).count()
+            return Response({
+                'success': True,
+                'date': date_str,
+                'total_owner_request_accept': count
+            }, status=status.HTTP_200_OK)
+        except:
+            return Response({'error': 'Ngày không hợp lệ'}, status=400)
 #---------------------------------------------------------------------------------------------------#
 # Api người dùng xem Chi tiết, cập nhật, xóa tài khoản
 class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -374,8 +626,7 @@ class OwnerRequestAPIViewSet(viewsets.ViewSet):
         
         serializer = OwnerRequestSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        print(request.data)
-        print("="*20)
+        
         serializer.save()
         return Response({
             'success': True,
@@ -417,7 +668,7 @@ class OwnerRequestAdminAPIViewSet(viewsets.ViewSet):
             "requests": serializer.data
         }, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post']) #Api chấp nhận làm chủ trọ
     def approve(self, request, pk=None):
         try:
             owner_request = OwnerRequest.objects.get(pk=pk, status='pending')
@@ -443,7 +694,7 @@ class OwnerRequestAdminAPIViewSet(viewsets.ViewSet):
             'message': 'Yêu cầu đã được chấp nhận.'
         }, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post']) #Api từ chối làm chủ trọ
     def reject(self, request, pk=None):
         try:
             owner_request = OwnerRequest.objects.get(pk=pk, status='pending')
