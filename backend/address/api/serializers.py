@@ -31,30 +31,38 @@ class AddressSerializer(serializers.ModelSerializer):
         
 class AddressNestedSerializer(serializers.ModelSerializer):
     address_name = serializers.CharField(source='description')
+
+    # Input
     district_name = serializers.CharField(write_only=True)
     city_name = serializers.CharField(write_only=True)
-    district = serializers.SerializerMethodField(read_only=True)
-    city = serializers.SerializerMethodField(read_only=True)
+
+    # Output: override lại bằng SerializerMethodField nhưng dùng chung tên
+    district_name_display = serializers.SerializerMethodField()
+    city_name_display = serializers.SerializerMethodField()
 
     class Meta:
         model = Address
         fields = [
             'id',
             'address_name',
-            'latitude',
-            'longitude',
-            'district_name',
-            'city_name',
-            'district',
-            'city',
+            'district_name',       # input
+            'city_name',           # input
+            'district_name_display',  # output
+            'city_name_display',      # output
         ]
 
-    def get_district(self, obj):
+    def get_district_name_display(self, obj):
         return obj.district.name_district if obj.district else None
 
-    def get_city(self, obj):
+    def get_city_name_display(self, obj):
         return obj.city.name_city if obj.city else None
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Đổi tên trường trả về
+        data['district_name'] = data.pop('district_name_display')
+        data['city_name'] = data.pop('city_name_display')
+        return data
 
     def create_or_update_address(self, validated_data):
         description = validated_data.get("description")
@@ -79,5 +87,3 @@ class AddressNestedSerializer(serializers.ModelSerializer):
         return address
 
 
-    
-    

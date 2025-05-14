@@ -1,0 +1,24 @@
+.step-container {
+    max-width: 1200px;
+    margin: auto;
+    text-align: left;
+}
+
+.content-box {
+    flex: 1;
+    padding: 20px;
+}
+
+.image-preview {
+    flex-shrink: 0;
+    padding: 20px;
+}
+
+.room-preview {
+    width: 500px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+
+

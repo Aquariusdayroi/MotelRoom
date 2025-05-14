@@ -21,10 +21,13 @@ import {
 } from "react-bootstrap-icons";
 import { Building } from "lucide-react";
 import decodeJwtPayload from "../until/decodeJwt";
-import { getUserInfoById } from "../api/userApi/getUserInfoById";
+import { getReviewsByRentalPostId } from "../api/ownerApi/getReviewsByRentalPostId";
 import SettingProfileModal from "../components/modal/SettingProfileModal";
 import ConfirmModal from "../components/modal/ComfirmModal";
-import { updateUserProfile } from "../api/userApi/updateUserProfile";
+import {
+    getMyProfile,
+    updateUserProfile,
+} from "../api/userApi/updateUserProfile";
 
 function Profile() {
     const [userInfo, setUserInfo] = useState(null);
@@ -36,44 +39,30 @@ function Profile() {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [pendingFormData, setPendingFormData] = useState(null);
     const handleCloseModal = () => setShowEditModal(false);
+    const [reviews, setReviews] = useState([]);
     const navigate = useNavigate();
     const handleBackToHome = () => {
         navigate("/post");
     };
-    const reviews = [
-        {
-            rating: 1,
-            date: "2025-08-16",
-            time: "01:11",
-            content:
-                "Trọ như cức, chủ trọ như cức, làm ăn gian dối. Sớm trả nghiệp, nhắm giữ được cọc thì giữ...",
-            location: ".........",
-        },
-        {
-            rating: 1,
-            date: "2025-08-16",
-            time: "01:11",
-            content:
-                "Trọ như cức, chủ trọ như cức, làm ăn gian dối. Sớm trả nghiệp, nhắm giữ được cọc thì giữ...",
-            location: ".........",
-        },
-        {
-            rating: 1,
-            date: "2025-08-16",
-            time: "01:11",
-            content:
-                "Trọ như cức, chủ trọ như cức, làm ăn gian dối. Sớm trả nghiệp, nhắm giữ được cọc thì giữ...",
-            location: ".........",
-        },
-        {
-            rating: 1,
-            date: "2025-08-16",
-            time: "01:11",
-            content:
-                "Trọ như cức, chủ trọ như cức, làm ăn gian dối. Sớm trả nghiệp, nhắm giữ được cọc thì giữ...",
-            location: ".........",
-        },
-    ];
+
+    useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const res = await getReviewsByRentalPostId(1);
+                if (Array.isArray(res)) {
+                    setReviews(res);
+                } else {
+                    console.error("Dữ liệu đánh giá không phải mảng:", res);
+                    setReviews([]);
+                }
+            } catch (err) {
+                console.error("Không thể lấy đánh giá:", err);
+                setReviews([]);
+            }
+        };
+
+        fetchReviews();
+    }, []);
 
     const [startIndex, setStartIndex] = useState(0);
     const itemsPerPage = 2;
@@ -88,25 +77,32 @@ function Profile() {
     const [showAllReviews, setShowAllReviews] = useState(false);
 
     function prepareFormDataForAPI(data) {
-        // Chuyển birthday từ dd/mm/yyyy → yyyy-mm-dd
-        const [day, month, year] = data.birthday.split("/");
-        const birthdayAPI = `${year}-${month}-${day}`;
+        let birthdayAPI = "";
+
+        if (data.birthday.includes("/")) {
+            const [day, month, year] = data.birthday.split("/");
+            birthdayAPI = `${year}-${month}-${day}T00:00:00Z`;
+        } else if (data.birthday.includes("T")) {
+            birthdayAPI = data.birthday;
+        }
 
         return {
             fullname: data.fullname,
             birthday: birthdayAPI,
             email: data.email,
             phone_number: data.phone,
-            address_name: data.address,
-            district_name: data.district,
-            city_name: data.city,
+            address: {
+                address_name: data.address,
+                district_name: data.district,
+                city_name: data.city,
+            },
         };
     }
 
     const handleOpenModal = async () => {
         try {
             const decoded = decodeJwtPayload(user);
-            const res = await getUserInfoById(decoded.user_id);
+            const res = await getMyProfile();
             setUserInfo(res);
             setShowEditModal(true);
         } catch (error) {
@@ -117,7 +113,12 @@ function Profile() {
     const toggleReviews = () => {
         setShowAllReviews((prev) => !prev);
     };
-    const reviewsToDisplay = showAllReviews ? reviews : reviews.slice(0, 3);
+    const reviewsToDisplay =
+        reviews && Array.isArray(reviews)
+            ? showAllReviews
+                ? reviews
+                : reviews.slice(0, 3)
+            : [];
 
     const handleNext = () => {
         setStartIndex((prev) => (prev + itemsPerPage) % rooms.length);
@@ -161,8 +162,7 @@ function Profile() {
         const fetchUserInfo = async () => {
             if (user) {
                 try {
-                    const decoded = decodeJwtPayload(user);
-                    const info = await getUserInfoById(decoded.user_id);
+                    const info = await getMyProfile();
                     setUserInfo(info);
                     console.log(info);
                 } catch (error) {
@@ -228,12 +228,14 @@ function Profile() {
                                 <li className="mb-2 d-flex align-items-center">
                                     <GeoAltFill className="me-2 text-secondary" />
                                     <b>Địa chỉ: </b>
-                                    {userInfo?.address_name || "Chưa cập nhật"}
+                                    {userInfo?.address?.address_name ||
+                                        "Chưa cập nhật"}
                                 </li>
                                 <li className="mb-2 d-flex align-items-center">
                                     <SignpostSplitFill className="me-2 text-secondary" />
                                     <b>Tên đường:</b>
-                                    {userInfo?.district_name || "Chưa cập nhật"}
+                                    {userInfo?.address?.district ||
+                                        "Chưa cập nhật"}
                                 </li>
                                 <li className="mb-2 d-flex align-items-center">
                                     <Building
@@ -241,7 +243,7 @@ function Profile() {
                                         style={{ width: "1.2em" }}
                                     />
                                     <b>Thành phố:</b>
-                                    {userInfo?.city_name || "Chưa cập nhật"}
+                                    {userInfo?.address?.city || "Chưa cập nhật"}
                                 </li>
                                 <li className="mb-2 d-flex align-items-center">
                                     <CalendarDate className="me-2 text-secondary" />
@@ -274,7 +276,7 @@ function Profile() {
                             <ul className="list-unstyled ps-3">
                                 <li className="mb-2 d-flex align-items-center">
                                     <EnvelopeFill className="me-2 text-secondary" />
-                                    <b>Email:</b>
+                                    <b>Email :</b>
                                     {userInfo?.email}
                                 </li>
                                 <li className="mb-2 d-flex align-items-center">
@@ -377,7 +379,12 @@ function Profile() {
                             padding: "12px",
                         }}
                     >
-                        <ReviewCard {...review} />
+                        <ReviewCard
+                            rating={review.rating}
+                            content={review.comment}
+                            time={new Date(review.time).toLocaleTimeString()}
+                            date={new Date(review.time).toLocaleDateString()}
+                        />
                     </div>
                 ))}
             </div>
@@ -401,7 +408,10 @@ function Profile() {
                 onConfirm={async () => {
                     try {
                         const payload = prepareFormDataForAPI(pendingFormData);
+                        console.log(payload);
                         const updatedUser = await updateUserProfile(payload);
+
+                        console.log(payload);
                         if (updatedUser?.id) {
                             setUserInfo(updatedUser);
                             setPendingFormData(null);

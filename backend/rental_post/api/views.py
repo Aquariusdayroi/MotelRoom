@@ -220,17 +220,13 @@ class RentalPostSearchAPIView(ListAPIView):
         return queryset
 
 # #Api tìm kiếm bài đăng theo bộ lọc
-class MyRentalPostSearchKeyWordAPIView(ListAPIView):
-    serializer_class = RentalPostSerializer
+class MyRentalPostSearchKeyWordAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     pagination_class = SmartPagination
 
-    def paginate_queryset(self, queryset):
-        if self.paginator is not None:
-            self.paginator.page_size = 6
-        return super().paginate_queryset(queryset)
-
-    def list(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         user = request.user
+
         if not user.is_authenticated:
             return Response({
                 "success": False,
@@ -243,7 +239,26 @@ class MyRentalPostSearchKeyWordAPIView(ListAPIView):
                 "message": "Bạn chưa là Owner để truy cập vào danh sách bài đăng."
             }, status=status.HTTP_403_FORBIDDEN)
 
-        return super().list(request, *args, **kwargs)
+        keyword = request.query_params.get('keyword', '')
+        ordering = request.query_params.get('ordering', 'newest')  # mặc định newest
+
+        queryset = RentalPost.objects.filter(user=user)
+
+        if keyword:
+            queryset_title = queryset.filter(title__icontains=keyword)
+            queryset_detail = queryset.filter(information_detail__icontains=keyword)
+            queryset = queryset_title.union(queryset_detail)
+
+        if ordering == 'newest':
+            queryset = queryset.order_by('-create_at')
+        elif ordering == 'oldest':
+            queryset = queryset.order_by('create_at')
+
+        paginator = self.pagination_class()
+        paginated_qs = paginator.paginate_queryset(queryset, request)
+
+        serializer = RentalPostSerializer(paginated_qs, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
 
 
 #Api lấy danh sách bài đăng 
@@ -316,21 +331,42 @@ class RentalPostListByUserAPIView(ListAPIView):
 # API lấy chi tiết bài đăng theo ID
 class RentalPostDetailAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = RentalPostSerializer  
+
+    def get_serializer_context(self):
+        context =  {}
+        if self.request.user.is_authenticated:
+            favorite_ids = set(
+                Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
+            )
+            context['favorite_post_ids'] = favorite_ids
+
+        return context
+    
+    def get_serializer(self, *args, **kwargs):
+        kwargs['context'] = self.get_serializer_context()
+        kwargs['context']['expand_user'] = True
+        return self.serializer_class(*args, **kwargs)        
 
     def get(self, request, id):
         """Xem chi tiết bài đăng theo ID"""
         try:
             post = RentalPost.objects.get(id=id)
         except RentalPost.DoesNotExist:
-            raise NotFound(detail="Không tìm thấy bài đăng.")
+            return Response({  
+                "success": False,
+                "message": "Không tìm thấy bài đăng."
+            }, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = RentalPostSerializer(post)
+        serializer = self.get_serializer(post)  
         return Response({
             "success": True,
             "message": "Lấy thông tin bài đăng thành công.",
             "data": serializer.data
         }, status=status.HTTP_200_OK)
 
+    
+    
 # Api tìm kiếm bài đăng theo bộ lọc
 class RentalPostSearchAPIView(ListAPIView):
     serializer_class = RentalPostSerializer
