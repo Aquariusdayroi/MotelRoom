@@ -660,8 +660,21 @@ class OwnerRequestAdminAPIViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='list-request')
     def list_request(self, request):
-        requests = OwnerRequest.objects.filter(status='pending')
-        serializer = OwnerRequestAdminSerializer(requests, many=True)
+        filter = request.query_params.get('filter', 'all')  # default: day
+        queryset = OwnerRequest.objects.all()
+        if filter == "pending": 
+            queryset = queryset.filter(status = filter)
+        elif filter == 'rejected':
+            queryset = queryset.filter(status = filter)
+        elif filter == 'approved':
+             queryset = queryset.filter(status = filter)
+        elif filter == 'all': 
+            pass
+        else:
+            return Response({"success": False, "message": "param phải là một trong [pending, rejected, approved, all]"}, status=status.HTTP_400_BAD_REQUEST)
+       
+    
+        serializer = OwnerRequestAdminSerializer(queryset, many=True)
         return Response({
             "success": True,
             "message": "Lấy danh sách yêu cầu thành công.",
