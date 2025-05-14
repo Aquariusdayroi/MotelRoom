@@ -96,7 +96,7 @@ const TableRequest = () => {
         if (req.status === "Chờ duyệt") {
             return (
                 <button
-                    className="btn btn-success btn-sm px-3 w-50 text-white"
+                    className="btn btn-success btn-sm w-50 text-white"
                     onClick={() => {
                         setSelectedRequest(req);
                         setShowModal(true);
@@ -107,9 +107,7 @@ const TableRequest = () => {
             );
         }
         return (
-            <button className="btn btn-info btn-sm px-3 w-50 text-white">
-                Xem
-            </button>
+            <button className="btn btn-info btn-sm w-50 text-white">Xem</button>
         );
     };
 

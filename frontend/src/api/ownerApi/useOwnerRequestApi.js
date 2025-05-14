@@ -12,7 +12,7 @@ export const useOwnerRequestCount = (token) => {
                 }
 
                 const response = await axiosClient.get(
-                    "/user/api/admin/owner-requests/list-requests/"
+                    "/user/api/admin/owner-requests/list-request/"
                 );
 
                 if (response.data && response.data.requests) {
@@ -40,26 +40,27 @@ export const useOwnerRequests = () => {
         try {
             setLoading(true);
             const response = await axiosClient.get(
-                "/user/api/admin/owner-requests/list-requests/"
+                "/user/api/admin/owner-requests/list-request/"
             );
+            console.log(response);
 
             if (response.data && response.data.requests) {
                 const formattedRequests = response.data.requests.map((req) => ({
                     cccd: req.cccd,
-                    user: req.user,
                     image_front_cccd: req.image_front_cccd,
                     image_back_cccd: req.image_back_cccd,
-                    fullname: req.user.fullname,
-                    email: req.user.email,
+                    fullname: req.fullname,
+                    email: req.email,z
+                    // phone_number: req.phone_number,
                     status:
                         req.status === "pending"
                             ? "Chờ duyệt"
                             : req.status === "approved"
                             ? "Đã duyệt"
                             : "Từ chối",
-                    createdAt: new Date(req.created_at).toLocaleDateString(
-                        "vi-VN"
-                    ),
+                    createdAt: req.created_at
+                        ? new Date(req.created_at).toLocaleDateString("vi-VN")
+                        : "",
                     approvedAt: req.reviewed_at
                         ? new Date(req.reviewed_at).toLocaleDateString("vi-VN")
                         : "",
