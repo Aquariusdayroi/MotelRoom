@@ -7,6 +7,7 @@ import styles from '../../styles/OwnerManagement.module.css';
 import { useEffect, useState } from "react";
 import ownerPostApi from '../../api/ownerPostApi';
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import EditPostModal from '../modal/EditPostModal';
 
 const OwnerPostManagement = () => {
     const navigate = useNavigate();
@@ -21,6 +22,8 @@ const OwnerPostManagement = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [data, setData] = useState({ results: [], total_pages: 0 });
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedPost, setSelectedPost] = useState(null);
     const fetchRooms = async (currentPage = 1) => {
         setLoading(true);
         try {
@@ -131,6 +134,23 @@ const OwnerPostManagement = () => {
         }
     };
 
+    const handleEdit = (post) => {
+        setSelectedPost(post);
+        setShowEditModal(true);
+    };
+
+    const handleUpdatePost = async (updatedData) => {
+        try {
+            await ownerPostApi.update(selectedPost.id, updatedData);
+            alert('Cập nhật bài đăng thành công!');
+            setShowEditModal(false);
+            fetchRooms(page);
+        } catch (error) {
+            console.error('Error updating post:', error);
+            alert('Có lỗi xảy ra khi cập nhật bài đăng. Vui lòng thử lại sau!');
+        }
+    };
+
     if (loading) return <div className="text-center p-5">Đang tải...</div>;
     if (error) return <div className="text-center text-danger p-5">{error}</div>;
 
@@ -197,6 +217,7 @@ const OwnerPostManagement = () => {
                                     onClick={() => navigate(`/detail/${room.id}`)}
                                     onHide={(id) => handleHidePost(id)}
                                     onDelete={(id) => handleDeletePost(id)}
+                                    onEdit={() => handleEdit(room)}
                                 />
                             ))
                         ) : (
@@ -206,6 +227,12 @@ const OwnerPostManagement = () => {
                 </div>
             </motion.div>
             <Pagination totalPages={data?.total_pages} />
+            <EditPostModal
+                show={showEditModal}
+                onHide={() => setShowEditModal(false)}
+                post={selectedPost}
+                onUpdate={handleUpdatePost}
+            />
         </div>
     );
 };

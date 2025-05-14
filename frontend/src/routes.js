@@ -17,7 +17,6 @@ import AddPost from './pages/AddPost';
 import OwnerManagement from './pages/OwnerManagement';
 import OwnerDashboard from './components/ownerManage/OwnerDashboard';
 import OwnerPostManagement from './components/ownerManage/OwnerPostManagement';
-
 export default function AppRoutes() {
     return (
         <Router>
