@@ -3,6 +3,9 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from city.models import City
 from district.models import District
 from address.models import Address
+from rental_post.models import RentalPost
+
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -70,8 +73,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+
 class OwnerRequest(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    rental_post_data = models.JSONField()
     cccd = models.CharField(max_length=12) 
     image_front_cccd = models.ImageField(upload_to='cccd/front/', null=True, blank=True)
     image_back_cccd = models.ImageField(upload_to='cccd/back/', null=True, blank=True)
@@ -79,3 +84,6 @@ class OwnerRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     rejection_reason = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.user.fullname

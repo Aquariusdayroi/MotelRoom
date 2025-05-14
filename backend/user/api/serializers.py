@@ -212,7 +212,7 @@ class GoogleLoginSerializer(serializers.Serializer):
 class OwnerRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = OwnerRequest 
-        fields = ['cccd', 'image_front_cccd', 'image_back_cccd']
+        fields = ['rental_post_data', 'cccd', 'image_front_cccd', 'image_back_cccd']
         
     def validate(self, attrs):
         user = self.context['request'].user
@@ -225,10 +225,50 @@ class OwnerRequestSerializer(serializers.ModelSerializer):
             elif user.ownerrequest.status == 'rejected':
                 raise serializers.ValidationError('Yêu cầu đã bị từ chối.')
         
-        return attrs
+        # Lấy giá trị rental_post_data từ dữ liệu request
+        rental_post_data = attrs.get('rental_post_data')
+        # Kiểm tra rental_post_data có tồn tại và hợp lệ không
+                # Kiểm tra từng field bắt buộc
+        if not rental_post_data.get('title'):
+            raise serializers.ValidationError({'title': 'Tiêu đề bài đăng không được để trống.'})
+        if not rental_post_data.get('information_detail'):
+            raise serializers.ValidationError({'information_detail': 'Mô tả chi tiết không được để trống.'})
+        if not rental_post_data.get('home_type'):
+            raise serializers.ValidationError({'home_type': 'Loại phòng không được để trống.'})
+        
+        if not rental_post_data.get('address'):
+            raise serializers.ValidationError({'address': 'Địa chỉ không được để trống.'})
+        else: 
+            address = rental_post_data.get('address', {})
+            if not address.get('city'): 
+                raise serializers.ValidationError({'address': 'Thành phố không được để trống'})
+            if not address.get('district'): 
+                raise serializers.ValidationError({'address': 'Quận huyện không được để trống'})
+            if not address.get('description'): 
+                raise serializers.ValidationError({'address': 'Địa chỉ chi tiết không được để trống'})
+            if not address.get('latitude'): 
+                raise serializers.ValidationError({'address': 'Địa chỉ không có vĩ độ'})
+            if not address.get('longitude'): 
+                raise serializers.ValidationError({'address': 'Địa chỉ không có kinh độ'})
+            
+        if not rental_post_data.get('total_occupancy'):
+            raise serializers.ValidationError({'total_occupancy': 'Sức chứa không được để trống.'})
+        if not rental_post_data.get('acreage'):
+            raise serializers.ValidationError({'acreage': 'Diện tích không được để trống.'})
+        if not rental_post_data.get('price'):
+            raise serializers.ValidationError({'price': 'Giá phòng không được để trống.'})
 
+        return attrs
+    
     def create(self, validated_data):
-        return OwnerRequest.objects.create(user=self.context['request'].user, **validated_data)
+        
+        rental_post_data = validated_data.pop('rental_post_data')
+        owner_request = OwnerRequest.objects.create(
+            user=self.context['request'].user,
+            rental_post_data=rental_post_data,
+            **validated_data
+        )
+        return owner_request
 
 #---------------------------------------------------------------------------------------------------#   
 # Serializer admin xem danh sách các yêu cầu
@@ -240,7 +280,7 @@ class OwnerRequestAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = OwnerRequest
         fields = ['id', 'email', 'fullname', 'phone_number', 'cccd', 'image_front_cccd',
-                  'image_back_cccd', 'status', 'reviewed_at', 'rejection_reason']
+                  'image_back_cccd', 'status', 'reviewed_at', 'rejection_reason', 'rental_post_data']
     def validate_user(self, value):
         if OwnerRequest.objects.filter(user=value).exists():
             raise serializers.ValidationError("Bạn đã gửi yêu cầu trước đó.")
