@@ -31,6 +31,7 @@ from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYea
 import os
 from datetime import datetime, timedelta
 import time
+import json
 
 #Review
 from review.models import Review
@@ -622,11 +623,20 @@ class OwnerRequestAPIViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['post'], url_path='send-request')
-    def send_request(self, request):
-        
-        serializer = OwnerRequestSerializer(data=request.data, context={'request': request})
+    def send_request(self, request):        
+        image_files = request.FILES.getlist('images_rental_post')
+        images_data = [{'image': f} for f in image_files]
+        rental_post_data_str = request.data.get('rental_post_data')
+        try:
+            rental_post_data = json.loads(rental_post_data_str)
+        except Exception:
+            rental_post_data = {}
+
+        data = request.data.dict()
+        data['rental_post_data'] = rental_post_data
+        data['images_rental_post'] = images_data  
+        serializer = OwnerRequestSerializer(data=data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        
         serializer.save()
         return Response({
             'success': True,
@@ -745,7 +755,6 @@ class AdminStatsRentalPostAPIViewSet(viewsets.ModelViewSet):
     def stat(self, request, *args, **kwargs):
         # Thống kê số lượng bài đăng theo tiêu chí
         total_rentalposts = RentalPost.objects.count()
-        
         fields_param = request.query_params.get('fields')
         if not fields_param:
             return Response({
