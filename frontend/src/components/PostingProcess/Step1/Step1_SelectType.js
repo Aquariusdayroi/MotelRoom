@@ -32,10 +32,10 @@ function Step1_SelectType({ data = {}, onNext, onBack, currentStep, totalSteps }
     };
 
     return (
-        <div className="step-container">
+        <div className="selec-container">
             <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
 
-            <h4>Loại hình nào sau đây liên quan đến chỗ ở của bạn?</h4>
+            <div className='title_1'><h4 style={{fontWeight:"bold"}}>Loại hình nào sau đây liên quan đến chỗ ở của bạn?</h4></div>
             <div className="type-options">
                 {TYPES.map((option) => (
                     <button
@@ -48,11 +48,10 @@ function Step1_SelectType({ data = {}, onNext, onBack, currentStep, totalSteps }
                     </button>
                 ))}
             </div>
-
-            <h4>Cho khách hàng biết một số thông tin cơ bản</h4>
+            <div className='title_1'><h4 style={{fontWeight:"bold"}}>Cho khách hàng biết một số thông tin cơ bản</h4></div>
             <div className="basic-info">
                 <div className="input-group">
-                    <label>Số phòng</label>
+                    <label className='counter'>Số phòng</label>
                     <div className="counter">
                         <button onClick={() => handleRoomCountChange(-1)} className='btn btn-info'>-</button>
                         <span>{roomCount}</span>
@@ -61,11 +60,9 @@ function Step1_SelectType({ data = {}, onNext, onBack, currentStep, totalSteps }
                 </div>
 
                 <div className="input-group">
-                    <label>Diện tích chung</label>
+                    <label className='input-with-unit'>Diện tích chung</label>
                     <div className="input-with-unit">
                         <input 
-                            type="number" 
-                            placeholder="0" 
                             value={area} 
                             onChange={(e) => setArea(e.target.value)} 
                         />
@@ -78,7 +75,7 @@ function Step1_SelectType({ data = {}, onNext, onBack, currentStep, totalSteps }
                 <button className="back-btn" onClick={onBack}>
                     <span style={{ transform: "rotate(180deg)", display: "inline-block" }}>➔</span> Quay lại
             </button>
-                <button className="btn btn-info next-btn" onClick={handleNext} disabled={!type}>
+                <button className="next-btn" onClick={handleNext} disabled={!type}>
                     Tiếp tục ➔
                 </button>
             </div>

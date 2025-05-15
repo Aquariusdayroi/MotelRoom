@@ -1,0 +1,106 @@
+.amenities-container {
+    max-width: 1000px;
+    margin: auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.amenities-content {
+    text-align: left;
+    margin-bottom: 30px;
+}
+
+.amenities-content h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.amenities-content p {
+    width: 500px;
+    color: #888888;
+    margin-bottom: 40px;
+    font-size: 16px;
+}
+
+.amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+}
+
+
+.amenity-item {
+    width: 200px;
+    height: 150px;
+    background-color: #f8f8f8;
+    border-radius: 15px;
+    border: 2px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    padding: 20px;
+    text-align: center;
+}
+
+.amenity-item img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
+}
+
+.amenity-item span {
+    font-size: 16px;
+    color: #555;
+    display: block;
+}
+
+.amenity-item.active {
+    border-color: #17a2b8;
+    background-color: #e8f8fb;
+}
+
+.amenities-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1000px;
+}
+
+.amenities-back-btn, .amenities-next-btn {
+    background-color: #6D7677;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s;
+}
+
+.amenities-back-btn:hover {
+    background-color: #555;
+}
+
+.amenities-next-btn {
+    background-color: #17a2b8;
+}
+
+.amenities-next-btn:hover {
+    background-color: #138496;
+}
+
+.amenities-next-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

@@ -7,7 +7,10 @@ import Step1_AddressConfirm from '../components/PostingProcess/Step1/Step1_Addre
 import Step2_Intro from '../components/PostingProcess/Step2/Step2_Intro';
 import Step2_UploadImage from '../components/PostingProcess/Step2/Step2_UploadImage';
 
-import Step3_ReviewAndSubmit from '../components/PostingProcess/Step3/Step3_ReviewAndSubmit';
+import Step3_Intro from '../components/PostingProcess/Step3/Step3_Intro';
+import Step3_Amenities from '../components/PostingProcess/Step3/Step3_Amenities';
+import Step3_AdditionalAmenities from '../components/PostingProcess/Step3/Step3_AdditionalAmenities';
+import Step3_TitleAndDescription from '../components/PostingProcess/Step3/Step3_TitleAndDescription';
 
 import Step4_Intro from '../components/PostingProcess/Step4/Step4_Intro';
 import Step4_ReviewAndSubmit from '../components/PostingProcess/Step4/Step4_ReviewAndSubmit';
@@ -22,7 +25,7 @@ const steps = [
     // Step1_AddressConfirm,
     // Step2_Intro,
     // Step2_UploadImage,
-    // Step3_ReviewAndSubmit,
+    //Step3_Intro,Step3_Amenities, Step3_AdditionalAmenities, Step3_TitleAndDescription,
     // Step4_Intro,
     // Step4_ReviewAndSubmit,
     OwnerRegister,

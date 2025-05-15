@@ -61,4 +61,7 @@
     font-size: 16px;
 }
 
+.next-btn.disabled {
+    color: #678084;
+}
 

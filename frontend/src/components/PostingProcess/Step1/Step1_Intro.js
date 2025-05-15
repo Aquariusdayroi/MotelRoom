@@ -20,7 +20,7 @@ function Step1_Intro({ onNext, currentStep, totalSteps }) {
                 <div className='box-img'><img src={room}></img></div>
             </div>
             <div className="buttons">
-                <button className="btn btn-info ms-auto next-btn" onClick={() => onNext({ introCompleted: true })}>Tiếp tục ➔</button>
+                <button className="ms-auto next-btn" onClick={() => onNext({ introCompleted: true })}>Tiếp tục ➔</button>
             </div>
         </div>
     );
