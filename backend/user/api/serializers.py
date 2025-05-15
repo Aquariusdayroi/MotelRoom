@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from city.models import City
 from district.models import District
 from address.models import Address
-from user.models import User, OwnerRequest
+from user.models import User, OwnerRequest, OwnerRequestImage
 
 #JWT token
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -206,13 +206,22 @@ class GoogleLoginSerializer(serializers.Serializer):
             }
         }
 
+#---------------------------------------------------------------------------------------------------#
+# Serializer ảnh bài đăng trọ khi người dùng đăng ký thành owner
+class OwnerRequestImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OwnerRequestImage
+        fields = ['image']
+
 
 #---------------------------------------------------------------------------------------------------#
 # Serializer người dùng đăng ký thành owner
 class OwnerRequestSerializer(serializers.ModelSerializer):
+    images_rental_post = OwnerRequestImageSerializer(many=True, write_only=True, required=False)
+
     class Meta:
         model = OwnerRequest 
-        fields = ['rental_post_data', 'cccd', 'image_front_cccd', 'image_back_cccd']
+        fields = ['rental_post_data', 'cccd', 'image_front_cccd', 'image_back_cccd', 'images_rental_post']
         
     def validate(self, attrs):
         user = self.context['request'].user
@@ -227,6 +236,10 @@ class OwnerRequestSerializer(serializers.ModelSerializer):
         
         # Lấy giá trị rental_post_data từ dữ liệu request
         rental_post_data = attrs.get('rental_post_data')
+        images_rental_post = attrs.get('images_rental_post')
+        # print(attrs.get('image_front_cccd'))
+        if not images_rental_post: 
+            raise serializers.ValidationError({'Image RentalPost': 'Không được để trống'})
         # Kiểm tra rental_post_data có tồn tại và hợp lệ không
                 # Kiểm tra từng field bắt buộc
         if not rental_post_data.get('title'):
@@ -261,13 +274,15 @@ class OwnerRequestSerializer(serializers.ModelSerializer):
         return attrs
     
     def create(self, validated_data):
-        
+        images_rental_post = validated_data.pop('images_rental_post', [])
         rental_post_data = validated_data.pop('rental_post_data')
         owner_request = OwnerRequest.objects.create(
             user=self.context['request'].user,
             rental_post_data=rental_post_data,
             **validated_data
         )
+        for img in images_rental_post:
+            OwnerRequestImage.objects.create(owner_request=owner_request, **img)
         return owner_request
 
 #---------------------------------------------------------------------------------------------------#   
@@ -276,11 +291,11 @@ class OwnerRequestAdminSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email')
     fullname = serializers.CharField(source='user.fullname')
     phone_number = serializers.CharField(source='user.phone_number')
-
+    images_rental_post = OwnerRequestImageSerializer(many=True, read_only=True)
     class Meta:
         model = OwnerRequest
         fields = ['id', 'email', 'fullname', 'phone_number', 'cccd', 'image_front_cccd',
-                  'image_back_cccd', 'status', 'reviewed_at', 'rejection_reason', 'rental_post_data']
+                  'image_back_cccd', 'status', 'reviewed_at', 'rejection_reason', 'rental_post_data', 'images_rental_post']
     def validate_user(self, value):
         if OwnerRequest.objects.filter(user=value).exists():
             raise serializers.ValidationError("Bạn đã gửi yêu cầu trước đó.")
