@@ -5,9 +5,11 @@ from district.models import District
 from district.api.serializers import DistrictSerializer
 from city.models import City
 from address.models import Address
-from address.api.serializers import AddressSerializer
+from address.api.serializers import AddressSerializer, AddressNestedSerializer
 from image.api.serializers import ImageSerializer
 from image.models import Image
+from backend import settings
+import os
 
 from rest_framework import serializers
 from rental_post.models import RentalPost
@@ -90,7 +92,7 @@ class UserForRentalPostSerializer(serializers.ModelSerializer):
 #         return instance
 class RentalPostSerializer(DynamicFieldsModelSerializer):
     # CHỈ dùng AddressSerializer để đọc (read-only)
-    address = AddressSerializer(read_only=True)
+    address = AddressNestedSerializer(read_only=True)
     user = serializers.SerializerMethodField()
     fullname = serializers.CharField(source='user.fullname', read_only=True)
     avatar = serializers.ImageField(source='user.avatar', read_only=True)
@@ -110,7 +112,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
             'id', 'user', 'fullname', 'avatar', 'home_type', 'title', 'information_detail',
             'address', 'description', 'latitude', 'longitude',
             'city', 'district', 'total_occupancy', 'acreage', 'price',
-            'create_at', 'update_at',  'images', 'is_favorite', 'is_public',
+            'create_at', 'update_at',  'images', 'is_favorite', 'is_public', 'views',
 
             # Tiện nghi cơ bản
             'has_wifi',
@@ -136,7 +138,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
             'has_fingerprint_lock',
         ]
 
-        read_only_fields = ('user', 'create_at', 'update_at', 'address', 'images', 'is_favorite')
+        read_only_fields = ('user', 'create_at', 'update_at', 'address', 'is_favorite', 'views')
 
     def get_is_favorite(self, obj):
         favorite_ids = self.context.get('favorite_post_ids', set())
@@ -184,21 +186,57 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         return rental_post
 
     def update(self, instance, validated_data):
+        # Bước 1: Xử lý địa chỉ (nếu có)
         address = instance.address
         if address:
-            for field in ['description', 'latitude', 'longitude', 'city', 'district']:
-                if field in validated_data:
-                    setattr(address, field, validated_data.pop(field))
+            city_id = validated_data.pop('city', None)
+            district_id = validated_data.pop('district', None)
+
+            try:
+                if city_id:
+                    city = City.objects.get(pk=city_id)
+                    address.city = city
+                if district_id:
+                    district = District.objects.get(pk=district_id)
+                    address.district = district
+            except City.DoesNotExist:
+                raise serializers.ValidationError("Thành phố không tồn tại.")
+            except District.DoesNotExist:
+                raise serializers.ValidationError("Quận/huyện không tồn tại.")
+
             address.save()
 
-        # Cập nhật các trường khác
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
+        new_images = validated_data.pop('images', [])
+        print(validated_data)
+        new_image_urls = [image_data['image_url'].replace(settings.MEDIA_URL, '') for image_data in new_images]
+        # current_images = instance.image.all()
+        # for image in current_images:
+        #     relative_image_url = str(image.image_url)
+
+        #     if relative_image_url not in new_image_urls:
+        #         # Xóa file ảnh khỏi hệ thống
+        #         image_path = os.path.join(settings.MEDIA_ROOT, relative_image_url)
+        #         if os.path.exists(image_path):
+        #             os.remove(image_path)
+        #         # Xóa khỏi database
+        #         image.delete()
+
+        # # Lấy danh sách URL hiện tại (sau khi đã xóa các ảnh không hợp lệ)
+        # existing_image_urls = {str(img.image_url) for img in instance.image.all()}
+
+        # # Thêm các ảnh mới chưa tồn tại trong bài viết
+        # for image_data in new_images:
+        #     image_url = image_data.get('image_url').replace(settings.MEDIA_URL, '')
+        #     if image_url not in existing_image_urls:
+        #         # Tạo mới nếu ảnh chưa tồn tại
+        #         instance.image.create(image_url=image_data['image_url'])
+
+        # # Bước 3: Cập nhật các trường khác
+        # for attr, value in validated_data.items():
+        #     setattr(instance, attr, value)
+
+        # instance.save()
         return instance
-
-
-
 
 
 class RentalPostFavoriteSerializer(DynamicFieldsModelSerializer):
