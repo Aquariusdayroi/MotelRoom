@@ -3,7 +3,7 @@ import { Modal } from 'react-bootstrap';
 import styles from '../../styles/OwnerManagement.module.css';
 
 const EditPostModal = ({ show, onHide, post, onUpdate }) => {
-    const [formData, setFormData] = useState({
+    const defaultForm = {
         title: '',
         information_detail: '',
         home_type: '',
@@ -19,20 +19,19 @@ const EditPostModal = ({ show, onHide, post, onUpdate }) => {
         has_air_conditioner: false,
         has_water_heater: false,
         has_tv: false,
-        private_rental: false,
-        ...post
-    });
+        private_rental: false
+    };
+
+    const [formData, setFormData] = useState(defaultForm);
 
     useEffect(() => {
         if (post) {
-            console.log('🧭 post.address:', post.address);
-            setFormData(prev => ({
-                ...prev,
+            setFormData({
+                ...defaultForm,
                 ...post,
-            }));
+            });
         }
     }, [post]);
-
 
 
     const handleChange = (e) => {
@@ -53,41 +52,31 @@ const EditPostModal = ({ show, onHide, post, onUpdate }) => {
             description: post.address?.description || "",
             latitude: parseFloat(post.address?.latitude || 0),
             longitude: parseFloat(post.address?.longitude || 0),
-            city: post.address?.city || 0,
-            district: post.address?.district || 0,
+            city: parseInt(post.address?.city || 1),
+            district: parseInt(post.address?.district || 3),
             total_occupancy: parseInt(formData.total_occupancy),
             acreage: parseFloat(formData.acreage),
-            price: parseFloat(formData.price),
-            has_toilet: formData.has_toilet,
-            private_rental: formData.private_rental, // đúng tên theo yêu cầu backend
-            has_washing: formData.has_washing_machine,
-            curfew_time: false // hoặc formData.curfew_time nếu bạn có field đó
+            price: parseFloat(formData.price)
         };
 
-        // ✅ Log tất cả các key-value gửi lên
         console.log("🧾 Payload gửi lên backend:");
         Object.entries(payload).forEach(([key, value]) => {
             console.log(`${key}:`, value);
         });
 
-        // ⚠️ Option: Kiểm tra thiếu field nào
         const requiredKeys = [
-            "home_type", "title", "information_detail", "description", "latitude", "longitude",
-            "city", "district", "total_occupancy", "acreage", "price",
-            "has_toilet", "private_renta", "has_washing", "curfew_time"
+            "home_type", "title", "information_detail", "description",
+            "latitude", "longitude", "city", "district", "total_occupancy",
+            "acreage", "price"
         ];
-        requiredKeys.forEach(key => {
-            if (!(key in payload)) {
-                console.warn(`⚠️ Thiếu trường: ${key}`);
-            }
-        });
 
-        // Gọi onUpdate hoặc axios
+        const missingFields = requiredKeys.filter(key => !(key in payload));
+        if (missingFields.length > 0) {
+            alert(`⚠️ Thiếu các trường: ${missingFields.join(', ')}`);
+            return;
+        }
         onUpdate(payload);
     };
-
-
-
 
     return (
         <Modal show={show} onHide={onHide} size="lg" centered>
@@ -119,7 +108,17 @@ const EditPostModal = ({ show, onHide, post, onUpdate }) => {
                             required
                         />
                     </div>
-
+                    <div className="mb-3">
+                        <label className="form-label">Địa chỉ</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            name="address_description"
+                            value={formData.address?.description || ''}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
                     <div className="row mb-3">
                         <div className="col">
                             <label className="form-label">Loại phòng</label>
@@ -176,128 +175,76 @@ const EditPostModal = ({ show, onHide, post, onUpdate }) => {
                     </div>
 
                     <div className="mb-3">
-                        <label className="form-label">Tiện nghi</label>
+                        <label className="form-label">Tiện nghi cơ bản</label>
                         <div className="row g-3">
-                            <div className="col-md-4">
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        name="has_wifi"
-                                        checked={formData.has_wifi || false}
-                                        onChange={handleChange}
-                                    />
-                                    <label className="form-check-label">Wifi</label>
+                            {[
+                                { name: "has_wifi", label: "Wifi" },
+                                { name: "has_parking", label: "Chỗ để xe" },
+                                { name: "has_kitchen", label: "Nhà bếp" },
+                                { name: "has_washing_machine", label: "Máy giặt" },
+                                { name: "has_fridge", label: "Tủ lạnh" },
+                                { name: "has_air_conditioner", label: "Máy lạnh" },
+                                { name: "has_water_heater", label: "Máy nước nóng" },
+                                { name: "has_tv", label: "TV" },
+                                { name: "has_attic", label: "Gác lửng" },
+                            ].map(({ name, label }) => (
+                                <div className="col-md-4" key={name}>
+                                    <div className="form-check">
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            name={name}
+                                            checked={formData[name] || false}
+                                            onChange={handleChange}
+                                        />
+                                        <label className="form-check-label">{label}</label>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        name="has_parking"
-                                        checked={formData.has_parking || false}
-                                        onChange={handleChange}
-                                    />
-                                    <label className="form-check-label">Chỗ để xe</label>
+                            ))}
+                        </div>
+                        <label className="form-label mt-3">Tiện nghi bổ sung</label>
+                        <div className="row g-3">
+                            {[
+                                { name: "has_balcony", label: "Ban công" },
+                                { name: "has_dehumidifier", label: "Máy hút ẩm" },
+                                { name: "has_elevator", label: "Thang máy" },
+                                { name: "has_hot_tub", label: "Bồn tắm nước nóng" },
+                                { name: "has_microwave", label: "Lò vi sóng" },
+                            ].map(({ name, label }) => (
+                                <div className="col-md-4" key={name}>
+                                    <div className="form-check">
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            name={name}
+                                            checked={formData[name] || false}
+                                            onChange={handleChange}
+                                        />
+                                        <label className="form-check-label">{label}</label>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        name="has_toilet"
-                                        checked={formData.has_toilet || false}
-                                        onChange={handleChange}
-                                    />
-                                    <label className="form-check-label">Nhà vệ sinh</label>
+                            ))}
+                        </div>
+                        <label className="form-label mt-3">Tiện nghi an toàn</label>
+                        <div className="row g-3">
+                            {[
+                                { name: "has_fingerprint_lock", label: "Khoá vân tay" },
+                                { name: "has_first_aid_kit", label: "Bộ sơ cứu" },
+                                { name: "has_security_camera", label: "Camera an ninh" },
+                            ].map(({ name, label }) => (
+                                <div className="col-md-4" key={name}>
+                                    <div className="form-check">
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            name={name}
+                                            checked={formData[name] || false}
+                                            onChange={handleChange}
+                                        />
+                                        <label className="form-check-label">{label}</label>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        name="has_kitchen"
-                                        checked={formData.has_kitchen || false}
-                                        onChange={handleChange}
-                                    />
-                                    <label className="form-check-label">Nhà bếp</label>
-                                </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        name="has_washing_machine"
-                                        checked={formData.has_washing_machine || false}
-                                        onChange={handleChange}
-                                    />
-                                    <label className="form-check-label">Máy giặt</label>
-                                </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        name="has_fridge"
-                                        checked={formData.has_fridge || false}
-                                        onChange={handleChange}
-                                    />
-                                    <label className="form-check-label">Tủ lạnh</label>
-                                </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        name="has_air_conditioner"
-                                        checked={formData.has_air_conditioner || false}
-                                        onChange={handleChange}
-                                    />
-                                    <label className="form-check-label">Máy lạnh</label>
-                                </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        name="has_water_heater"
-                                        checked={formData.has_water_heater || false}
-                                        onChange={handleChange}
-                                    />
-                                    <label className="form-check-label">Máy nước nóng</label>
-                                </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        name="has_tv"
-                                        checked={formData.has_tv || false}
-                                        onChange={handleChange}
-                                    />
-                                    <label className="form-check-label">TV</label>
-                                </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        name="private_rental"
-                                        checked={formData.private_rental || false}
-                                        onChange={handleChange}
-                                    />
-                                    <label className="form-check-label">Cho thuê riêng</label>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
 
