@@ -1,14 +1,14 @@
-.step-container {
+/* .step-container {
     max-width: 1000px;
     margin: auto;
     text-align: center;
-}
+} */
 
-.address-section{
+.address-section {
     display: flex;
-    gap: 40px;
-    justify-content: center;
+    gap: 50px;
     align-items: center;
+    margin-bottom: 50px;
 }
 
 .map-container {
@@ -17,6 +17,7 @@
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 50%;
 }
 
 .map-container img {
@@ -49,19 +50,21 @@
 .address-inputs {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
     margin-bottom: 30px;
+    flex: 1;
 }
 
 .address-inputs input {
     width: 100%;
     padding: 15px 20px;
     border-radius: 10px;
-    border: 2px solid #ccc;
+    border: 1.5px solid #ccc;
     font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
 }
 
-.next-btn.disabled {
-    color: #678084;
+.address-inputs input:focus {
+    border-color: var(--primary-color);
 }
-

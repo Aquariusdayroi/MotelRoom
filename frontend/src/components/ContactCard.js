@@ -10,7 +10,7 @@ function ContactCard({ price, onCall, onZalo, onMaps, isCall }) {
         <div className={`${styles.wrapper} rounded-4 border shadow-sm p-4 text-center`}>
             <div className="d-flex flex-column align-items-center gap-3">
                 <div className="mb-2">
-                    Giá chỉ từ: <span className="fw-bold fs-4">{price / 1000000} triệu / tháng</span>
+                    Giá chỉ từ: <span className="fw-bold fs-4">{(price / 1000000).toFixed(1)} triệu / tháng</span>
                 </div>
                 <button
                     type="button"

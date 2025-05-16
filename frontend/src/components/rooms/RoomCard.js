@@ -211,7 +211,7 @@ const RoomCard = ({
                         <span>Chủ nhà: {owner?.fullname}</span>
                     </div>
                     <div className={styles.details}>
-                        <div className={styles.price}>Từ: {price / 1000000} triệu/tháng</div>
+                        <div className={styles.price}>Từ: {(price / 1000000).toFixed(2)} triệu/tháng</div>
                         <div className={styles.info}>
                             Loại hình: {type}, {Math.floor(area)}m²
                         </div>

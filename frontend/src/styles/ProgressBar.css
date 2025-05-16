@@ -3,6 +3,7 @@
     justify-content: center;
     align-items: center;
     width: 100%;
+    margin-top: 50px;
     margin-bottom: 50px;
 }
 
@@ -90,6 +91,7 @@
 
 .step-label.active-label {
     color: #333;
+    font-weight: bold;
 }
 
 .step-label.completed-label {

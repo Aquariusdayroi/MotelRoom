@@ -27,7 +27,7 @@ function OwnerReview({ data }) {
                         Bài đăng của bạn sẽ được hiển thị ngay sau khi hồ sơ của bạn được duyệt
                     </h5>
                     <div style={{ maxWidth: '300px' }}>
-                        <RoomCard {...data} showFavoriteButton={false} />
+                        <RoomCard {...data.post_data} showFavoriteButton={false} />
                     </div>
                 </div>
             </div>

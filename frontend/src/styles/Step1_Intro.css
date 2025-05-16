@@ -1,22 +1,17 @@
 .basic-info-form {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    padding: 20px;
-    max-width: 1200px;
-    margin: auto;
-    text-align: left;
 }
 
 .content {
     display: flex;
     width: 100%;
-    margin-left: auto;
-    margin-bottom: 40px;
+    margin-bottom: 50px;
+    gap: 80px;
 }
 
 .box-content {
-    margin-top: 40px;
+    width: 100%;
 }
 
 .box-content h1,
@@ -27,16 +22,17 @@
 }
 
 .box-content p {
-    margin-bottom: 30px;
-    font-size: 16px;
-    margin-bottom: 30px;
-    width: 600px;
+    margin-top: 20px;
+    width: 100%;
+    height: auto;
 }
 
 .buttons {
     display: flex;
     justify-content: space-between;
     width: 100%;
+    /* margin-top: 50px; */
+    margin-bottom: 50px;
 }
 
 .back-btn {
@@ -87,4 +83,22 @@
 
 .form-label {
     font-weight: 600;
+}
+
+.form-control,
+.form-select {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: none;
 }
