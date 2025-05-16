@@ -87,3 +87,11 @@ class OwnerRequest(models.Model):
 
     def __str__(self):
         return self.user.fullname
+    
+class OwnerRequestImage(models.Model):
+    owner_request = models.ForeignKey(OwnerRequest, on_delete=models.CASCADE, related_name='images_rental_post')
+    image = models.ImageField(upload_to='owner_request_images/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.owner_request.user.fullname
