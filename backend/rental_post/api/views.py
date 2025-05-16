@@ -75,7 +75,7 @@ class RentalPostListCreateAPIView(GenericAPIView):
         posts = self.get_queryset()
         paginator = self.pagination_class()
         result_page = paginator.paginate_queryset(posts, request)
-        serializer = self.get_serializer(result_page, many=True, context={})
+        serializer = self.get_serializer(result_page, many=True, context={'request': request})
 
         result_data = {
             "success": True,
@@ -284,7 +284,7 @@ class MyRentalPostSearchKeyWordAPIView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
 
-#Api lấy danh sách bài đăng 
+# Api lấy danh sách bài đăng 
 class RentalPostListAPIView(ListAPIView):
 
     serializer_class = RentalPostSerializer
@@ -341,7 +341,7 @@ class RentalPostListByUserAPIView(ListAPIView):
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True, context={})
+            serializer = self.get_serializer(page, many=True, context={'request':request})
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
@@ -363,21 +363,19 @@ class RentalPostDetailAPIView(APIView):
                 Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
             )
             context['favorite_post_ids'] = favorite_ids
-
+        context['request'] = self.request
         return context
     
     def get_serializer(self, *args, **kwargs):
         kwargs['context'] = self.get_serializer_context()
         kwargs['context']['expand_user'] = True
         return self.serializer_class(*args, **kwargs)        
-
+    
     def get(self, request, id):
         """Xem chi tiết bài đăng theo ID"""
         try:
             post = RentalPost.objects.get(id=id)
             if self.request.user!=post.user:
-                print(self.request.user)
-                print(post.user)
                 post.views = F('views') + 1
                 post.save(update_fields=["views"])
                 post.refresh_from_db()

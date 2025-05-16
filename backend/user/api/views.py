@@ -32,6 +32,7 @@ import os
 from datetime import datetime, timedelta
 import time
 import json
+from backend import settings
 
 #Review
 from review.models import Review
@@ -479,7 +480,7 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     
     def retrieve(self, request, *args, **kwargs):
         # Lấy thông tin người dùng
-        serializer = self.get_serializer(self.get_object(), context={})
+        serializer = self.get_serializer(self.get_object(), context={'request': request})
         return Response({
             "success": True,
             "message": "Lấy thông tin người dùng thành công.",
@@ -489,14 +490,14 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', True)
         instance = self.get_object()  # Lấy đối tượng người dùng hiện tại
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(instance, data=request.data,  partial=partial)
         serializer.is_valid(raise_exception=True)
 
         # Tiến hành cập nhật đối tượng
         self.perform_update(serializer)
 
         # Trả về dữ liệu người dùng đã cập nhật, sử dụng UpdateUserSerializer để lấy thông tin địa chỉ
-        read_serializer = UpdateUserSerializer(instance)
+        read_serializer = UpdateUserSerializer(instance, context={'request': request})
 
         return Response({
             "success": True,
@@ -908,7 +909,7 @@ class UserDetailAPIView(generics.RetrieveAPIView):
         user_id = kwargs.get('user_id')
         try:
             user = self.get_queryset().get(id=user_id)
-            serializer = self.get_serializer(user, context={})
+            serializer = self.get_serializer(user, context={'request': request})
             return Response({
                 "success": True,
                 "message": "Lấy thông tin người dùng thành công.",
@@ -934,7 +935,7 @@ class MyLatestReviewsAPIView(APIView):
             reviews = Review.objects.filter(rental_post__user=user).exclude(user=user).order_by('-rating', '-time')[:10]
         else:
             reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
-        serializer = ReviewSerializer(reviews, many=True)
+        serializer = ReviewSerializer(reviews, many=True, context={'request': request})
         return Response({
             "success": True,
             "message": "Lấy danh sách review thành công.",
@@ -950,7 +951,6 @@ class UserLatestReviewsAPIView(APIView):
 
     def get(self, request, user_id):
         """Lấy 10 review của người dùng khác"""
-        target_user = get_object_or_404(User, id=user_id)
         user = User.objects.filter(id=user_id).first()
         if user.role == 'owner':
         # Lấy các review của người khác viết cho bài đăng mà user là chủ
@@ -958,11 +958,17 @@ class UserLatestReviewsAPIView(APIView):
         else:
             # Người thường: lấy review mà chính họ viết
             reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
-        
+        updated_request = update_request_url(request)
         return Response({
             "success": True,
             "message": "Lấy danh sách review thành công.",
-            "reviews": ReviewSerializer(reviews, many=True).data
+            "reviews": ReviewSerializer(reviews, many=True, context={'request': updated_request}).data
         }, status=status.HTTP_200_OK)
-        
+
+# Thêm hostname
+def update_request_url(request):
+    if hasattr(settings, 'BASE_URL'):
+        request._current_scheme_host = settings.BASE_URL
+        print(request)
+    return request
 # API thống kê số lượng người dùng đang đăng nhập

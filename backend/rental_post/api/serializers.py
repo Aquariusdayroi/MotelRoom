@@ -91,46 +91,22 @@ class UserForRentalPostSerializer(serializers.ModelSerializer):
 
 #         instance.save()
 #         return instance
+
 class RentalPostSerializer(DynamicFieldsModelSerializer):
-    # Các trường cho phép None để không cập nhật
-    title = serializers.CharField(required=True, allow_null=True) 
-    information_detail = serializers.CharField(required=True, allow_null=True)
-    description = serializers.CharField(required=True, allow_null=True)
-    images = ImageSerializer(source='image', many=True, allow_null=True)
-    total_occupancy = serializers.IntegerField(
-        required=True,
-        allow_null=True,
-        validators=[validators.MinValueValidator(0), validators.MaxValueValidator(32767)]  # Simulate PositiveSmallIntegerField
-    )
-    acreage = serializers.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        required=True,
-        allow_null=True,
-        validators=[validators.MinValueValidator(0)] #giá trị diện tích không được âm
-    )
-    price = serializers.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        required=True,
-        allow_null=True,
-        validators=[validators.MinValueValidator(0)]  # Giá không được âm
-    )
-    
-    
     # CHỈ dùng AddressSerializer để đọc (read-only)
     address = AddressNestedSerializer(read_only=True)
     user = serializers.SerializerMethodField()
     fullname = serializers.CharField(source='user.fullname', read_only=True)
     avatar = serializers.ImageField(source='user.avatar', read_only=True)
+    images = ImageSerializer(source='image', many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
 
     # Các trường cần để ghi (ghi qua FormData)
     description = serializers.CharField(write_only=True)
     latitude = serializers.CharField(write_only=True, required=False)
     longitude = serializers.CharField(write_only=True, required=False)
-    city = serializers.IntegerField(write_only=True, allow_null=True)
-    district = serializers.IntegerField(write_only=True, allow_null=True)
+    city = serializers.IntegerField(write_only=True)
+    district = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = RentalPost
@@ -172,8 +148,8 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     
     def get_user(self, obj):
         if self.context.get("expand_user"):
-            return UserForRentalPostSerializer(obj.user).data
-        return obj.user.id
+            # return UserForRentalPostSerializer(obj.user).data
+            return obj.user.id
 
     def create(self, validated_data):
         # Lấy dữ liệu địa chỉ từ validated_data
