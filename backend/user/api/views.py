@@ -479,7 +479,7 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     
     def retrieve(self, request, *args, **kwargs):
         # Lấy thông tin người dùng
-        serializer = self.get_serializer(self.get_object())
+        serializer = self.get_serializer(self.get_object(), context={})
         return Response({
             "success": True,
             "message": "Lấy thông tin người dùng thành công.",
@@ -496,7 +496,7 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         self.perform_update(serializer)
 
         # Trả về dữ liệu người dùng đã cập nhật, sử dụng UpdateUserSerializer để lấy thông tin địa chỉ
-        read_serializer = UpdateUserSerializer(instance, context=self.get_serializer_context())
+        read_serializer = UpdateUserSerializer(instance)
 
         return Response({
             "success": True,
@@ -908,7 +908,7 @@ class UserDetailAPIView(generics.RetrieveAPIView):
         user_id = kwargs.get('user_id')
         try:
             user = self.get_queryset().get(id=user_id)
-            serializer = self.get_serializer(user)
+            serializer = self.get_serializer(user, context={})
             return Response({
                 "success": True,
                 "message": "Lấy thông tin người dùng thành công.",

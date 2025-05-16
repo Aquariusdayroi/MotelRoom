@@ -75,7 +75,7 @@ class RentalPostListCreateAPIView(GenericAPIView):
         posts = self.get_queryset()
         paginator = self.pagination_class()
         result_page = paginator.paginate_queryset(posts, request)
-        serializer = self.get_serializer(result_page, many=True)
+        serializer = self.get_serializer(result_page, many=True, context={})
 
         result_data = {
             "success": True,
@@ -179,7 +179,7 @@ class RentalPostDetailUpdateDeleteAPIView(APIView):
         except RentalPost.DoesNotExist:
             raise NotFound(detail="Không tìm thấy bài đăng của bạn.")
 
-        serializer = RentalPostSerializer(post, data=request.data, partial=False)
+        serializer = RentalPostSerializer(post, data=request.data, context={'request': request}, partial=True)
         if serializer.is_valid():
             serializer.save()
             total_items = RentalPost.objects.filter(user=request.user).count()
@@ -341,7 +341,7 @@ class RentalPostListByUserAPIView(ListAPIView):
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = self.get_serializer(page, many=True, context={})
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
