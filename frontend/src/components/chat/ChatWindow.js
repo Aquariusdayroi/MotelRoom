@@ -24,7 +24,7 @@ export default function ChatWindow({ token, conversation, socket }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [loading, setLoading] = useState(false);
-  const shouldScrollRef = useRef(false); // không bị reset sau render
+  const shouldScrollRef = useRef(true); // không bị reset sau render
 
   // Refs để scroll và track container
   const messageEndRef = useRef(null);
@@ -71,6 +71,7 @@ export default function ChatWindow({ token, conversation, socket }) {
   const loadInitialMessages = useCallback(async () => {
     if (!conversation?.id) return;
     setLoading(true);
+    shouldScrollRef.current = true;
     try {
       const res = await axiosClient.get("chat/api/messages/", {
         params: { conversation_id: conversation.id, page: 1 },
@@ -80,10 +81,20 @@ export default function ChatWindow({ token, conversation, socket }) {
         : [];
       setMessages(msgs);
       setCurrentPage(1);
-      setHasMoreMessages(res.data.next !== null);
-      // Scroll xuống cuối
+      setHasMoreMessages(res.data.next !== null); 
       messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      isUserNearBottom.current = true;
+      for (const msg of msgs) {
+        if (msg.status === "sent") {  
+          try {
+            await axiosClient.post("chat/api/messages/update-status/", {
+              message_id: msg.id,
+              status: "read",
+            }).then(() => sendReadStatus(msg.id))
+          } catch (err) {
+            console.error("Lỗi cập nhật trạng thái tin nhắn:", err);
+          }
+        }
+    }
     } catch (err) {
       console.error(err);
       setError("Không thể tải tin nhắn");
@@ -114,6 +125,7 @@ export default function ChatWindow({ token, conversation, socket }) {
         setHasMoreMessages(res.data.next !== null);
         // Giữ vị trí scroll
         container.scrollTop = container.scrollHeight - previousHeight;
+        shouldScrollRef.current = false
       } else {
         setHasMoreMessages(false);
       }
@@ -153,10 +165,6 @@ export default function ChatWindow({ token, conversation, socket }) {
       if (container.scrollTop === 0 && hasMoreMessages && !loading) {
         fetchMoreMessages();
       }
-      // Kiểm tra xem người dùng có gần cuối danh sách không
-      const isNearBottom =
-        container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-      isUserNearBottom.current = isNearBottom;
     };
 
     container.addEventListener("scroll", handleScroll);
@@ -209,9 +217,6 @@ export default function ChatWindow({ token, conversation, socket }) {
             .then(() => sendReadStatus(formatted.id))
             .catch((err) => console.error(err));
         }
-        // Chỉ scroll xuống nếu người dùng đang ở gần cuối
-        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        isUserNearBottom.current = true;
       }
     };
 
@@ -237,19 +242,11 @@ export default function ChatWindow({ token, conversation, socket }) {
     );
     setMessage("");
     setError("");
-    
-    // Scroll xuống cuối khi gửi tin nhắn
-    if(loadmessage) {
-        
-        setloadmessage(false);
-    }
-    isUserNearBottom.current = true;
   }, [message, socket, userInfo?.user_id, conversation.id]);
 
     useEffect(() => {
     if (shouldScrollRef.current) {
         messageEndRef.current?.scrollIntoView({ behavior: "smooth" });    
-        shouldScrollRef.current = false;
     }
     }, [messages]);
 
