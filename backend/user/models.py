@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from city.models import City
 from district.models import District
 from address.models import Address
+from rental_post.models import RentalPost
+
 
 
 class CustomUserManager(BaseUserManager):
@@ -30,7 +32,6 @@ class CustomUserManager(BaseUserManager):
 
 
 
-
 class User(AbstractBaseUser, PermissionsMixin):
     REGISTRATION_TYPES = [('local', 'Local'), ('google', 'Google')]
     ROLES = [('user', 'User'), ('owner', 'Owner'), ('admin', 'Admin')]
@@ -42,12 +43,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     registration_type = models.CharField(max_length=10, choices=REGISTRATION_TYPES, default='local')
     fullname = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=255, null=True, blank=True, unique=True)
+    
+    # Các trường của user đăng ký thành owner
+    cccd = models.CharField(max_length=12, null=True, blank=True) 
+    image_front_cccd = models.ImageField(upload_to='cccd/front/', null=True, blank=True)
+    image_back_cccd = models.ImageField(upload_to='cccd/back/', null=True, blank=True)
 
     # ForeignKey
     city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True, related_name='user')
     district = models.ForeignKey(District, on_delete=models.SET_NULL, null=True, blank=True, related_name='user')
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True, related_name='user')
-    
 
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='avatars/default.jpg')
     birthday = models.DateTimeField(null=True, blank=True)
@@ -68,8 +73,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+
 class OwnerRequest(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    rental_post_data = models.JSONField()
     cccd = models.CharField(max_length=12) 
     image_front_cccd = models.ImageField(upload_to='cccd/front/', null=True, blank=True)
     image_back_cccd = models.ImageField(upload_to='cccd/back/', null=True, blank=True)
@@ -77,3 +84,14 @@ class OwnerRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     rejection_reason = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.user.fullname
+    
+class OwnerRequestImage(models.Model):
+    owner_request = models.ForeignKey(OwnerRequest, on_delete=models.CASCADE, related_name='images_rental_post')
+    image = models.ImageField(upload_to='owner_request_images/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.owner_request.user.fullname
