@@ -9,10 +9,10 @@ import tro from '../../../assets/img/tro.png';
 import house_small from '../../../assets/img/house_small.png';
 
 const TYPES = [
-    { label: 'Nhà nguyên căn', icon: home },
-    { label: 'Căn hộ', icon: apartment },
     { label: 'Phòng trọ', icon: tro },
-    { label: 'Nhà nhỏ', icon: house_small },
+    { label: 'Studio', icon: home },
+    { label: 'Duplex', icon: apartment },
+    { label: 'Căn hộ dịch vụ', icon: house_small },
 ];
 
 function Step1_SelectType({ data, onNext, onBack }) {

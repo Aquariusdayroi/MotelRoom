@@ -198,7 +198,7 @@ function Desciption({ text }) {
     );
 }
 
-function RoomDetail({ room, reviews, isCall = true, showAction = true }) {
+function RoomDetail({ room, reviews, isCall = true, showAction = true, isSmall = false }) {
     let { user } = useContext(AuthToken);
     const [isFavorite, setIsFavorite] = useState(room.is_favorite);
 
@@ -246,7 +246,7 @@ function RoomDetail({ room, reviews, isCall = true, showAction = true }) {
     const [showShare, setShowShare] = useState(false);
 
     return (
-        <>
+        <div style={{ padding: `0 ${!isSmall ? '0' : '160px'}` }}>
             <div className="d-flex align-items-center justify-content-between mb-2">
                 <h3 className={styles.title}>{room?.title}</h3>
                 {showAction && (
@@ -276,7 +276,7 @@ function RoomDetail({ room, reviews, isCall = true, showAction = true }) {
             <RoomImageGallery gallery={room?.images} />
             <div className="row mt-4">
                 <div className="col-7">
-                    <div className={styles.address}>{room?.address?.description}</div>
+                    <div className={styles.address}>{room?.address?.address_name}</div>
                     <div className="text-muted d-flex align-items-center gap-1 mb-4">
                         <StarIcon className="text-warning" />
                         {reviews?.length ? (
@@ -299,12 +299,12 @@ function RoomDetail({ room, reviews, isCall = true, showAction = true }) {
                 </div>
                 <div className="col">
                     <div className="d-flex justify-content-end mt-4">
-                        <ContactCard price={room?.price} onCall={room?.user?.id} isCall={isCall} />
+                        <ContactCard price={room?.price} onCall={room?.user?.id} isCall={isCall} isSmall={isSmall} />
                     </div>
                 </div>
             </div>
             <Desciption text={room?.information_detail} />
-        </>
+        </div>
     );
 }
 

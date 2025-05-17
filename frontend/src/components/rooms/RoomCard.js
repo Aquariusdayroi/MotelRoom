@@ -196,7 +196,7 @@ const RoomCard = ({
                                 clipRule="evenodd"
                             />
                         </svg>
-                        {location?.description}
+                        {location?.address_name}
                     </div>
                 </div>
                 <div>

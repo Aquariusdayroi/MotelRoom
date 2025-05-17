@@ -32,9 +32,12 @@ function Step4_ReviewAndSubmit({ data, onBack, onSubmit }) {
         title: data.title,
         information_detail: data.description,
         address: {
+            city: 1,
+            district: 2,
             description: data.address.detail,
-            latitude: null,
-            longitude: null,
+            address_name: data.address.detail,
+            latitude: 14.05,
+            longitude: 23.06,
         },
         total_occupancy: data.roomCount,
         acreage: data.area,
@@ -78,7 +81,7 @@ function Step4_ReviewAndSubmit({ data, onBack, onSubmit }) {
                     đăng này, hãy nhấn nút "Hoàn thành" để gửi bài đăng của bạn.
                 </p>
             </div>
-            <RoomDetail room={room} isCall={false} showAction={false} />
+            <RoomDetail room={room} isCall={false} showAction={false} isSmall={true} />
             <div className="d-flex aling-items-center justify-content-between my-5">
                 <button className="back-btn" onClick={() => onBack({})}>
                     <span style={{ transform: 'rotate(180deg)', display: 'inline-block' }}>➔</span> Quay lại

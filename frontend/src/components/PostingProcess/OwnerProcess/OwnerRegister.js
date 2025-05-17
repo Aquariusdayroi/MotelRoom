@@ -27,6 +27,7 @@ function OwnerRegister({ data: postData, onBack, onNext, onSubmit }) {
     const handleSubmitOwner = (data) => {
         const owner = {
             cccd: data.id_number,
+            // get path from image
             image_front_cccd: data.frontCCCD,
             image_back_cccd: data.backCCCD,
         };

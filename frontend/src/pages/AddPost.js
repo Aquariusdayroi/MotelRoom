@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import StepWrapper from '../components/PostingProcess/StepWrapper';
 import Step1_Intro from '../components/PostingProcess/Step1/Step1_Intro';
 import Step1_SelectType from '../components/PostingProcess/Step1/Step1_SelectType';
@@ -20,7 +20,29 @@ import { AuthToken } from '../authToken';
 import OwnerReview from '../components/PostingProcess/OwnerProcess/OwnerReview';
 import axiosClient from '../api/axiosClient';
 
-const steps = [
+import UniversalModal from '../components/modal/UniversalModal';
+import { useNavigate } from 'react-router-dom';
+
+function InitStep() {
+    return <></>;
+}
+
+const ownerSteps = [
+    InitStep,
+    Step1_SelectType,
+    Step1_AddressConfirm,
+
+    Step2_UploadImage,
+
+    Step3_Amenities,
+    Step3_AdditionalAmenities,
+    Step3_TitleAndDescription,
+
+    Step4_ReviewAndSubmit,
+];
+
+const userSteps = [
+    InitStep,
     Step1_Intro,
     Step1_SelectType,
     Step1_AddressConfirm,
@@ -39,11 +61,38 @@ const steps = [
 function AddPost() {
     const [currentStep, setCurrentStep] = useState(0);
     const [formData, setFormData] = useState({});
+    const [status, setStatus] = useState('');
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [modalType, setModalType] = useState('success');
+
+    const navigate = useNavigate();
+
+    const { role } = useContext(AuthToken);
+
+    const steps = role === 'user' ? userSteps : ownerSteps;
+
+    useEffect(() => {
+        if (role !== 'user') {
+            setCurrentStep(1);
+            return;
+        }
+        const getMyRequest = async () => {
+            try {
+                const res = await axiosClient.get('/user/api/owner-requests/my_request/');
+                if (res.data.success && res.data.status === 'pending') {
+                    setStatus('pending');
+                    setCurrentStep(steps.length - 1);
+                } else setCurrentStep(1);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        getMyRequest();
+    }, [steps.length, role]);
 
     const headerHeight = 80;
     const containerHeight = `calc(100vh - ${headerHeight}px)`;
-
-    const { user, role } = useContext(AuthToken);
 
     const StepComponent = steps[currentStep];
 
@@ -52,7 +101,6 @@ function AddPost() {
     const handleSetData = (data) => {
         if (!data) return;
         setFormData((prev) => ({ ...prev, ...data }));
-        console.log('form-data:', { ...formData, ...data });
     };
 
     const handleNext = (data = {}) => {
@@ -71,18 +119,59 @@ function AddPost() {
 
     const requestOwner = async (data) => {
         try {
-            const res = await axiosClient.post('/user/api/owner-requests/send-request/', data);
-            console.log(res);
+            const sendData = new FormData();
+
+            sendData.append('rental_post_data', JSON.stringify(data.rental_post_data));
+
+            data.images_rental_post.forEach((file) => sendData.append('images_rental_post', file));
+
+            sendData.append('cccd', data.cccd);
+            sendData.append('image_front_cccd', data.image_front_cccd);
+            sendData.append('image_back_cccd', data.image_back_cccd);
+
+            const res = await axiosClient.post('/user/api/owner-requests/send-request/', sendData);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    const requestPost = async (data) => {
+        try {
+            const sendData = new FormData();
+            Object.entries(data).forEach(([key, value]) => sendData.append(key, value));
+            data.images.forEach((file) => sendData.append('images', file));
+
+            const res = await axiosClient.post('/rental_post/api/my-posts/', sendData);
+
+            setModalType('success');
+            setModalMessage(res.data.message);
+            setModalOpen(true);
         } catch (error) {
-            console.error(error);
+            setModalType('error');
+            setModalMessage(error.response.data.message);
+            setModalOpen(true);
         }
     };
 
     const handleSubmit = async (data = {}) => {
         if (data.home_type) {
             if (role !== 'user') {
-                console.log('submit');
+                const { user, home_type, images_rental_post, images, ...rest } = data;
+                const final_data = {
+                    ...rest,
+                    images: images_rental_post,
+                    home_type: home_type.toLowerCase(),
+                    description: rest.address.description,
+                    city: rest.address.city,
+                    district: rest.address.district,
+                };
+                console.log(final_data);
+                await requestPost(final_data);
+
+                return;
             }
+
             handleNext({ post_data: data });
         }
 
@@ -93,20 +182,47 @@ function AddPost() {
                 rental_post_data: rest,
                 images_rental_post: images_rental_post,
             };
-            await requestOwner(final_data);
+            const res = await requestOwner(final_data);
+
+            if (!res) {
+                setModalType('error');
+                setModalMessage('Đã xảy ra lỗi, vui lòng thử lại.');
+                setModalOpen(true);
+                return;
+            }
 
             handleNext({ owner: data });
         }
     };
 
+    const handleCloseModal = () => {
+        if (modalType === 'success') {
+            navigate('/profile');
+            return;
+        }
+
+        setModalOpen(false);
+        setModalMessage('');
+    };
+
     return (
-        <div className="container" style={{ minHeight: containerHeight }}>
-            <StepWrapper key={currentStep} stepKey={currentStep} direction={direction}>
-                <div className="px-5">
-                    <StepComponent data={formData} onNext={handleNext} onBack={handleBack} onSubmit={handleSubmit} />
-                </div>
-            </StepWrapper>
-        </div>
+        <>
+            <div className="container" style={{ minHeight: containerHeight }}>
+                <StepWrapper key={currentStep} stepKey={currentStep} direction={direction}>
+                    <div className="px-5">
+                        <StepComponent
+                            data={formData}
+                            onNext={handleNext}
+                            onBack={handleBack}
+                            onSubmit={handleSubmit}
+                            status={status}
+                        />
+                    </div>
+                </StepWrapper>
+            </div>
+
+            <UniversalModal show={modalOpen} message={modalMessage} type={modalType} onClose={handleCloseModal} />
+        </>
     );
 }
 
