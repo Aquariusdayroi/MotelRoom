@@ -124,6 +124,29 @@ class RentalPostListCreateAPIView(GenericAPIView):
             "message": "Tạo bài đăng thất bại.",
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+        
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+
+        # Kiểm tra dữ liệu đầu vào
+        serializer.is_valid(raise_exception=True)
+        
+        try:
+            # Gọi hàm update từ serializer đã được tùy chỉnh
+            instance = serializer.update(instance, serializer.validated_data)
+        except ValidationError as e:
+            return Response({
+                "success": False,
+                "message": "Cập nhật bài đăng thất bại.",
+                "errors": serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Trả về kết quả sau khi cập nhật
+        return Response({
+            "success": True,
+            "message": "Bài đăng đã được tạo thành công.",
+            "data": self.get_serializer(instance).data}, status=status.HTTP_200_OK)
     
 # API xem chi tiết bài đăng, sửa bài đăng, xóa bài đăng theo ID của người dùng hiện tại
 class RentalPostDetailUpdateDeleteAPIView(APIView):
@@ -352,6 +375,12 @@ class RentalPostDetailAPIView(APIView):
         """Xem chi tiết bài đăng theo ID"""
         try:
             post = RentalPost.objects.get(id=id)
+            if self.request.user!=post.user:
+                print(self.request.user)
+                print(post.user)
+                post.views = F('views') + 1
+                post.save(update_fields=["views"])
+                post.refresh_from_db()
         except RentalPost.DoesNotExist:
             return Response({  
                 "success": False,
@@ -359,6 +388,7 @@ class RentalPostDetailAPIView(APIView):
             }, status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.get_serializer(post)  
+    
         return Response({
             "success": True,
             "message": "Lấy thông tin bài đăng thành công.",
@@ -469,5 +499,26 @@ class RentalPostFavoriteListAPIView(ListAPIView):
         kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
         return self.serializer_class(*args, **kwargs)        
         
+       
+# API thống kê 5 bài đăng có view cao nhất 
+class TopViewedPostsAPIView(APIView):
+    permission_classes = [IsAuthenticated]  # Yêu cầu đăng nhập
 
+    def get(self, request):
+        # Lọc các bài đăng do chính người dùng hiện tại đăng
+        user_posts = RentalPost.objects.filter(user=request.user)
+
+        # Nếu không có bài đăng nào của người dùng
+        if not user_posts.exists():
+            return Response({"error": "Bạn không có bài đăng nào."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Lấy 5 bài đăng có lượt xem cao nhất của người dùng
+        top_posts = user_posts.order_by('-views')[:5]
+
+        # Sử dụng serializer để chuyển đổi dữ liệu
+        serializer = RentalPostSerializer(top_posts, many=True)
+        return Response({
+            "success": True,
+            "top_viewed_posts": serializer.data
+        }, status=status.HTTP_200_OK)
 
