@@ -7,12 +7,7 @@ function RoomImageGallery({ gallery }) {
     const [visibleIndex, setVisibleIndex] = useState(-1);
 
     const getImageUrl = (image) => {
-        if (image?.image_url) {
-            if (image.image_url.startsWith('blob')) {
-                return image.image_url;
-            }
-            return `http://localhost:8000${image.image_url}`;
-        }
+        if (image?.image_url) return image.image_url;
         return images.emptyImg;
     };
 

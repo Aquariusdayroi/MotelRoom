@@ -24,10 +24,8 @@ function Step4_ReviewAndSubmit({ data, onBack, onSubmit }) {
     }, [user]);
 
     const room = {
-        user: {
-            fullname: userInfo?.fullname,
-            avatar: userInfo?.avatar?.replace('http://localhost:8000', ''),
-        },
+        fullname: userInfo.fullname,
+        avatar: userInfo.avatar,
         home_type: data.type,
         title: data.title,
         information_detail: data.description,

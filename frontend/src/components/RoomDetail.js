@@ -283,7 +283,7 @@ function RoomDetail({ room, reviews, isCall = true, showAction = true, isSmall =
                             <>
                                 <span>{rating.toFixed(1)}</span>
                                 <span>/</span>
-                                <span className="text-decoration-underline">{reviews?.length} đánh giá</span>
+                                <span>{reviews?.length} đánh giá</span>
                             </>
                         ) : (
                             'Chưa có đánh giá'
@@ -291,15 +291,15 @@ function RoomDetail({ room, reviews, isCall = true, showAction = true, isSmall =
                     </div>
 
                     <div className="d-flex align-items-center gap-3 mb-4 py-3 border-top border-bottom">
-                        <Avatar src={`http://localhost:8000${room?.user?.avatar}`} className="shadow-sm" />
-                        <div>Chủ nhà/Người đăng bài: {room?.user?.fullname}</div>
+                        <Avatar src={room?.avatar} className="shadow-sm" />
+                        <div>Chủ nhà/Người đăng bài: {room?.fullname}</div>
                     </div>
 
                     <BasicInfo data={basicInfo} />
                 </div>
                 <div className="col">
                     <div className="d-flex justify-content-end mt-4">
-                        <ContactCard price={room?.price} onCall={room?.user?.id} isCall={isCall} isSmall={isSmall} />
+                        <ContactCard price={room?.price} onCall={room?.user} isCall={isCall} isSmall={isSmall} />
                     </div>
                 </div>
             </div>
