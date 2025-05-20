@@ -1,0 +1,10 @@
+.pendingImage {
+    width: 200px;
+    aspect-ratio: 1/1;
+    background-color: #91ebff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+}

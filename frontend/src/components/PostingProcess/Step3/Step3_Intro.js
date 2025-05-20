@@ -2,18 +2,18 @@ import '../../../styles/Step1_Intro.css';
 import room from '../../../assets/img/room.png';
 import ProgressBar from '../ProgressBar';
 
-function Step2_UploadImages({ onNext, onBack }) {
+function Step3_Intro({ onNext, onBack }) {
     return (
         <div className="basic-info-form">
-            <ProgressBar currentStep={2} />
+            <ProgressBar currentStep={3} />
 
             <div className="content">
                 <div className="box-content">
-                    <h2>Bước 2</h2>
-                    <h1>Thêm ảnh cho chỗ ở của bạn</h1>
+                    <h2>Bước 3</h2>
+                    <h1>Làm cho chỗ ở của bạn trở nên nổi bật</h1>
                     <p>
-                        Ở bước này, bạn cần cung cấp các hình ảnh hoặc video giúp cung cấp cái nhìn trực quan cho khách
-                        hàng về chỗ ở của bạn.
+                        Ở bước này, bạn sẽ thêm một số tiện nghi được cung cấp tại chỗ ở của bạn, cùng với 5 bức ảnh
+                        lớn. Sau đó, bạn sẽ soạn tiêu đề, nội dung mô tả và mức giá mong muốn cho chỗ ở của bạn.
                     </p>
                 </div>
                 <div className="box-img w-100">
@@ -24,7 +24,7 @@ function Step2_UploadImages({ onNext, onBack }) {
                 <button className="back-btn" onClick={() => onBack({})}>
                     <span style={{ transform: 'rotate(180deg)', display: 'inline-block' }}>➔</span> Quay lại
                 </button>
-                <button className="ms-auto next-btn" onClick={() => onNext({})}>
+                <button className="next-btn" onClick={() => onNext({})}>
                     Tiếp tục ➔
                 </button>
             </div>
@@ -32,4 +32,4 @@ function Step2_UploadImages({ onNext, onBack }) {
     );
 }
 
-export default Step2_UploadImages;
+export default Step3_Intro;

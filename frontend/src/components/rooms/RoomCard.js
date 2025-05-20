@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import styles from '../../styles/RoomCard.module.css';
 import { images } from '../../assets/images';
 import { AuthToken } from '../../authToken';
@@ -17,6 +17,7 @@ const RoomCard = ({
     onClick,
     onLocationClick,
     is_favorite,
+    showFavoriteButton = true,
 }) => {
     let { user } = useContext(AuthToken);
 
@@ -95,7 +96,7 @@ const RoomCard = ({
                     ))}
                 </div>
                 {isNew && <span className={styles.newBadge}>Mới</span>}
-                {user && (
+                {user && showFavoriteButton && (
                     <button className={styles.favoriteButton} onClick={handleSetFavorite}>
                         {isFavorite ? (
                             <svg
@@ -195,7 +196,7 @@ const RoomCard = ({
                                 clipRule="evenodd"
                             />
                         </svg>
-                        {location?.description}
+                        {location?.address_name}
                     </div>
                 </div>
                 <div>
@@ -210,7 +211,7 @@ const RoomCard = ({
                         <span>Chủ nhà: {owner?.fullname}</span>
                     </div>
                     <div className={styles.details}>
-                        <div className={styles.price}>Từ: {price / 1000000} triệu/tháng</div>
+                        <div className={styles.price}>Từ: {(price / 1000000).toFixed(2)} triệu/tháng</div>
                         <div className={styles.info}>
                             Loại hình: {type}, {Math.floor(area)}m²
                         </div>

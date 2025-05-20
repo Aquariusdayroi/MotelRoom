@@ -2,19 +2,16 @@ import '../../../styles/Step1_Intro.css';
 import room from '../../../assets/img/room.png';
 import ProgressBar from '../ProgressBar';
 
-function Step2_UploadImages({ onNext, onBack }) {
+function Step4_Intro({ onNext, onBack }) {
     return (
         <div className="basic-info-form">
-            <ProgressBar currentStep={2} />
+            <ProgressBar currentStep={4} />
 
             <div className="content">
                 <div className="box-content">
-                    <h2>Bước 2</h2>
-                    <h1>Thêm ảnh cho chỗ ở của bạn</h1>
-                    <p>
-                        Ở bước này, bạn cần cung cấp các hình ảnh hoặc video giúp cung cấp cái nhìn trực quan cho khách
-                        hàng về chỗ ở của bạn.
-                    </p>
+                    <h2>Bước 4</h2>
+                    <h1>Xem lại bài đăng của bạn</h1>
+                    <p>Xem lại bài đăng của bạn để đảm bảo không có sai sót hay nhầm lẫn.</p>
                 </div>
                 <div className="box-img w-100">
                     <img src={room} alt="room" className="img-fluid w-100" />
@@ -24,7 +21,7 @@ function Step2_UploadImages({ onNext, onBack }) {
                 <button className="back-btn" onClick={() => onBack({})}>
                     <span style={{ transform: 'rotate(180deg)', display: 'inline-block' }}>➔</span> Quay lại
                 </button>
-                <button className="ms-auto next-btn" onClick={() => onNext({})}>
+                <button className="next-btn" onClick={() => onNext({})}>
                     Tiếp tục ➔
                 </button>
             </div>
@@ -32,4 +29,4 @@ function Step2_UploadImages({ onNext, onBack }) {
     );
 }
 
-export default Step2_UploadImages;
+export default Step4_Intro;
