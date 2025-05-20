@@ -167,22 +167,9 @@ class ReviewDetailAPIView(APIView):
             "data": ReviewSerializer(review).data
         }, status=status.HTTP_200_OK)
 
-# API thống kê lượt review bài đăng theo tháng
+# API thống kê lượt review bài đăng
 class ReviewCountAPIView(APIView):
     def get(self, request, post_id):
-        # Lấy tháng từ query parameters, nếu không có thì dùng tháng hiện tại
-        month = request.query_params.get("month", str(now().month))
-
-        # Kiểm tra tính hợp lệ của tháng
-        try:
-            month = int(month)
-            if month < 1 or month > 12:
-                raise ValueError
-        except ValueError:
-            return Response({"error": "Tháng không hợp lệ. Vui lòng nhập số từ 1 đến 12."}, status=400)
-
-        # Lấy năm hiện tại
-        year = now().year
 
         # Kiểm tra xem bài đăng có tồn tại hay không
         try:
@@ -194,14 +181,10 @@ class ReviewCountAPIView(APIView):
         # Lọc review theo bài đăng, tháng và năm hiện tại
         reviews_count = Review.objects.filter(
             rental_post=rental_post,
-            time__year=year,
-            time__month=month
         ).count()
 
         return Response({
-            "success": True,
+            "success": True,    
             "post_id": post_id,
-            "month": month,
-            "year": year,
             "reviews_count": reviews_count,
         })
