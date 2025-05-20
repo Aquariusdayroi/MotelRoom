@@ -7,9 +7,7 @@ function RoomImageGallery({ gallery }) {
     const [visibleIndex, setVisibleIndex] = useState(-1);
 
     const getImageUrl = (image) => {
-        if (image?.image_url) {
-            return `http://localhost:8000${image.image_url}`;
-        }
+        if (image?.image_url) return image.image_url;
         return images.emptyImg;
     };
 
@@ -17,18 +15,8 @@ function RoomImageGallery({ gallery }) {
         e.target.src = images.emptyImg;
     };
 
-    if (!gallery || gallery.length === 0) {
-        return (
-            <div className="rounded-4 overflow-hidden">
-                <img
-                    src={images.emptyImg}
-                    alt="No images available"
-                    className="w-100 h-100"
-                    style={{ objectFit: 'cover', aspectRatio: '2/1' }}
-                />
-            </div>
-        );
-    }
+    const rawGallery = gallery?.slice(0, 5) || [];
+    const galleryRender = [...rawGallery, ...Array(5 - rawGallery.length).fill({ image_url: images.emptyImg })];
 
     return (
         <PhotoProvider
@@ -41,14 +29,14 @@ function RoomImageGallery({ gallery }) {
                 <div className="row g-2">
                     <div className="col-12 col-md-6">
                         <div
-                            onClick={() => setVisibleIndex(0)}
+                            onClick={() => setVisibleIndex(Math.min(0, rawGallery.length - 1))}
                             style={{ cursor: 'pointer', aspectRatio: '4/3' }}
                             className="h-100"
                         >
                             <img
-                                src={getImageUrl(gallery?.[0])}
+                                src={getImageUrl(galleryRender?.[0])}
                                 onError={handleImgError}
-                                alt={gallery?.[0]?.id}
+                                alt="0"
                                 className="w-100 h-100"
                                 style={{ objectFit: 'cover' }}
                             />
@@ -57,17 +45,17 @@ function RoomImageGallery({ gallery }) {
 
                     <div className="col-12 col-md-6">
                         <div className="row g-2">
-                            {gallery?.slice(1, 5)?.map((img, idx) => (
-                                <div key={img.id} className="col-6">
+                            {galleryRender?.slice(1, 5)?.map((img, idx) => (
+                                <div key={idx} className="col-6">
                                     <div
-                                        onClick={() => setVisibleIndex(idx + 1)}
+                                        onClick={() => setVisibleIndex(Math.min(idx + 1, rawGallery.length - 1))}
                                         style={{ cursor: 'pointer', aspectRatio: '4/3' }}
                                         className="h-100"
                                     >
                                         <img
                                             src={getImageUrl(img)}
                                             onError={handleImgError}
-                                            alt={img.id}
+                                            alt={idx}
                                             className="w-100 h-100"
                                             style={{ objectFit: 'cover' }}
                                         />
@@ -79,8 +67,8 @@ function RoomImageGallery({ gallery }) {
                 </div>
             </div>
 
-            {gallery?.map((img) => (
-                <PhotoView key={img.id} src={getImageUrl(img)} />
+            {gallery?.map((img, idx) => (
+                <PhotoView key={idx} src={getImageUrl(img)} />
             ))}
         </PhotoProvider>
     );
