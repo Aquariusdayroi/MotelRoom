@@ -34,20 +34,17 @@ const OwnerPostManagement = () => {
                 page: currentPage
             });
             if (response?.data) {
-                const rawRooms = response.data.results.data || [];
-
-                const formattedRooms = rawRooms.map(room => ({
+                const rawRooms = response.data.results.data || []; const formattedRooms = rawRooms.map(room => ({
                     ...room,
                     user: {
                         fullname: room.fullname,
-                        avatar: room.avatar?.startsWith('http')
-                            ? room.avatar
-                            : `http://localhost:8000${room.avatar}`,
+                        avatar: room.avatar?.replace('http://localhost:8000', '')
                     },
-                    address: room.address || {
-                        address_name: room.address_name,
-                        city_name: room.city_name,
-                        district_name: room.district_name
+                    address: {
+                        id: room.address?.id,
+                        address_name: room.address?.address_name,
+                        city_name: room.address?.city_name,
+                        district_name: room.address?.district_name
                     }
                 }));
 
@@ -75,9 +72,7 @@ const OwnerPostManagement = () => {
     }, [page]); const handleSort = (order) => {
         const sortValue = order === 'asc' ? 'newest' : 'oldest';
         setSortOrder(sortValue);
-        navigate(`?page=1&keyword=${searchTerm}&ordering=${sortValue}`);
-
-        // Dùng search API với ordering
+        navigate(`?page=1&keyword=${searchTerm}&ordering=${sortValue}`);        // Dùng search API với ordering
         ownerPostApi.search({
             page: 1,
             keyword: searchTerm,
@@ -88,7 +83,7 @@ const OwnerPostManagement = () => {
                     ...room,
                     user: {
                         fullname: room.fullname,
-                        avatar: room.avatar,
+                        avatar: room.avatar?.replace('http://localhost:8000', ''),
                     },
                     address: {
                         address_name: room.address_name,
@@ -121,7 +116,7 @@ const OwnerPostManagement = () => {
                     ...room,
                     user: {
                         fullname: room.fullname,
-                        avatar: room.avatar,
+                        avatar: room.avatar?.replace('http://localhost:8000', ''),
                     },
                     address: {
                         address_name: room.address_name,

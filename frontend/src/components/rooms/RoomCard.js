@@ -245,30 +245,30 @@ const RoomCard = ({
                                             <circle cx="12" cy="12" r="2" />
                                             <circle cx="19" cy="12" r="2" />
                                         </svg>
-                                    </button>                                {isMenuOpen && (                                        <div className={styles.menuDropdown}>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    onEdit && onEdit(id);
-                                                    setIsMenuOpen(false);
-                                                }}
-                                                className={styles.editButton}
-                                            >
-                                                Chỉnh sửa
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    onDelete && onDelete(id);
-                                                    setIsMenuOpen(false);
-                                                }}
-                                                className={styles.deleteButton}
-                                            >
-                                                Xóa
-                                            </button>
-                                        </div>
+                                    </button>                                {isMenuOpen && (<div className={styles.menuDropdown}>
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                onEdit && onEdit(id);
+                                                setIsMenuOpen(false);
+                                            }}
+                                            className={styles.editButton}
+                                        >
+                                            Chỉnh sửa
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                onDelete && onDelete(id);
+                                                setIsMenuOpen(false);
+                                            }}
+                                            className={styles.deleteButton}
+                                        >
+                                            Xóa
+                                        </button>
+                                    </div>
                                     )}
                                 </div>
                             )}
