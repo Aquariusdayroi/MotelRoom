@@ -17,7 +17,10 @@ const ReviewPostModal = ({ request, onNext, onSuccess }) => {
             <Detail
                 showAction={false}
                 showReviews={false}
-                roomData={request?.rental_post_data}
+                roomData={{
+                    ...request.rental_post_data,
+                    images: request.images_rental_post,
+                }}
             />
 
             <div className="d-flex justify-content-end mt-3 align-items-center">

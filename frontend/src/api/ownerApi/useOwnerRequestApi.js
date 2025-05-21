@@ -14,6 +14,7 @@ export const useOwnerRequestCount = (token) => {
                 const response = await axiosClient.get(
                     "/user/api/admin/owner-requests/list-request/"
                 );
+                console.log("cc", response);
 
                 if (response.data && response.data.requests) {
                     setCount(response.data.requests.length);

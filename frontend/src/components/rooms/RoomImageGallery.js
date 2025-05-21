@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { PhotoProvider, PhotoView } from 'react-photo-view';
-import 'react-photo-view/dist/react-photo-view.css';
-import { images } from '../../assets/images';
+import { useState } from "react";
+import { PhotoProvider, PhotoView } from "react-photo-view";
+import "react-photo-view/dist/react-photo-view.css";
+import { images } from "../../assets/images";
 
 function RoomImageGallery({ gallery }) {
     const [visibleIndex, setVisibleIndex] = useState(-1);
 
     const getImageUrl = (image) => {
         if (image?.image_url) return image.image_url;
+        if (image?.image) return image.image;
         return images.emptyImg;
     };
 
@@ -16,7 +17,10 @@ function RoomImageGallery({ gallery }) {
     };
 
     const rawGallery = gallery?.slice(0, 5) || [];
-    const galleryRender = [...rawGallery, ...Array(5 - rawGallery.length).fill({ image_url: images.emptyImg })];
+    const galleryRender = [
+        ...rawGallery,
+        ...Array(5 - rawGallery.length).fill({ image_url: images.emptyImg }),
+    ];
 
     return (
         <PhotoProvider
@@ -29,8 +33,12 @@ function RoomImageGallery({ gallery }) {
                 <div className="row g-2">
                     <div className="col-12 col-md-6">
                         <div
-                            onClick={() => setVisibleIndex(Math.min(0, rawGallery.length - 1))}
-                            style={{ cursor: 'pointer', aspectRatio: '4/3' }}
+                            onClick={() =>
+                                setVisibleIndex(
+                                    Math.min(0, rawGallery.length - 1)
+                                )
+                            }
+                            style={{ cursor: "pointer", aspectRatio: "4/3" }}
                             className="h-100"
                         >
                             <img
@@ -38,7 +46,7 @@ function RoomImageGallery({ gallery }) {
                                 onError={handleImgError}
                                 alt="0"
                                 className="w-100 h-100"
-                                style={{ objectFit: 'cover' }}
+                                style={{ objectFit: "cover" }}
                             />
                         </div>
                     </div>
@@ -48,8 +56,18 @@ function RoomImageGallery({ gallery }) {
                             {galleryRender?.slice(1, 5)?.map((img, idx) => (
                                 <div key={idx} className="col-6">
                                     <div
-                                        onClick={() => setVisibleIndex(Math.min(idx + 1, rawGallery.length - 1))}
-                                        style={{ cursor: 'pointer', aspectRatio: '4/3' }}
+                                        onClick={() =>
+                                            setVisibleIndex(
+                                                Math.min(
+                                                    idx + 1,
+                                                    rawGallery.length - 1
+                                                )
+                                            )
+                                        }
+                                        style={{
+                                            cursor: "pointer",
+                                            aspectRatio: "4/3",
+                                        }}
                                         className="h-100"
                                     >
                                         <img
@@ -57,7 +75,7 @@ function RoomImageGallery({ gallery }) {
                                             onError={handleImgError}
                                             alt={idx}
                                             className="w-100 h-100"
-                                            style={{ objectFit: 'cover' }}
+                                            style={{ objectFit: "cover" }}
                                         />
                                     </div>
                                 </div>
