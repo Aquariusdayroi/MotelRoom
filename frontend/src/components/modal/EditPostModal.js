@@ -22,13 +22,13 @@ const EditPostModal = ({ show, onHide, post, onUpdate }) => {
         private_rental: false
     };
 
-    const [formData, setFormData] = useState(defaultForm);
-
-    useEffect(() => {
+    const [formData, setFormData] = useState(defaultForm); useEffect(() => {
         if (post) {
             setFormData({
                 ...defaultForm,
                 ...post,
+                address_name: post.address?.address_name || '',
+                description: post.information_detail || '' // Initialize description with information_detail
             });
         }
     }, [post]);
@@ -40,23 +40,31 @@ const EditPostModal = ({ show, onHide, post, onUpdate }) => {
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        const payload = {
+    }; const handleSubmit = (e) => {
+        e.preventDefault(); const payload = {
             home_type: formData.home_type,
             title: formData.title,
             information_detail: formData.information_detail,
-            description: post.address?.description || "",
+            description: formData.information_detail, // Use information_detail as description
             latitude: parseFloat(post.address?.latitude || 0),
             longitude: parseFloat(post.address?.longitude || 0),
             city: parseInt(post.address?.city || 1),
             district: parseInt(post.address?.district || 3),
             total_occupancy: parseInt(formData.total_occupancy),
             acreage: parseFloat(formData.acreage),
-            price: parseFloat(formData.price)
+            price: parseFloat(formData.price),
+            // Include amenity fields
+            has_wifi: formData.has_wifi,
+            has_parking: formData.has_parking,
+            has_toilet: formData.has_toilet,
+            has_kitchen: formData.has_kitchen,
+            has_washing_machine: formData.has_washing_machine,
+            has_fridge: formData.has_fridge,
+            has_air_conditioner: formData.has_air_conditioner,
+            has_water_heater: formData.has_water_heater,
+            has_tv: formData.has_tv,
+            private_rental: formData.private_rental,
+            address_name: formData.address_name || post.address?.address_name || ""
         };
 
         console.log("🧾 Payload gửi lên backend:");
@@ -107,16 +115,16 @@ const EditPostModal = ({ show, onHide, post, onUpdate }) => {
                             rows="4"
                             required
                         />
-                    </div>
-                    <div className="mb-3">
+                    </div>                    <div className="mb-3">
                         <label className="form-label">Địa chỉ</label>
                         <input
                             type="text"
                             className="form-control"
-                            name="address_description"
-                            value={formData.address?.description || ''}
+                            name="address_name"
+                            value={formData.address?.address_name || ''}
                             onChange={handleChange}
                             required
+                            readOnly
                         />
                     </div>
                     <div className="row mb-3">

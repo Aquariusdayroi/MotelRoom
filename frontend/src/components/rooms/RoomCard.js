@@ -7,8 +7,8 @@ import axiosClient from '../../api/axiosClient';
 const RoomCard = ({
     id,
     images: imgList,
-    title: address,
-    address: location,
+    title,
+    address,  // This is now the address object containing address_name, city_name, district_name
     user: owner,
     price,
     home_type: type,
@@ -16,7 +16,7 @@ const RoomCard = ({
     isNew,
     onClick,
     onLocationClick,
-    is_favorite, onHide,
+    is_favorite,
     onDelete,
     onEdit,
     isOwnerView,
@@ -101,17 +101,15 @@ const RoomCard = ({
                     }}
                 >
                     {imageList.map((image, index) => (
-                        <div key={index} className={styles.imageWrapper}>
-                            <img
-                                src={image.image_url}
-                                alt={`${address} - ${index + 1}`}
-                                className={styles.image}
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = images.emptyImg;
-                                    e.target.src = images.emptyImg;
-                                }}
-                            />
+                        <div key={index} className={styles.imageWrapper}>                            <img
+                            src={image.image_url}
+                            alt={`${address?.address_name || ''} - ${index + 1}`}
+                            className={styles.image}
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = images.emptyImg;
+                            }}
+                        />
                         </div>
                     ))}
                 </div>
@@ -198,23 +196,22 @@ const RoomCard = ({
                     </>
                 )}
             </div>
-            <div className={styles.content}>
-                <h3 className={styles.address}>{address}</h3>                <div className={`${styles.location} ${styles.clickable}`} onClick={onLocationClick}>
-                    <div>
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            width="18px"
-                            height="18px" style={{ marginBottom: '7px' }}
-                        >
-                            <path
-                                fillRule="evenodd"
-                                d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                                clipRule="evenodd"
-                            />
-                        </svg>
-                        {location?.description}
+            <div className={styles.content}>                <h3 className={styles.address}>{title}</h3>
+                <div className={`${styles.location} ${styles.clickable}`} onClick={onLocationClick}>
+                    <div>                        <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        width="18px"
+                        height="18px" style={{ marginBottom: '7px' }}
+                    >
+                        <path
+                            fillRule="evenodd"
+                            d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                            clipRule="evenodd"
+                        />
+                    </svg>
+                        {address?.address_name}
                     </div>
                 </div>
                 <div>
@@ -248,19 +245,7 @@ const RoomCard = ({
                                             <circle cx="12" cy="12" r="2" />
                                             <circle cx="19" cy="12" r="2" />
                                         </svg>
-                                    </button>                                {isMenuOpen && (
-                                        <div className={styles.menuDropdown}>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    onHide && onHide(id);
-                                                    setIsMenuOpen(false);
-                                                }}
-                                                className={styles.hideButton}
-                                            >
-                                                Ẩn
-                                            </button>
+                                    </button>                                {isMenuOpen && (                                        <div className={styles.menuDropdown}>
                                             <button
                                                 onClick={(e) => {
                                                     e.preventDefault();

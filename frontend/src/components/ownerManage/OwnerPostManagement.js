@@ -8,10 +8,14 @@ import { useEffect, useState } from "react";
 import ownerPostApi from '../../api/ownerPostApi';
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import EditPostModal from '../modal/EditPostModal';
+import ConfirmModal from '../modal/ComfirmModal';
 
 const OwnerPostManagement = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [confirmMessage, setConfirmMessage] = useState('');
+    const [pendingAction, setPendingAction] = useState(null);
 
     const page = +searchParams.get("page") || 1;
     const keywordParam = searchParams.get("keyword") || '';
@@ -19,8 +23,7 @@ const OwnerPostManagement = () => {
 
     const [searchTerm, setSearchTerm] = useState(keywordParam);
     const [sortOrder, setSortOrder] = useState(orderingParam);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true); const [error, setError] = useState(null);
     const [data, setData] = useState({ results: [], total_pages: 0 });
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedPost, setSelectedPost] = useState(null);
@@ -40,6 +43,11 @@ const OwnerPostManagement = () => {
                         avatar: room.avatar?.startsWith('http')
                             ? room.avatar
                             : `http://localhost:8000${room.avatar}`,
+                    },
+                    address: room.address || {
+                        address_name: room.address_name,
+                        city_name: room.city_name,
+                        district_name: room.district_name
                     }
                 }));
 
@@ -51,7 +59,6 @@ const OwnerPostManagement = () => {
                 console.log('Data being set:', responseData);
                 setData(responseData);
             }
-
         } catch (error) {
             console.error(error);
             setError(error.message);
@@ -59,6 +66,7 @@ const OwnerPostManagement = () => {
             setLoading(false);
         }
     };
+
     useEffect(() => {
         // Ban đầu vào trang dùng getAll
         fetchRooms(page);
@@ -76,8 +84,20 @@ const OwnerPostManagement = () => {
             ordering: sortValue
         }).then(response => {
             if (response?.data) {
+                const formattedResults = response.data.results.map(room => ({
+                    ...room,
+                    user: {
+                        fullname: room.fullname,
+                        avatar: room.avatar,
+                    },
+                    address: {
+                        address_name: room.address_name,
+                        city_name: room.city_name,
+                        district_name: room.district_name
+                    },
+                }));
                 setData({
-                    results: response.data.results,
+                    results: formattedResults,
                     total_pages: response.data.total_pages,
                 });
             }
@@ -95,10 +115,22 @@ const OwnerPostManagement = () => {
                 page: 1,
                 keyword: searchTerm,
                 ordering: sortOrder
-            });
-            console.log('Kết quả tìm kiếm:', response.data); if (response?.data) {
+            }); console.log('Kết quả tìm kiếm:', response.data);
+            if (response?.data) {
+                const formattedResults = response.data.results.map(room => ({
+                    ...room,
+                    user: {
+                        fullname: room.fullname,
+                        avatar: room.avatar,
+                    },
+                    address: {
+                        address_name: room.address_name,
+                        city_name: room.city_name,
+                        district_name: room.district_name
+                    },
+                }));
                 setData({
-                    results: response.data.results,
+                    results: formattedResults,
                     total_pages: response.data.total_pages,
                 });
             }
@@ -108,49 +140,45 @@ const OwnerPostManagement = () => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleHidePost = async (id) => {
-        try {
-            await ownerPostApi.hidePost(id);
-            alert('Đã ẩn bài đăng thành công!');
-            fetchRooms(page);
-        } catch (error) {
-            console.error('Error hiding post:', error);
-            alert('Có lỗi xảy ra khi ẩn bài đăng. Vui lòng thử lại sau!');
-        }
-    };
-
-    const handleDeletePost = async (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa bài đăng này? Hành động này không thể hoàn tác.')) {
+    }; const handleDeletePost = async (id) => {
+        setConfirmMessage('Bạn có chắc chắn muốn xóa bài đăng này? Hành động này không thể hoàn tác.');
+        const deleteAction = async () => {
             try {
                 await ownerPostApi.delete(id);
-                alert('Xóa bài đăng thành công!');
-                fetchRooms(page);
+                await fetchRooms(page);
+                return true;
             } catch (error) {
                 console.error('Error deleting post:', error);
-                alert('Có lỗi xảy ra khi xóa bài đăng. Vui lòng thử lại sau!');
+                setConfirmMessage('Có lỗi xảy ra khi xóa bài đăng. Vui lòng thử lại sau!');
+                return false;
             }
-        }
+        };
+        setPendingAction(() => deleteAction);
+        setShowConfirmModal(true);
     };
 
     const handleEdit = (post) => {
         setSelectedPost(post);
         setShowEditModal(true);
+    }; const handleUpdatePost = async (updatedData) => {
+        setConfirmMessage('Bạn có chắc chắn muốn cập nhật bài đăng này?');
+        const updateAction = async () => {
+            try {
+                await ownerPostApi.update(selectedPost.id, updatedData);
+                await fetchRooms(page);
+                setShowEditModal(false);
+                return true;
+            } catch (error) {
+                console.error('Error updating post:', error);
+                setConfirmMessage('Có lỗi xảy ra khi cập nhật bài đăng. Vui lòng thử lại sau!');
+                return false;
+            }
+        };
+        setPendingAction(() => updateAction);
+        setShowConfirmModal(true);
     };
 
-    const handleUpdatePost = async (updatedData) => {
-        try {
-            await ownerPostApi.update(selectedPost.id, updatedData);
-            alert('Cập nhật bài đăng thành công!');
-            setShowEditModal(false);
-            fetchRooms(page);
-        } catch (error) {
-            console.error('Error updating post:', error);
-            alert('Có lỗi xảy ra khi cập nhật bài đăng. Vui lòng thử lại sau!');
-        }
-    };
-
+    // Component code starts here
     if (loading) return <div className="text-center p-5">Đang tải...</div>;
     if (error) return <div className="text-center text-danger p-5">{error}</div>;
 
@@ -211,11 +239,9 @@ const OwnerPostManagement = () => {
                         {Array.isArray(data?.results) && data.results.length > 0 ? (
                             data.results.map((room) => (
                                 <RoomCard
-                                    key={room.id}
-                                    {...room}
+                                    key={room.id}                                    {...room}
                                     isOwnerView={true}
                                     onClick={() => navigate(`/detail/${room.id}`)}
-                                    onHide={(id) => handleHidePost(id)}
                                     onDelete={(id) => handleDeletePost(id)}
                                     onEdit={() => handleEdit(room)}
                                 />
@@ -226,12 +252,24 @@ const OwnerPostManagement = () => {
                     </div>
                 </div>
             </motion.div>
-            <Pagination totalPages={data?.total_pages} />
-            <EditPostModal
+            <Pagination totalPages={data?.total_pages} />            <EditPostModal
                 show={showEditModal}
                 onHide={() => setShowEditModal(false)}
                 post={selectedPost}
                 onUpdate={handleUpdatePost}
+            />            <ConfirmModal
+                show={showConfirmModal}
+                onHide={() => setShowConfirmModal(false)}
+                title={confirmMessage}
+                onConfirm={async () => {
+                    if (typeof pendingAction === 'function') {
+                        const success = await pendingAction();
+                        if (success) {
+                            setShowConfirmModal(false);
+                        }
+                        setPendingAction(null);
+                    }
+                }}
             />
         </div>
     );
