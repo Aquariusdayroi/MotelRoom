@@ -22,6 +22,7 @@ import AuthenticManage from "./components/adminManage/AuthenticManage";
 import AddPost from "./pages/AddPost";
 import ScrollToTop from "./until/ScrollToTop";
 import Statistical from "./components/adminManage/Statistical";
+import HeaderWhite from "./layout/components/HeaderWhite";
 
 export default function AppRoutes() {
     return (
@@ -104,9 +105,9 @@ function AnimatedRoutes() {
                 <Route
                     path="/chat"
                     element={
-                        // <Layout enableScroll={false} enableSearch={false}>
-                        <Chat />
-                        // </Layout>
+                        <Layout useHeaderWhite={true}>
+                            <Chat />
+                        </Layout>
                     }
                 />
 

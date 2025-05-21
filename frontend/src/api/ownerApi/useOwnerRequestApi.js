@@ -42,35 +42,16 @@ export const useOwnerRequests = () => {
             const response = await axiosClient.get(
                 "/user/api/admin/owner-requests/list-request/"
             );
-            console.log(response);
 
-            if (response.data && response.data.requests) {
-                const formattedRequests = response.data.requests.map((req) => ({
-                    cccd: req.cccd,
-                    image_front_cccd: req.image_front_cccd,
-                    image_back_cccd: req.image_back_cccd,
-                    fullname: req.fullname,
-                    email: req.email,z
-                    // phone_number: req.phone_number,
-                    status:
-                        req.status === "pending"
-                            ? "Chờ duyệt"
-                            : req.status === "approved"
-                            ? "Đã duyệt"
-                            : "Từ chối",
-                    createdAt: req.created_at
-                        ? new Date(req.created_at).toLocaleDateString("vi-VN")
-                        : "",
-                    approvedAt: req.reviewed_at
-                        ? new Date(req.reviewed_at).toLocaleDateString("vi-VN")
-                        : "",
-                    id: req.id,
-                }));
-                setRequests(formattedRequests);
+            if (response?.data?.success && response?.data?.requests) {
+                setRequests(response.data.requests);
+            } else {
+                throw new Error(
+                    response?.data?.message || "Không lấy được yêu cầu."
+                );
             }
         } catch (err) {
-            setError("Có lỗi xảy ra khi tải dữ liệu");
-            console.error("Lỗi khi lấy danh sách yêu cầu:", err);
+            setError(err);
         } finally {
             setLoading(false);
         }

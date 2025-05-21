@@ -212,7 +212,7 @@ class GoogleLoginSerializer(serializers.Serializer):
 class OwnerRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = OwnerRequest 
-        fields = ['rental_post_data', 'cccd', 'image_front_cccd', 'image_back_cccd']
+        fields = ['rental_post_data', 'cccd', 'image_front_cccd', 'image_back_cccd', 'created_at']
         
     def validate(self, attrs):
         user = self.context['request'].user

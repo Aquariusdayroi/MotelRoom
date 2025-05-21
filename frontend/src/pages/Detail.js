@@ -209,30 +209,36 @@ function Desciption({ text }) {
     );
 }
 
-function Detail({ showAction = true, showReviews = true }) {
+function Detail({ showAction = true, showReviews = true, roomData = null }) {
     const { roomId } = useParams();
     const [room, setRoom] = useState({});
     const [reviews, setReviews] = useState([]);
     const [isFavorite, setIsFavorite] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await axiosClient.get(
-                    `/rental_post/api/${roomId}/`
-                );
-                const rvs = await axiosClient.get(
-                    `/rental_post/api/by-posts/${roomId}/reviews/`
-                );
-                setRoom(res.data.data);
-                setReviews(rvs.data.data);
-                setIsFavorite(res.data.data.is_favorite);
-            } catch (error) {
-                throw error;
-            }
-        };
-        fetchData();
-    }, [roomId]);
+        if (roomData) {
+            setRoom(roomData);
+            setReviews([]); // Hoặc nếu có review sẵn thì truyền thêm
+            setIsFavorite(false);
+        } else {
+            const fetchData = async () => {
+                try {
+                    const res = await axiosClient.get(
+                        `/rental_post/api/${roomId}/`
+                    );
+                    const rvs = await axiosClient.get(
+                        `/rental_post/api/by-posts/${roomId}/reviews/`
+                    );
+                    setRoom(res.data.data);
+                    setReviews(rvs.data.data);
+                    setIsFavorite(res.data.data.is_favorite);
+                } catch (error) {
+                    throw error;
+                }
+            };
+            fetchData();
+        }
+    }, [roomId, roomData]);
 
     let { user } = useContext(AuthToken);
 
