@@ -31,6 +31,8 @@ from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYea
 import os
 from datetime import datetime, timedelta
 import time
+import json
+from backend import settings
 
 #Review
 from review.models import Review
@@ -478,7 +480,7 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     
     def retrieve(self, request, *args, **kwargs):
         # Lấy thông tin người dùng
-        serializer = self.get_serializer(self.get_object())
+        serializer = self.get_serializer(self.get_object(), context={'request': request})
         return Response({
             "success": True,
             "message": "Lấy thông tin người dùng thành công.",
@@ -488,14 +490,14 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', True)
         instance = self.get_object()  # Lấy đối tượng người dùng hiện tại
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(instance, data=request.data,  partial=partial)
         serializer.is_valid(raise_exception=True)
 
         # Tiến hành cập nhật đối tượng
         self.perform_update(serializer)
 
         # Trả về dữ liệu người dùng đã cập nhật, sử dụng UpdateUserSerializer để lấy thông tin địa chỉ
-        read_serializer = UpdateUserSerializer(instance, context=self.get_serializer_context())
+        read_serializer = UpdateUserSerializer(instance, context={'request': request})
 
         return Response({
             "success": True,
@@ -622,11 +624,20 @@ class OwnerRequestAPIViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['post'], url_path='send-request')
-    def send_request(self, request):
-        
-        serializer = OwnerRequestSerializer(data=request.data, context={'request': request})
+    def send_request(self, request):        
+        image_files = request.FILES.getlist('images_rental_post')
+        images_data = [{'image': f} for f in image_files]
+        rental_post_data_str = request.data.get('rental_post_data')
+        try:
+            rental_post_data = json.loads(rental_post_data_str)
+        except Exception:
+            rental_post_data = {}
+
+        data = request.data.dict()
+        data['rental_post_data'] = rental_post_data
+        data['images_rental_post'] = images_data  
+        serializer = OwnerRequestSerializer(data=data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        
         serializer.save()
         return Response({
             'success': True,
@@ -660,8 +671,21 @@ class OwnerRequestAdminAPIViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='list-request')
     def list_request(self, request):
-        requests = OwnerRequest.objects.filter(status='pending')
-        serializer = OwnerRequestAdminSerializer(requests, many=True)
+        filter = request.query_params.get('filter', 'all')  # default: day
+        queryset = OwnerRequest.objects.all()
+        if filter == "pending": 
+            queryset = queryset.filter(status = filter)
+        elif filter == 'rejected':
+            queryset = queryset.filter(status = filter)
+        elif filter == 'approved':
+             queryset = queryset.filter(status = filter)
+        elif filter == 'all': 
+            pass
+        else:
+            return Response({"success": False, "message": "param phải là một trong [pending, rejected, approved, all]"}, status=status.HTTP_400_BAD_REQUEST)
+       
+    
+        serializer = OwnerRequestAdminSerializer(queryset, many=True)
         return Response({
             "success": True,
             "message": "Lấy danh sách yêu cầu thành công.",
@@ -732,7 +756,6 @@ class AdminStatsRentalPostAPIViewSet(viewsets.ModelViewSet):
     def stat(self, request, *args, **kwargs):
         # Thống kê số lượng bài đăng theo tiêu chí
         total_rentalposts = RentalPost.objects.count()
-        
         fields_param = request.query_params.get('fields')
         if not fields_param:
             return Response({
@@ -886,7 +909,7 @@ class UserDetailAPIView(generics.RetrieveAPIView):
         user_id = kwargs.get('user_id')
         try:
             user = self.get_queryset().get(id=user_id)
-            serializer = self.get_serializer(user)
+            serializer = self.get_serializer(user, context={'request': request})
             return Response({
                 "success": True,
                 "message": "Lấy thông tin người dùng thành công.",
@@ -912,7 +935,7 @@ class MyLatestReviewsAPIView(APIView):
             reviews = Review.objects.filter(rental_post__user=user).exclude(user=user).order_by('-rating', '-time')[:10]
         else:
             reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
-        serializer = ReviewSerializer(reviews, many=True)
+        serializer = ReviewSerializer(reviews, many=True, context={'request': request})
         return Response({
             "success": True,
             "message": "Lấy danh sách review thành công.",
@@ -928,7 +951,6 @@ class UserLatestReviewsAPIView(APIView):
 
     def get(self, request, user_id):
         """Lấy 10 review của người dùng khác"""
-        target_user = get_object_or_404(User, id=user_id)
         user = User.objects.filter(id=user_id).first()
         if user.role == 'owner':
         # Lấy các review của người khác viết cho bài đăng mà user là chủ
@@ -936,11 +958,17 @@ class UserLatestReviewsAPIView(APIView):
         else:
             # Người thường: lấy review mà chính họ viết
             reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
-        
+        updated_request = update_request_url(request)
         return Response({
             "success": True,
             "message": "Lấy danh sách review thành công.",
-            "reviews": ReviewSerializer(reviews, many=True).data
+            "reviews": ReviewSerializer(reviews, many=True, context={'request': updated_request}).data
         }, status=status.HTTP_200_OK)
-        
+
+# Thêm hostname
+def update_request_url(request):
+    if hasattr(settings, 'BASE_URL'):
+        request._current_scheme_host = settings.BASE_URL
+        print(request)
+    return request
 # API thống kê số lượng người dùng đang đăng nhập

@@ -17,6 +17,7 @@ const RoomCard = ({
     onClick,
     onLocationClick,
     is_favorite,
+    showFavoriteButton = true,
 }) => {
     let { user } = useContext(AuthToken);
 
@@ -99,7 +100,7 @@ const RoomCard = ({
                     ))}
                 </div>
                 {isNew && <span className={styles.newBadge}>Mới</span>}
-                {user && (
+                {user && showFavoriteButton && (
                     <button
                         className={styles.favoriteButton}
                         onClick={handleSetFavorite}
@@ -217,7 +218,7 @@ const RoomCard = ({
                                 clipRule="evenodd"
                             />
                         </svg>
-                        {location?.description}
+                        {location?.address_name}
                     </div>
                 </div>
                 <div>
@@ -233,7 +234,7 @@ const RoomCard = ({
                     </div>
                     <div className={styles.details}>
                         <div className={styles.price}>
-                            Từ: {price / 1000000} triệu/tháng
+                            Từ: {(price / 1000000).toFixed(2)} triệu/tháng
                         </div>
                         <div className={styles.info}>
                             Loại hình: {type}, {Math.floor(area)}m²

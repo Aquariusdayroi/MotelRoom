@@ -1,13 +1,16 @@
-import background from "./img/background.png";
-import logo from "./img/logo.png";
-import Header from "./img/Header.png";
-import notFound from "./img/notFound.png";
-import BackgroundLogin from "./img/BackgroundLogin.png";
-import iconGoogle from "./img/iconGoogle.png";
-import fallbackAvatar from "./img/fallback_avatar.png";
-import noRentalPost from "./img/noRentalPost.png";
-import emptyImg from "./img/empty_img.jpg";
-import comfirm from "./img/comfirm.png";
+import background from './img/background.png';
+import logo from './img/logo.png';
+import Header from './img/Header.png';
+import notFound from './img/notFound.png';
+import BackgroundLogin from './img/BackgroundLogin.png';
+import iconGoogle from './img/iconGoogle.png';
+import fallbackAvatar from './img/fallback_avatar.png';
+import noRentalPost from './img/noRentalPost.png';
+import emptyImg from './img/empty_img.jpg';
+import comfirm from './img/comfirm.png';
+import cccdFront from './img/cccd_front.png';
+import cccdBack from './img/cccd_back.png';
+import profilePending from './img/profile_pending.png';
 
 const images = {
     logo,
@@ -20,6 +23,9 @@ const images = {
     noRentalPost,
     emptyImg,
     comfirm,
+    cccdFront,
+    cccdBack,
+    profilePending,
 };
 
 export { images };
