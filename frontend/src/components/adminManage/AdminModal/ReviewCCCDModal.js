@@ -6,6 +6,8 @@ import { approveOwnerRequest } from "../../../api/ownerApi/useOwnerRequestApi";
 import ConfirmModal from "../../modal/ComfirmModal";
 import RefuseModal from "./RefuseModal";
 
+const BASE_URL = "http://localhost:8000";
+
 const styles = {
     btnGray: "btn btn-secondary rounded-5",
 };
@@ -71,7 +73,7 @@ const ReviewCCCDModal = ({ request, onBack, onSuccess }) => {
 
                     <div className="col-md-5 d-flex flex-column align-items-center justify-content-center">
                         <img
-                            src={request?.image_front_cccd}
+                            src={BASE_URL + request?.image_front_cccd}
                             alt="Ảnh mặt trước"
                             className="img-fluid rounded mb-3"
                             style={{
@@ -80,12 +82,14 @@ const ReviewCCCDModal = ({ request, onBack, onSuccess }) => {
                                 cursor: "pointer",
                             }}
                             onClick={() =>
-                                setPreviewImage(request?.image_front_cccd)
+                                setPreviewImage(
+                                    BASE_URL + request?.image_front_cccd
+                                )
                             }
                         />
 
                         <img
-                            src={request?.image_back_cccd}
+                            src={BASE_URL + request?.image_back_cccd}
                             alt="Ảnh mặt sau"
                             className="img-fluid rounded"
                             style={{
@@ -94,7 +98,9 @@ const ReviewCCCDModal = ({ request, onBack, onSuccess }) => {
                                 cursor: "pointer",
                             }}
                             onClick={() =>
-                                setPreviewImage(request?.image_back_cccd)
+                                setPreviewImage(
+                                    BASE_URL + request?.image_back_cccd
+                                )
                             }
                         />
                     </div>

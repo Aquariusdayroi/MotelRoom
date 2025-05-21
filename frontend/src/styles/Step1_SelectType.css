@@ -52,7 +52,7 @@
     width: 100%;
 }
 
-.input-group {
+.inputGroup {
     display: flex;
     align-items: flex-start;
     font-size: 16px;

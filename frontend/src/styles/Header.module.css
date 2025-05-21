@@ -15,7 +15,7 @@
     border-radius: 0;
 }
 .logo {
-    width: 142px;
+    height: 57px !important;
     height: auto;
     cursor: pointer;
     position: relative;
@@ -33,7 +33,7 @@
     top: 0;
     left: 0;
     right: 0;
-    padding: 0 10vw;
+    padding: 0 5.5vw;
     height: 80px;
     display: flex;
     align-items: center;
@@ -77,6 +77,7 @@
     justify-content: space-between;
     width: 100%;
     gap: 20px;
+    align-items: center;
 }
 .headerScrolled .headerContent {
     justify-content: space-between;
