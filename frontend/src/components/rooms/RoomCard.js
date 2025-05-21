@@ -25,7 +25,7 @@ const RoomCard = ({
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const imageList =
-        imgList.length > 0
+        Array.isArray(imgList) && imgList.length > 0
             ? imgList
             : [
                   {
@@ -75,6 +75,7 @@ const RoomCard = ({
             console.error(error);
         }
     };
+    console.log(owner.avatar);
 
     return (
         <div className={styles.card} onClick={onClick}>
@@ -198,12 +199,12 @@ const RoomCard = ({
                 )}
             </div>
             <div className={styles.content}>
-                <h3 className={styles.address}>{address}</h3>
                 <div
                     className={`${styles.location} ${styles.clickable}`}
                     onClick={onLocationClick}
                 >
-                    <div>
+                    <h3 className={styles.address}>{address}</h3>
+                    <div className={styles.addressName}>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -220,18 +221,21 @@ const RoomCard = ({
                         </svg>
                         {location?.address_name}
                     </div>
+                    <div>
+                        {" "}
+                        <div className={styles.owner}>
+                            {owner?.avatar && (
+                                <img
+                                    src={`${owner.avatar}`}
+                                    alt={owner.id}
+                                    className={styles.ownerAvatar}
+                                />
+                            )}
+                            <span>Chủ nhà: {owner?.fullname}</span>
+                        </div>
+                    </div>
                 </div>
                 <div>
-                    <div className={styles.owner}>
-                        {owner?.avatar && (
-                            <img
-                                src={`http://localhost:8000${owner.avatar}`}
-                                alt={owner.id}
-                                className={styles.ownerAvatar}
-                            />
-                        )}
-                        <span>Chủ nhà: {owner?.fullname}</span>
-                    </div>
                     <div className={styles.details}>
                         <div className={styles.price}>
                             Từ: {(price / 1000000).toFixed(2)} triệu/tháng
