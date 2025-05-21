@@ -18,20 +18,27 @@ function OwnerForm({ register, errors, setValue, watch }) {
         fetchCity();
     }, []);
 
-    const selectedCity = watch('province');
-
     useEffect(() => {
-        if (!selectedCity) return;
-        const fetchDistrict = async () => {
-            try {
-                const res = await axiosClient.get(`/district/api/by-city/${selectedCity}/`);
-                setDistrict(res.data);
-            } catch (error) {
-                console.error(error);
+        const subscription = watch((value, { name }) => {
+            if (name === 'province' && value.province) {
+                const parsed = JSON.parse(value.province);
+                if (!parsed.id) return;
+
+                const fetchDistrict = async () => {
+                    try {
+                        const res = await axiosClient.get(`/district/api/by-city/${parsed.id}/`);
+                        setDistrict(res.data);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                };
+
+                fetchDistrict();
             }
-        };
-        fetchDistrict();
-    }, [selectedCity]);
+        });
+
+        return () => subscription.unsubscribe();
+    }, [watch]);
 
     return (
         <div className="row g-4 py-5">
@@ -120,7 +127,13 @@ function OwnerForm({ register, errors, setValue, watch }) {
                                 <select className="form-select" {...register('province')}>
                                     <option value="">-- Chọn --</option>
                                     {city?.map((item) => (
-                                        <option key={item.id} value={item.id}>
+                                        <option
+                                            key={item.id}
+                                            value={JSON.stringify({
+                                                id: item.id,
+                                                name: item.name_city,
+                                            })}
+                                        >
                                             {item.name_city}
                                         </option>
                                     ))}
@@ -134,7 +147,13 @@ function OwnerForm({ register, errors, setValue, watch }) {
                                 <select className="form-select" {...register('district')}>
                                     <option value="">-- Chọn --</option>
                                     {district?.map((item) => (
-                                        <option key={item.id} value={item.id}>
+                                        <option
+                                            key={item.id}
+                                            value={JSON.stringify({
+                                                id: item.id,
+                                                name: item.name_district,
+                                            })}
+                                        >
                                             {item.name_district}
                                         </option>
                                     ))}

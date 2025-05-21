@@ -24,6 +24,11 @@ function Step4_ReviewAndSubmit({ data, onBack, onSubmit }) {
     }, [user]);
 
     const room = {
+        user: {
+            id: userInfo.id,
+            fullname: userInfo.fullname,
+            avatar: userInfo.avatar,
+        },
         fullname: userInfo.fullname,
         avatar: userInfo.avatar,
         home_type: data.type,
