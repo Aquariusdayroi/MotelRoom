@@ -37,7 +37,14 @@ class UserForRentalPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'fullname', 'avatar'] 
-
+        
+    def get_avatar(self, obj):
+        request = self.context.get('request')
+        if obj.avatar and request:
+            return request.build_absolute_uri(obj.avatar.url)
+        elif obj.avatar:
+            return obj.avatar.url
+        return None
 
 # class RentalPostSerializer(DynamicFieldsModelSerializer):
 #     address = AddressSerializer()
@@ -148,8 +155,8 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     
     def get_user(self, obj):
         if self.context.get("expand_user"):
-            # return UserForRentalPostSerializer(obj.user).data
-            return obj.user.id
+            return UserForRentalPostSerializer(obj.user, context=self.context).data
+        return obj.user.id
 
     def create(self, validated_data):
         # Lấy dữ liệu địa chỉ từ validated_data

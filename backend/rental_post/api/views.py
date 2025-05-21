@@ -90,8 +90,22 @@ class RentalPostListCreateAPIView(GenericAPIView):
 
         cache.set(cache_key, result_data)
         return Response(result_data, status=status.HTTP_200_OK)
-
-
+    
+    def get_serializer_context(self):
+        context =  {}
+        if self.request.user.is_authenticated:
+            favorite_ids = set(
+                Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
+            )
+            context['favorite_post_ids'] = favorite_ids
+        context['request'] = self.request
+        return context
+    
+    def get_serializer(self, *args, **kwargs):
+        kwargs['context'] = self.get_serializer_context()
+        kwargs['context']['expand_user'] = True
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
+        return self.serializer_class(*args, **kwargs)  
 
     def post(self, request):
         """Tạo bài đăng mới"""
@@ -151,7 +165,24 @@ class RentalPostListCreateAPIView(GenericAPIView):
 # API xem chi tiết bài đăng, sửa bài đăng, xóa bài đăng theo ID của người dùng hiện tại
 class RentalPostDetailUpdateDeleteAPIView(APIView):
     permission_classes = [IsAuthenticated]
-
+    serializer_class = RentalPostSerializer
+    
+    def get_serializer_context(self):
+        context =  {}
+        if self.request.user.is_authenticated:
+            favorite_ids = set(
+                Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
+            )
+            context['favorite_post_ids'] = favorite_ids
+        context['request'] = self.request
+        return context
+    
+    def get_serializer(self, *args, **kwargs):
+        kwargs['context'] = self.get_serializer_context()
+        kwargs['context']['expand_user'] = True
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
+        return self.serializer_class(*args, **kwargs)  
+    
     def get(self, request, id):
         """Xem chi tiết bài đăng theo ID"""
         try:
@@ -159,7 +190,7 @@ class RentalPostDetailUpdateDeleteAPIView(APIView):
         except RentalPost.DoesNotExist:
             raise NotFound(detail="Không tìm thấy bài đăng của bạn.")
 
-        serializer = RentalPostSerializer(post)
+        serializer = self.get_serializer(post)
         return Response({
             "success": True,
             "message": "Lấy thông tin bài đăng thành công.",
@@ -179,7 +210,7 @@ class RentalPostDetailUpdateDeleteAPIView(APIView):
         except RentalPost.DoesNotExist:
             raise NotFound(detail="Không tìm thấy bài đăng của bạn.")
 
-        serializer = RentalPostSerializer(post, data=request.data, context={'request': request}, partial=True)
+        serializer = self.get_serializer(post, data=request.data, context={'request': request}, partial=True)
         if serializer.is_valid():
             serializer.save()
             total_items = RentalPost.objects.filter(user=request.user).count()
@@ -246,7 +277,24 @@ class RentalPostSearchAPIView(ListAPIView):
 class MyRentalPostSearchKeyWordAPIView(APIView):
     permission_classes = [IsAuthenticated]
     pagination_class = SmartPagination
-
+    serializer_class = RentalPostSerializer
+    
+    def get_serializer_context(self):
+        context =  {}
+        if self.request.user.is_authenticated:
+            favorite_ids = set(
+                Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
+            )
+            context['favorite_post_ids'] = favorite_ids
+        context['request'] = self.request
+        return context
+    
+    def get_serializer(self, *args, **kwargs):
+        kwargs['context'] = self.get_serializer_context()
+        kwargs['context']['expand_user'] = True
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
+        return self.serializer_class(*args, **kwargs)  
+    
     def get(self, request, *args, **kwargs):
         user = request.user
 
@@ -280,7 +328,7 @@ class MyRentalPostSearchKeyWordAPIView(APIView):
         paginator = self.pagination_class()
         paginated_qs = paginator.paginate_queryset(queryset, request)
 
-        serializer = RentalPostSerializer(paginated_qs, many=True, context={'request': request})
+        serializer = self.get_serializer(paginated_qs, many=True)
         return paginator.get_paginated_response(serializer.data)
 
 
@@ -319,13 +367,29 @@ class RentalPostListAPIView(ListAPIView):
         kwargs['context'] = self.get_serializer_context()
         kwargs['context']['expand_user'] = True
         kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
-        return self.serializer_class(*args, **kwargs)        
+        return self.serializer_class(*args, **kwargs)      
 
 # API lấy danh sách bài đăng theo user_id
 class RentalPostListByUserAPIView(ListAPIView):
     serializer_class = RentalPostSerializer
     pagination_class = SmartPagination
 
+    def get_serializer_context(self):
+        context =  {}
+        if self.request.user.is_authenticated:
+            favorite_ids = set(
+                Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
+            )
+            context['favorite_post_ids'] = favorite_ids
+        context['request'] = self.request
+        return context
+    
+    def get_serializer(self, *args, **kwargs):
+        kwargs['context'] = self.get_serializer_context()
+        kwargs['context']['expand_user'] = True
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
+        return self.serializer_class(*args, **kwargs)  
+    
     def paginate_queryset(self, queryset):
         if self.paginator is not None:
             self.paginator.page_size = 20
@@ -501,7 +565,24 @@ class RentalPostFavoriteListAPIView(ListAPIView):
 # API thống kê 5 bài đăng có view cao nhất 
 class TopViewedPostsAPIView(APIView):
     permission_classes = [IsAuthenticated]  # Yêu cầu đăng nhập
-
+    serializer_class = RentalPostSerializer
+    
+    def get_serializer_context(self):
+        context =  {}
+        if self.request.user.is_authenticated:
+            favorite_ids = set(
+                Favorite.objects.filter(user=self.request.user).values_list('rentalpost_id', flat =True)    
+            )
+            context['favorite_post_ids'] = favorite_ids
+        context['request'] = self.request
+        return context
+    
+    def get_serializer(self, *args, **kwargs):
+        kwargs['context'] = self.get_serializer_context()
+        kwargs['context']['expand_user'] = True
+        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
+        return self.serializer_class(*args, **kwargs)  
+    
     def get(self, request):
         # Lọc các bài đăng do chính người dùng hiện tại đăng
         user_posts = RentalPost.objects.filter(user=request.user)
@@ -514,7 +595,7 @@ class TopViewedPostsAPIView(APIView):
         top_posts = user_posts.order_by('-views')[:5]
 
         # Sử dụng serializer để chuyển đổi dữ liệu
-        serializer = RentalPostSerializer(top_posts, many=True)
+        serializer = self.get_serializer(top_posts, many=True)
         return Response({
             "success": True,
             "top_viewed_posts": serializer.data
