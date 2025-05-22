@@ -8,13 +8,14 @@ import Layout from './layout/Layout';
 import DetailSearch from './pages/DetailSearch';
 import Detail from './pages/Detail';
 import ProtectedRoute from './until/ProtectedRoute';
-import PostManagement from './pages/PostManagement';
 import Chat from './pages/Chat';
 import AdminManagement from './pages/AdminManagement';
 import AnimatedPage from './animations/AnimatedPage';
 import AuthenticManage from './components/adminManage/AuthenticManage';
 import AddPost from './pages/AddPost';
-
+import OwnerManagement from './pages/OwnerManagement';
+import OwnerDashboard from './components/ownerManage/OwnerDashboard';
+import OwnerPostManagement from './components/ownerManage/OwnerPostManagement';
 export default function AppRoutes() {
     return (
         <Router>
@@ -66,15 +67,32 @@ function AnimatedRoutes() {
                     }
                 />
                 <Route
-                    path="/post"
+                    path="/owner-manage"
                     element={
-                        <ProtectedRoute allowedRoles={["owner", "admin"]}>
+                        <ProtectedRoute allowedRoles={["owner"]}>
                             <Layout enableScroll={false} enableSearch={false}>
-                                <PostManagement />
+                                <OwnerManagement />
                             </Layout>
                         </ProtectedRoute>
                     }
-                />
+                >
+                    <Route
+                        path="dashboard"
+                        element={
+                            <AnimatedPage>
+                                <OwnerDashboard />
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="posts"
+                        element={
+                            <AnimatedPage>
+                                <OwnerPostManagement />
+                            </AnimatedPage>
+                        }
+                    />
+                </Route>
                 <Route
                     path="/add-post"
                     element={
