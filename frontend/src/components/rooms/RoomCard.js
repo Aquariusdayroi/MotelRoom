@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
-import styles from "../../styles/RoomCard.module.css";
-import { images } from "../../assets/images";
-import { AuthToken } from "../../authToken";
-import axiosClient from "../../api/axiosClient";
+import styles from '../../styles/RoomCard.module.css';
+import { images } from '../../assets/images';
+import { AuthToken } from '../../authToken';
+import axiosClient from '../../api/axiosClient';
 
 const RoomCard = ({
     id,
