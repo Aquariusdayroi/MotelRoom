@@ -200,8 +200,8 @@ const RoomCard = ({
                                 <span
                                     key={index}
                                     className={`${styles.dot} ${index === currentImageIndex
-                                            ? styles.activeDot
-                                            : ""
+                                        ? styles.activeDot
+                                        : ""
                                         }`}
                                     onClick={(e) => {
                                         e.preventDefault();
@@ -235,7 +235,7 @@ const RoomCard = ({
                     <div className={styles.owner}>
                         {owner?.avatar && (
                             <img
-                                src={`http://localhost:8000${owner.avatar}`}
+                                src={`${owner.avatar}`}
                                 alt={owner.id}
                                 className={styles.ownerAvatar}
                             />
