@@ -5,13 +5,15 @@ import Reviews from "../components/reviews/Reviews";
 import axiosClient from "../api/axiosClient";
 import RoomDetail from "../components/RoomDetail";
 
-function Detail() {
+function Detail({ roomData = null, showAction = true, showReviews = true }) {
     const { roomId } = useParams();
-    const [room, setRoom] = useState({});
+    const [room, setRoom] = useState(roomData || {});
     const [reviews, setReviews] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!roomData);
 
     useEffect(() => {
+        if (roomData) return;
+
         const fetchData = async () => {
             setLoading(true);
             try {
@@ -25,23 +27,30 @@ function Detail() {
                 setRoom(roomRes.data.data);
                 setReviews(reviewsRes.data.data);
             } catch (error) {
-                throw error;
+                console.error("Lỗi khi tải chi tiết phòng:", error);
             }
             setLoading(false);
         };
+
         fetchData();
-    }, [roomId]);
+    }, [roomId, roomData]);
 
     return (
         <div className={styles.container}>
             {!loading && (
                 <>
-                    <RoomDetail room={room} reviews={reviews} />
-                    <div className="row">
-                        <div className="col-6">
-                            <Reviews data={reviews} />
+                    <RoomDetail
+                        room={room}
+                        reviews={reviews}
+                        showAction={showAction}
+                    />
+                    {showReviews && (
+                        <div className="row">
+                            <div className="col-6">
+                                <Reviews data={reviews} />
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </>
             )}
         </div>
