@@ -93,7 +93,6 @@ const RoomCard = ({
             console.error(error);
         }
     };
-    console.log(owner.avatar);
 
     return (
         <div className={styles.card} onClick={onClick}>
