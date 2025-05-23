@@ -14,7 +14,12 @@ const ReviewPostModal = ({ request, onNext, onSuccess }) => {
             <p>
                 Duyệt yêu cầu cho: <strong>{request?.fullname}</strong>
             </p>
-            <Detail showAction={false} showReviews={false} />
+            <Detail
+                showAction={false}
+                showReviews={false}
+                roomData={request?.rental_post_data}
+            />
+
             <div className="d-flex justify-content-end mt-3 align-items-center">
                 <ButtonPrimary
                     des="Từ chối"

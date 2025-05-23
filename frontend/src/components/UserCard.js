@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaStar, FaCamera } from "react-icons/fa";
 import { images } from "../assets/images";
-import { updateUserProfile } from "../api/userApi/updateUserProfile";
+import { updateUserAvatar } from "../api/userApi/updateUserProfile";
 import { DotLoader } from "react-spinners";
 
 const UserCard = ({ name, avatar, start, totalComment, year }) => {
@@ -22,16 +22,13 @@ const UserCard = ({ name, avatar, start, totalComment, year }) => {
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
         if (!file) return;
-
         const previewUrl = URL.createObjectURL(file);
         setAvatarPreview(previewUrl);
 
-        const formData = new FormData();
-        formData.append("avatar", file);
-
         try {
             setLoading(true);
-            const updatedUser = await updateUserProfile(formData);
+            const updatedUser = await updateUserAvatar(file);
+
             if (updatedUser) {
                 setTimeout(() => {
                     window.location.reload();

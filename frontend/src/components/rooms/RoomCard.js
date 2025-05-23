@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
-import styles from '../../styles/RoomCard.module.css';
-import { images } from '../../assets/images';
-import { AuthToken } from '../../authToken';
-import axiosClient from '../../api/axiosClient';
+import styles from "../../styles/RoomCard.module.css";
+import { images } from "../../assets/images";
+import { AuthToken } from "../../authToken";
+import axiosClient from "../../api/axiosClient";
 
 const RoomCard = ({
     id,
@@ -20,6 +20,7 @@ const RoomCard = ({
     onDelete,
     onEdit,
     isOwnerView,
+    showFavoriteButton = true,
 }) => {
     let { user, role, logout } = useContext(AuthToken);
     const [isFavorite, setIsFavorite] = useState(is_favorite);
@@ -42,7 +43,7 @@ const RoomCard = ({
     }, []);
 
     const imageList =
-        imgList.length > 0
+        Array.isArray(imgList) && imgList.length > 0
             ? imgList
             : [
                 {
@@ -54,8 +55,9 @@ const RoomCard = ({
         e.preventDefault();
         if (isTransitioning) return;
         setIsTransitioning(true);
-        setCurrentImageIndex((prevIndex) => (prevIndex === imageList.length - 1 ? 0 : prevIndex + 1));
-        setCurrentImageIndex((prevIndex) => (prevIndex === imageList.length - 1 ? 0 : prevIndex + 1));
+        setCurrentImageIndex((prevIndex) =>
+            prevIndex === imageList.length - 1 ? 0 : prevIndex + 1
+        );
         setTimeout(() => setIsTransitioning(false), 500);
     };
 
@@ -63,8 +65,9 @@ const RoomCard = ({
         e.preventDefault();
         if (isTransitioning) return;
         setIsTransitioning(true);
-        setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? imageList.length - 1 : prevIndex - 1));
-        setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? imageList.length - 1 : prevIndex - 1));
+        setCurrentImageIndex((prevIndex) =>
+            prevIndex === 0 ? imageList.length - 1 : prevIndex - 1
+        );
         setTimeout(() => setIsTransitioning(false), 500);
     };
 
@@ -77,7 +80,7 @@ const RoomCard = ({
 
     const handleSetFavorite = async (e) => {
         e.preventDefault();
-
+        e.stopPropagation();
         try {
             if (isFavorite) {
                 await axiosClient.delete(`/favorite/api/delete/${id}/`);
@@ -90,6 +93,7 @@ const RoomCard = ({
             console.error(error);
         }
     };
+    console.log(owner.avatar);
 
     return (
         <div className={styles.card} onClick={onClick}>
@@ -113,8 +117,12 @@ const RoomCard = ({
                         </div>
                     ))}
                 </div>
-                {isNew && <span className={styles.newBadge}>Mới</span>}                {user && (
-                    <button className={styles.favoriteButton} onClick={handleSetFavorite}>
+                {isNew && <span className={styles.newBadge}>Mới</span>}
+                {user && showFavoriteButton && (
+                    <button
+                        className={styles.favoriteButton}
+                        onClick={handleSetFavorite}
+                    >
                         {isFavorite ? (
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -160,8 +168,11 @@ const RoomCard = ({
                                 width="20"
                                 height="20"
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                                />
                             </svg>
                         </button>
                         <button
@@ -178,14 +189,21 @@ const RoomCard = ({
                                 width="20"
                                 height="20"
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                />
                             </svg>
                         </button>
                         <div className={styles.dots}>
                             {imageList.map((_, index) => (
                                 <span
-                                    key={index} className={`${styles.dot} ${index === currentImageIndex ? styles.activeDot : ''}`}
+                                    key={index}
+                                    className={`${styles.dot} ${index === currentImageIndex
+                                            ? styles.activeDot
+                                            : ""
+                                        }`}
                                     onClick={(e) => {
                                         e.preventDefault();
                                         goToImage(index);
