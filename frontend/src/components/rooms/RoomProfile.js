@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import RoomCard from "../rooms/RoomCard";
 import styles from "../../styles/Profile.module.css";
 import { images } from "../../assets/images";
+import { useNavigate } from "react-router-dom";
 
 const RoomProfile = ({
     loading,
@@ -12,6 +13,11 @@ const RoomProfile = ({
     startIndex,
     direction,
 }) => {
+    const navigate = useNavigate();
+
+    const handleCardClick = (roomId) => {
+        navigate(`/detail/${roomId}`);
+    };
     if (loading) {
         return (
             <div className="text-center p-5">
@@ -103,6 +109,9 @@ const RoomProfile = ({
                                             acreage={room.acreage}
                                             images={room.images}
                                             is_favorite={room.is_favorite}
+                                            onClick={() =>
+                                                handleCardClick(room.id)
+                                            }
                                         />
                                     </div>
                                 </div>

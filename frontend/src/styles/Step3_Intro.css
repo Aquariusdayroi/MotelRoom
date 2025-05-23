@@ -1,0 +1,38 @@
+.step3-container {
+    max-width: 1200px;
+    margin: auto;
+    text-align: left;
+}
+
+.step3-content {
+    display: flex;
+    gap: 20px;
+}
+
+.text-section {
+    margin-top: 40px;
+}
+
+.text-section h1,
+.text-section h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.text-section p {
+    margin-bottom: 30px;
+    font-size: 16px;
+    margin-bottom: 30px;
+    width: 600px;
+}
+
+.image-section img {
+    width: 500px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.buttons {
+    margin-top: 50px;
+}

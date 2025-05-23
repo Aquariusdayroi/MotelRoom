@@ -3,6 +3,10 @@
     max-width: 360px;
 }
 
+.wrapper.small {
+    max-width: 320px;
+}
+
 .call,
 .zalo,
 .maps {

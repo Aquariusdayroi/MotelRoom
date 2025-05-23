@@ -156,6 +156,9 @@
     text-transform: uppercase;
 }
 
+.addressName {
+    height: 45px;
+}
 .location {
     margin: 8px 0;
     color: #666;
@@ -169,16 +172,18 @@
     align-items: center;
     margin: 10px 0;
     gap: 8px;
-    font-size: 14px;
+    font-size: 15px;
     color: #666;
     border: 1px solid #eaeaea;
-    padding-right: 12px;
     max-width: fit-content;
-    border-radius: 20px;
+    border-radius: 27px;
+    padding-left: 42x;
+    padding: 6px 4px;
+    padding-right: 23px;
 }
 .owner img {
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
 }
 .ownerAvatar {
