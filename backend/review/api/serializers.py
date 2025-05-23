@@ -13,5 +13,6 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def get_avatar(self, obj):
         # Truy cập avatar của user từ đối tượng Review
-        return obj.user.avatar.url if obj.user.avatar else None
+        request = self.context.get('request')
+        return request.build_absolute_uri(obj.user.avatar.url) if obj.user.avatar else None
 

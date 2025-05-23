@@ -20,6 +20,7 @@ const RoomCard = ({
     onDelete,
     onEdit,
     isOwnerView,
+
 }) => {
     let { user, role, logout } = useContext(AuthToken);
     const [isFavorite, setIsFavorite] = useState(is_favorite);
@@ -42,7 +43,7 @@ const RoomCard = ({
     }, []);
 
     const imageList =
-        imgList.length > 0
+        Array.isArray(imgList) && imgList.length > 0
             ? imgList
             : [
                 {
@@ -77,7 +78,7 @@ const RoomCard = ({
 
     const handleSetFavorite = async (e) => {
         e.preventDefault();
-
+        e.stopPropagation();
         try {
             if (isFavorite) {
                 await axiosClient.delete(`/favorite/api/delete/${id}/`);
@@ -90,6 +91,7 @@ const RoomCard = ({
             console.error(error);
         }
     };
+    console.log(owner.avatar);
 
     return (
         <div className={styles.card} onClick={onClick}>

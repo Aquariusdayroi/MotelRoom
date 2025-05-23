@@ -12,7 +12,7 @@ export const useOwnerRequestCount = (token) => {
                 }
 
                 const response = await axiosClient.get(
-                    "/user/api/admin/owner-requests/list-requests/"
+                    "/user/api/admin/owner-requests/list-request/"
                 );
 
                 if (response.data && response.data.requests) {
@@ -40,36 +40,18 @@ export const useOwnerRequests = () => {
         try {
             setLoading(true);
             const response = await axiosClient.get(
-                "/user/api/admin/owner-requests/list-requests/"
+                "/user/api/admin/owner-requests/list-request/"
             );
 
-            if (response.data && response.data.requests) {
-                const formattedRequests = response.data.requests.map((req) => ({
-                    cccd: req.cccd,
-                    user: req.user,
-                    image_front_cccd: req.image_front_cccd,
-                    image_back_cccd: req.image_back_cccd,
-                    fullname: req.user.fullname,
-                    email: req.user.email,
-                    status:
-                        req.status === "pending"
-                            ? "Chờ duyệt"
-                            : req.status === "approved"
-                            ? "Đã duyệt"
-                            : "Từ chối",
-                    createdAt: new Date(req.created_at).toLocaleDateString(
-                        "vi-VN"
-                    ),
-                    approvedAt: req.reviewed_at
-                        ? new Date(req.reviewed_at).toLocaleDateString("vi-VN")
-                        : "",
-                    id: req.id,
-                }));
-                setRequests(formattedRequests);
+            if (response?.data?.success && response?.data?.requests) {
+                setRequests(response.data.requests);
+            } else {
+                throw new Error(
+                    response?.data?.message || "Không lấy được yêu cầu."
+                );
             }
         } catch (err) {
-            setError("Có lỗi xảy ra khi tải dữ liệu");
-            console.error("Lỗi khi lấy danh sách yêu cầu:", err);
+            setError(err);
         } finally {
             setLoading(false);
         }

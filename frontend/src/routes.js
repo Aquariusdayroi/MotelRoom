@@ -16,9 +16,11 @@ import AddPost from './pages/AddPost';
 import OwnerManagement from './pages/OwnerManagement';
 import OwnerDashboard from './components/ownerManage/OwnerDashboard';
 import OwnerPostManagement from './components/ownerManage/OwnerPostManagement';
+
 export default function AppRoutes() {
     return (
         <Router>
+            <ScrollToTop />
             <AnimatedRoutes />
         </Router>
     );
@@ -47,7 +49,14 @@ function AnimatedRoutes() {
                         </Layout>
                     }
                 />
-                <Route path="/login" element={<Login />} />
+                <Route
+                    path="/login"
+                    element={
+                        <Layout useHeaderWhite={true}>
+                            <Login />
+                        </Layout>
+                    }
+                />
                 <Route
                     path="/detail/:roomId"
                     element={
@@ -106,9 +115,9 @@ function AnimatedRoutes() {
                 <Route
                     path="/chat"
                     element={
-                        // <Layout enableScroll={false} enableSearch={false}>
-                        <Chat />
-                        // </Layout>
+                        <Layout useHeaderWhite={true}>
+                            <Chat />
+                        </Layout>
                     }
                 />
 
@@ -158,7 +167,7 @@ function AnimatedRoutes() {
                         path="statistical"
                         element={
                             <AnimatedPage>
-                                <div>Thống kê hệ thống</div>
+                                <Statistical />
                             </AnimatedPage>
                         }
                     />
