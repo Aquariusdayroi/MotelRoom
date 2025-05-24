@@ -8,7 +8,6 @@ export const getOwnerRequestStats = async (groupBy = "all_year") => {
                 params: { group_by: groupBy },
             }
         );
-        console.log("Dữ liệu thống kê yêu cầu làm chủ trọ:", response);
         return response.data;
     } catch (error) {
         console.error("Lỗi khi lấy thống kê yêu cầu làm chủ trọ:", error);
