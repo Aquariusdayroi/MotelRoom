@@ -40,7 +40,6 @@ const AuthenticManage = () => {
                 </div>
                 <div className="row mb-4">
                     <div className="col-12">
-                        {/* chưa gọi api */}
                         <InforChart />
                     </div>
                 </div>
