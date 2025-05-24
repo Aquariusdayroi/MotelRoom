@@ -70,14 +70,12 @@ const Header = ({
 
     return (
         <div
-            className={`${styles.container} ${
-                !showContent ? styles.headerOnly : ""
-            } ${isInitialized ? "initialized" : ""}`}
+            className={`${styles.container} ${!showContent ? styles.headerOnly : ""
+                } ${isInitialized ? "initialized" : ""}`}
         >
             <header
-                className={`${styles.header} ${
-                    isScrolled ? styles.headerScrolled : ""
-                }`}
+                className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""
+                    }`}
             >
                 <div className={styles.headerContent}>
                     <div className={styles.logoWrapper}>
@@ -97,7 +95,7 @@ const Header = ({
                                     <ButtonLanguage des="Tiếng Việt" icon />
                                 )}
                                 {role === "owner" && (
-                                    <Link to="/post">
+                                    <Link to="/owner-manage">
                                         <ButtonLanguage des="Quản lý bài đăng" />
                                     </Link>
                                 )}

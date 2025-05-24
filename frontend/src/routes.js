@@ -23,7 +23,9 @@ import AddPost from "./pages/AddPost";
 import ScrollToTop from "./until/ScrollToTop";
 import Statistical from "./components/adminManage/Statistical";
 import HeaderWhite from "./layout/components/HeaderWhite";
-
+import OwnerManagement from './pages/OwnerManagement';
+import OwnerDashboard from './components/ownerManage/OwnerDashboard';
+import OwnerPostManagement from './components/ownerManage/OwnerPostManagement';
 export default function AppRoutes() {
     return (
         <Router>
@@ -83,15 +85,32 @@ function AnimatedRoutes() {
                     }
                 />
                 <Route
-                    path="/post"
+                    path="/owner-manage"
                     element={
-                        <ProtectedRoute allowedRoles={["owner", "admin"]}>
+                        <ProtectedRoute allowedRoles={["owner"]}>
                             <Layout enableScroll={false} enableSearch={false}>
-                                <PostManagement />
+                                <OwnerManagement />
                             </Layout>
                         </ProtectedRoute>
                     }
-                />
+                >
+                    <Route
+                        path="dashboard"
+                        element={
+                            <AnimatedPage>
+                                <OwnerDashboard />
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="posts"
+                        element={
+                            <AnimatedPage>
+                                <OwnerPostManagement />
+                            </AnimatedPage>
+                        }
+                    />
+                </Route>
                 <Route
                     path="/add-post"
                     element={

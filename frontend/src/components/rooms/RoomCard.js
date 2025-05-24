@@ -1,14 +1,14 @@
-import React, { useContext, useState } from "react";
-import styles from "../../styles/RoomCard.module.css";
-import { images } from "../../assets/images";
-import { AuthToken } from "../../authToken";
-import axiosClient from "../../api/axiosClient";
+import React, { useContext, useEffect, useState, useRef } from 'react';
+import styles from '../../styles/RoomCard.module.css';
+import { images } from '../../assets/images';
+import { AuthToken } from '../../authToken';
+import axiosClient from '../../api/axiosClient';
 
 const RoomCard = ({
     id,
     images: imgList,
-    title: address,
-    address: location,
+    title,
+    address,  // This is now the address object containing address_name, city_name, district_name
     user: owner,
     price,
     home_type: type,
@@ -17,21 +17,39 @@ const RoomCard = ({
     onClick,
     onLocationClick,
     is_favorite,
+    onDelete,
+    onEdit,
+    isOwnerView,
     showFavoriteButton = true,
 }) => {
-    let { user } = useContext(AuthToken);
-
+    let { user, role, logout } = useContext(AuthToken);
     const [isFavorite, setIsFavorite] = useState(is_favorite);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
+    const menuRef = useRef(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     const imageList =
         Array.isArray(imgList) && imgList.length > 0
             ? imgList
             : [
-                  {
-                      image_url: images.emptyImg,
-                  },
-              ];
+                {
+                    image_url: images.emptyImg,
+                },
+            ];
 
     const nextImage = (e) => {
         e.preventDefault();
@@ -86,16 +104,15 @@ const RoomCard = ({
                     }}
                 >
                     {imageList.map((image, index) => (
-                        <div key={index} className={styles.imageWrapper}>
-                            <img
-                                src={image.image_url}
-                                alt={`${address} - ${index + 1}`}
-                                className={styles.image}
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = images.emptyImg;
-                                }}
-                            />
+                        <div key={index} className={styles.imageWrapper}>                            <img
+                            src={image.image_url}
+                            alt={`${address?.address_name || ''} - ${index + 1}`}
+                            className={styles.image}
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = images.emptyImg;
+                            }}
+                        />
                         </div>
                     ))}
                 </div>
@@ -182,11 +199,10 @@ const RoomCard = ({
                             {imageList.map((_, index) => (
                                 <span
                                     key={index}
-                                    className={`${styles.dot} ${
-                                        index === currentImageIndex
-                                            ? styles.activeDot
-                                            : ""
-                                    }`}
+                                    className={`${styles.dot} ${index === currentImageIndex
+                                        ? styles.activeDot
+                                        : ""
+                                        }`}
                                     onClick={(e) => {
                                         e.preventDefault();
                                         goToImage(index);
@@ -197,50 +213,82 @@ const RoomCard = ({
                     </>
                 )}
             </div>
-            <div className={styles.content}>
-                <div
-                    className={`${styles.location} ${styles.clickable}`}
-                    onClick={onLocationClick}
-                >
-                    <h3 className={styles.address}>{address}</h3>
-                    <div className={styles.addressName}>
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            width="18px"
-                            height="18px"
-                            style={{ marginBottom: "7px" }}
-                        >
-                            <path
-                                fillRule="evenodd"
-                                d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                                clipRule="evenodd"
-                            />
-                        </svg>
-                        {location?.address_name}
-                    </div>
-                    <div>
-                        {" "}
-                        <div className={styles.owner}>
-                            {owner?.avatar && (
-                                <img
-                                    src={`${owner.avatar}`}
-                                    alt={owner.id}
-                                    className={styles.ownerAvatar}
-                                />
-                            )}
-                            <span>Chủ nhà: {owner?.fullname}</span>
-                        </div>
+            <div className={styles.content}>                <h3 className={styles.address}>{title}</h3>
+                <div className={`${styles.location} ${styles.clickable}`} onClick={onLocationClick}>
+                    <div>                        <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        width="18px"
+                        height="18px" style={{ marginBottom: '7px' }}
+                    >
+                        <path
+                            fillRule="evenodd"
+                            d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                            clipRule="evenodd"
+                        />
+                    </svg>
+                        {address?.address_name}
                     </div>
                 </div>
                 <div>
-                    <div className={styles.details}>
-                        <div className={styles.price}>
-                            Từ: {(price / 1000000).toFixed(2)} triệu/tháng
-                        </div>
-                        <div className={styles.info}>
-                            Loại hình: {type}, {Math.floor(area)}m²
+                    <div className={styles.owner}>
+                        {owner?.avatar && (
+                            <img
+                                src={`${owner.avatar}`}
+                                alt={owner.id}
+                                className={styles.ownerAvatar}
+                            />
+                        )}
+                        <span>Chủ nhà: {owner?.fullname}</span>
+                    </div>                    <div className={styles.details}>
+                        <div className={styles.price}>Từ: {price / 1000000} triệu/tháng</div>
+                        <div className={styles.infoRow}>
+                            <div className={styles.info}>
+                                Loại hình: {type}, {Math.floor(area)}m²
+                            </div>
+                            {isOwnerView && (
+                                <div className={styles.menuContainer} ref={menuRef}>
+                                    <button
+                                        className={styles.menuButton}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setIsMenuOpen(!isMenuOpen);
+                                        }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                            <circle cx="5" cy="12" r="2" />
+                                            <circle cx="12" cy="12" r="2" />
+                                            <circle cx="19" cy="12" r="2" />
+                                        </svg>
+                                    </button>                                {isMenuOpen && (<div className={styles.menuDropdown}>
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                onEdit && onEdit(id);
+                                                setIsMenuOpen(false);
+                                            }}
+                                            className={styles.editButton}
+                                        >
+                                            Chỉnh sửa
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                onDelete && onDelete(id);
+                                                setIsMenuOpen(false);
+                                            }}
+                                            className={styles.deleteButton}
+                                        >
+                                            Xóa
+                                        </button>
+                                    </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
