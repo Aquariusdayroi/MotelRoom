@@ -120,16 +120,26 @@ function AddPost() {
     const requestOwner = async (data) => {
         try {
             const sendData = new FormData();
-
             sendData.append('rental_post_data', JSON.stringify(data.rental_post_data));
-
             data.images_rental_post.forEach((file) => sendData.append('images_rental_post', file));
-
             sendData.append('cccd', data.cccd);
             sendData.append('image_front_cccd', data.image_front_cccd);
             sendData.append('image_back_cccd', data.image_back_cccd);
 
-            const res = await axiosClient.post('/user/api/owner-requests/send-request/', sendData);
+            const profileUpdate = new FormData();
+            profileUpdate.append('fullname', data.fullname);
+            profileUpdate.append('phone_number', data.phone_number);
+            profileUpdate.append('address_name', data.address_name);
+            profileUpdate.append('district_name', data.district_name);
+            profileUpdate.append('city_name', data.city_name);
+            profileUpdate.append('avatar', data.avatar);
+            profileUpdate.append('birthday', data.birthday);
+
+            await Promise.all([
+                axiosClient.post('/user/api/owner-requests/send-request/', sendData),
+                axiosClient.put('/user/api/me', profileUpdate),
+            ]);
+
             return true;
         } catch {
             return false;
