@@ -971,4 +971,69 @@ def update_request_url(request):
         request._current_scheme_host = settings.BASE_URL
         print(request)
     return request
-# API thống kê số lượng người dùng đang đăng nhập
+
+# API lấy số lượng owner theo ngày, tháng hoặc năm có tham số ?year=2023&month=10&day=1
+class OwnerCountByDateAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        year = request.query_params.get('year')
+        month = request.query_params.get('month')
+        day = request.query_params.get('day')
+
+        filters = {'role': 'owner'}
+
+        if year:
+            filters['created__year'] = year
+        if month:
+            filters['created__month'] = month
+        if day:
+            filters['created__day'] = day
+
+        if not year and not month and not day:
+            return Response({
+                'success': False,
+                'message': 'Thiếu tham số year, month hoặc day.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        count = User.objects.filter(**filters).count()
+        return Response({
+            'success': True,
+            'year': year,
+            'month': month,
+            'day': day,
+            'total_owner': count
+        }, status=status.HTTP_200_OK)
+
+# API lấy số lượng user theo ngày, tháng hoặc năm có tham số ?year=2023&month=10&day=1
+class UserCountByDateAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        year = request.query_params.get('year')
+        month = request.query_params.get('month')
+        day = request.query_params.get('day')
+
+        filters = {'role': 'user'}
+
+        if year:
+            filters['created__year'] = year
+        if month:
+            filters['created__month'] = month
+        if day:
+            filters['created__day'] = day
+
+        if not year and not month and not day:
+            return Response({
+                'success': False,
+                'message': 'Thiếu tham số year, month hoặc day.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        count = User.objects.filter(**filters).count()
+        return Response({
+            'success': True,
+            'year': year,
+            'month': month,
+            'day': day,
+            'total_owner': count
+        }, status=status.HTTP_200_OK)
