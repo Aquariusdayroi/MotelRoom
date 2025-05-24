@@ -120,24 +120,19 @@ const OwnerDashboard = () => {
             const statsPromises = posts.map(post =>
                 retryRequest(async () => {
                     try {
-                        const response = await axiosClient.get(
-                            `/rental_post/api/by-posts/${post.id}/reviews/static`,
-                            {
-                                timeout: timeout,
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'Cache-Control': 'no-cache'
-                                }
-                            }
-                        );
+                        // Sử dụng hàm getPostInteractions từ ownerPostApi
+                        const response = await ownerPostApi.getPostInteractions(post.id);
+
+                        // Xử lý phản hồi từ API
                         if (response?.data?.success) {
-                            return response.data.data;
+                            // Dựa trên cấu trúc phản hồi server, dữ liệu reviews_count nằm trực tiếp trong response.data
+                            return response.data; // Trả về toàn bộ data, bao gồm reviews_count
                         }
                         console.warn(`No reviews data for post ${post.id}:`, response);
-                        return { reviews_count: 0 };
+                        return { reviews_count: 0 }; // Trả về giá trị mặc định nếu không thành công
                     } catch (error) {
                         console.warn(`Failed to fetch stats for post ${post.id}:`, error.message);
-                        return { reviews_count: 0 }; // Return default value on error
+                        return { reviews_count: 0 }; // Trả về giá trị mặc định khi có lỗi
                     }
                 })
             );
@@ -183,14 +178,14 @@ const OwnerDashboard = () => {
                 label: 'Lượt xem',
                 data: statsData.views || [],
                 fill: false,
-                borderColor: '#00cfff',
+                borderColor: '#00cfff', // Màu xanh dương cho Lượt xem
                 tension: 0.4,
             },
             {
                 label: 'Lượt tương tác',
                 data: statsData.interactions || [],
                 fill: false,
-                borderColor: '#ff7373',
+                borderColor: '#ff7373', // Màu đỏ cho Lượt tương tác
                 tension: 0.4,
             },
         ],
