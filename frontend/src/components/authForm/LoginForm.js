@@ -12,7 +12,7 @@ import NotifyModal from "../modal/NotifyModal";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-function LoginForm({ onSwitch }) {
+function LoginForm({ onSwitch, onForgot }) {
     const { register, handleSubmit } = useForm();
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
@@ -148,12 +148,13 @@ function LoginForm({ onSwitch }) {
                     >
                         <input type="checkbox" className="me-1" /> Nhớ mật khẩu
                     </label>
-                    <a
-                        href="#"
+                    <span
                         className="text-dark fst-italic text-decoration-underline"
+                        style={{ cursor: "pointer" }}
+                        onClick={onForgot}
                     >
                         Quên mật khẩu?
-                    </a>
+                    </span>
                 </div>
 
                 <ButtonPrimary

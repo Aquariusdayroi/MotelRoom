@@ -2,8 +2,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout, get_user_model
 from django.utils import timezone
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 from django.utils.dateparse import parse_date
 from django.db.models import Count, Avg
+from django.http import HttpResponseRedirect
+from django.core.mail import send_mail
 
 #Rest frame work
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
@@ -574,7 +578,7 @@ class VerifyEmailView(APIView):
             
             user.email_verified_at = datetime.now()
             user.save()
-            return Response({"success": True, "message": "Xác minh email thành công."})
+            return HttpResponseRedirect("http://localhost:3000/")
         else:
             return Response({"success": False, "message": "Liên kết xác minh không hợp lệ hoặc đã hết hạn."}, status=400)
 
@@ -587,6 +591,8 @@ class RegisterAPIView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
+        print(serializer.is_valid())
+        print(serializer)
         if not serializer.is_valid():
             return Response({
                 "success": False,
@@ -602,6 +608,65 @@ class RegisterAPIView(generics.CreateAPIView):
         }, status=status.HTTP_201_CREATED)
     
 
+#---------------------------------------------------------------------------------------------------#
+#Api quên mật khẩu
+class PasswordResetRequestAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'success': False, 'message': 'Vui lòng nhập email.'}, status=400)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'success': False, 'message': 'Email không tồn tại.'}, status=404)
+
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
+
+        html_message = f"""
+        <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản MotelRoom.</p>
+        <p>Nhấn vào nút bên dưới để đặt lại mật khẩu:</p>
+        <a href="{reset_url}" style="padding:10px 20px;background:#4CAF50;color:#fff;text-decoration:none;border-radius:5px;">Đặt lại mật khẩu</a>
+        <p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+        """
+
+        send_mail(
+            subject='Đặt lại mật khẩu MotelRoom',
+            message='Đặt lại mật khẩu MotelRoom',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        return Response({'success': True, 'message': 'Đã gửi email đặt lại mật khẩu.'})
+
+
+
+#---------------------------------------------------------------------------------------------------#
+#Api xác nhận đặt lại mật khẩu
+class PasswordResetConfirmAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, uidb64, token):
+        password = request.data.get('password')
+        password2 = request.data.get('password2')
+        if not password or not password2:
+            return Response({'success': False, 'message': 'Vui lòng nhập đầy đủ mật khẩu.'}, status=400)
+        if password != password2:
+            return Response({'success': False, 'message': 'Mật khẩu không khớp.'}, status=400)
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({'success': False, 'message': 'Liên kết không hợp lệ.'}, status=400)
+        if not default_token_generator.check_token(user, token):
+            return Response({'success': False, 'message': 'Token không hợp lệ hoặc đã hết hạn.'}, status=400)
+        user.set_password(password)
+        user.save()
+        return Response({'success': True, 'message': 'Đặt lại mật khẩu thành công.'})
 
 #---------------------------------------------------------------------------------------------------#
 #Api Đăng nhập bằng google 
