@@ -119,10 +119,14 @@ const DetailSearch = () => {
         const room = displayRooms.find((r) => r.id === id);
         if (!room) return;
 
+        const addressText =
+            room.address?.address_name ||
+            `${room.address?.district_name || ""}, ${
+                room.address?.city_name || ""
+            }`;
+
         try {
-            const coords = await mapboxApi.fetchCoordinates(
-                room.address.description
-            );
+            const coords = await mapboxApi.fetchCoordinates(addressText);
             setSelectedRoomId(id);
             setSelectedCoordinates(coords);
         } catch (err) {

@@ -11,6 +11,7 @@ const generateSessionToken = () => {
         }
     );
 };
+// console.log(generateSessionToken());
 
 // console.log(generateSessionToken());
 
