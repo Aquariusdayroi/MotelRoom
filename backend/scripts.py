@@ -239,11 +239,12 @@ def AddDataReview(path: str, sheet_name: str) -> None:
     
 
 if __name__ == "__main__":    
-    # AddDataCity("database.xlsx", "Sheet2")
-    # AddDataDistrict("database.xlsx", "Sheet1")
-    # AddDataUser("data_user.xlsx", "Sheet1")
-    # AddDataRentalPost('processed_data2.xlsx', "Sheet1")
-    # AddDataImage('new_data.xlsx', 'Sheet1')
-    # AddLatitudeLongitude()
-    # RentalPost.objects.all().update(is_public=True)
+    AddDataCity("database.xlsx", "Sheet2")
+    AddDataDistrict("database.xlsx", "Sheet1")
+    AddDataUser("data_user.xlsx", "Sheet1")
+    AddDataRentalPost('processed_data2.xlsx', "Sheet1")
+    AddDataImage('new_data.xlsx', 'Sheet1')
+    AddLatitudeLongitude()
+    RentalPost.objects.all().update(is_public=True)
     AddDataReview('dummy_reviews.xlsx', "Reviews")
+    
