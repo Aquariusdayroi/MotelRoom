@@ -190,3 +190,98 @@ class ReviewCountAPIView(APIView):
             "post_id": post_id,
             "reviews_count": reviews_count,
         })
+
+
+
+#Api tạo đánh giá
+class ReviewCreateOrUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, post_id):
+        """
+        Lấy review của người dùng hiện tại cho bài đăng (nếu có).
+        """
+        rental_post = get_object_or_404(RentalPost, id=post_id)
+        review = Review.objects.filter(rental_post=rental_post, user=request.user).first()
+        if not review:
+            return Response({
+                "success": False,
+                "message": "Bạn chưa đánh giá bài đăng này."
+            }, status=status.HTTP_404_NOT_FOUND)
+        serializer = ReviewSerializer(review, context={'request': request})
+        return Response({
+            "success": True,
+            "message": "Lấy đánh giá thành công.",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request, post_id):
+        """
+        Tạo mới đánh giá cho bài đăng. Mỗi người chỉ được đánh giá 1 lần cho mỗi bài đăng.
+        """
+        rental_post = get_object_or_404(RentalPost, id=post_id)
+        print(request.data)
+        print(rental_post)
+        # Kiểm tra đã có review chưa
+        if Review.objects.filter(rental_post=rental_post, user=request.user).exists():
+            return Response({
+                "success": False,
+                "message": "Bạn đã đánh giá bài đăng này rồi. Hãy sử dụng chức năng cập nhật để thay đổi đánh giá!"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ReviewSerializer(data=request.data, context={'request': request})
+        # print(serializer.errors)
+        print('helo')
+        if serializer.is_valid():
+            serializer.save(rental_post=rental_post, user=request.user)
+            return Response({
+                "success": True,
+                "message": "Đánh giá đã được tạo thành công.",
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
+        
+        return Response({
+            "success": False,
+            "message": "Tạo đánh giá thất bại.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, post_id):
+        """
+        Cập nhật đánh giá của người dùng cho bài đăng.
+        """
+        rental_post = get_object_or_404(RentalPost, id=post_id)
+        review = Review.objects.filter(rental_post=rental_post, user=request.user).first()
+        if not review:
+            return Response({
+                "success": False,
+                "message": "Bạn chưa đánh giá bài đăng này. Hãy tạo đánh giá trước!"
+            }, status=status.HTTP_404_NOT_FOUND)
+        serializer = ReviewSerializer(review, data=request.data, context={'request': request}, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "success": True,
+                "message": "Cập nhật đánh giá thành công.",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        return Response({
+            "success": False,
+            "message": "Cập nhật đánh giá thất bại.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, post_id):
+        """
+        Xóa đánh giá của người dùng hiện tại cho bài đăng.
+        """
+        rental_post = get_object_or_404(RentalPost, id=post_id)
+        review = Review.objects.filter(rental_post=rental_post, user=request.user).first()
+        if not review:
+            return Response({
+                "success": False,
+                "message": "Bạn chưa đánh giá bài đăng này."
+            }, status=status.HTTP_404_NOT_FOUND)
+        review.delete()
+        return Response({
+            "success": True,
+            "message": "Xóa đánh giá thành công."
+        }, status=status.HTTP_204_NO_CONTENT)

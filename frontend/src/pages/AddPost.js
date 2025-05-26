@@ -88,6 +88,7 @@ function AddPost() {
         } else setCurrentStep(1);
       } catch (error) {
         console.error(error);
+        setCurrentStep(1);
       }
     };
     getMyRequest();
