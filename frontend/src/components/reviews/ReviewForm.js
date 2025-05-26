@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Rating, TextField, Button } from '@mui/material';
 
-function ReviewForm({ myReview, onReviewSubmit }) {
+function ReviewForm({ myReview, onReviewSubmit, onDelete }) {
     const [rating, setRating] = useState(myReview ? myReview.rating : 0);
     const [comment, setComment] = useState(myReview ? myReview.comment : '');
     const [loading, setLoading] = useState(false);
@@ -36,14 +36,27 @@ function ReviewForm({ myReview, onReviewSubmit }) {
                     maxRows={4}
                 />
             </div>
-            <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={loading || !rating || !comment}
-            >
-                {myReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá'}
-            </Button>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    disabled={loading || !rating || !comment}
+                >
+                    {myReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá'}
+                </Button>
+                {myReview && onDelete && (
+                    <Button
+                        type="button"
+                        variant="outlined"
+                        color="error"
+                        disabled={loading}
+                        onClick={onDelete}
+                    >
+                        Xóa đánh giá
+                    </Button>
+                )}
+            </div>
         </form>
     );
 }

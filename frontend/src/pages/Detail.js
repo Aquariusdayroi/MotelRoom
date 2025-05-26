@@ -51,7 +51,6 @@ function Detail({ roomData = null, showAction = true, showReviews = true }) {
                 await axiosClient.put(`/rental_post/api/by-posts/${roomId}/review/`, { rating, comment });
             } else {
                 // create
-                console.log(rating, comment);
                 await axiosClient.post(`/rental_post/api/by-posts/${roomId}/review/`, { rating, comment });
             }
             // reload reviews
@@ -61,6 +60,18 @@ function Detail({ roomData = null, showAction = true, showReviews = true }) {
             setMyReview(myReviewRes.data.data);
         } catch (e) {
             alert("Có lỗi khi gửi đánh giá!");
+        }
+    };
+
+    const handleReviewDelete = async () => {
+        try {
+            await axiosClient.delete(`/rental_post/api/by-posts/${roomId}/review/`);
+            // reload reviews
+            const reviewsRes = await axiosClient.get(`/rental_post/api/by-posts/${roomId}/reviews/`);
+            setReviews(reviewsRes.data.data);
+            setMyReview(null);
+        } catch (e) {
+            alert('Có lỗi khi xóa đánh giá!');
         }
     };
 
@@ -76,7 +87,7 @@ function Detail({ roomData = null, showAction = true, showReviews = true }) {
                     {showReviews && (
                         <div className="row">
                             <div className="col-6">
-                                <Reviews data={reviews} myReview={myReview} onReviewSubmit={handleReviewSubmit} />
+                                <Reviews data={reviews} myReview={myReview} onReviewSubmit={handleReviewSubmit} onReviewDelete={handleReviewDelete} />
                             </div>
                         </div>
                     )}
