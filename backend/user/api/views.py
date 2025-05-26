@@ -903,6 +903,72 @@ class AdminStatsRentalPostAPIViewSet(viewsets.ModelViewSet):
             "results": results
         }, status=status.HTTP_200_OK)
         
+
+    
+    @action(detail=False, methods=['get'], url_path="get-review-by-filter") # API  admin lấy danh sách review với các bộ lọc:
+    def get_review_by_filter(self, request, *args, **kwargs):
+        # - user_id: lọc theo user
+        # - post_id: lọc theo bài đăng
+        # - filter: 'month' (trong 1 tháng gần nhất) hoặc 'all' (tất cả)
+        user_id = request.query_params.get('user_id')
+        post_id = request.query_params.get('post_id')
+        filter_type = request.query_params.get('filter', 'all')
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 20))
+        reviews = Review.objects.all()
+
+        if user_id:
+            reviews = reviews.filter(user_id=user_id)
+        if post_id:
+            reviews = reviews.filter(rental_post_id=post_id)
+        if filter_type == 'month':
+            now_time = timezone.now()
+            month_ago = now_time - timedelta(days=30)
+            reviews = reviews.filter(time__gte=month_ago)
+
+        reviews = reviews.order_by('-time')
+        total_reviews = reviews.count()
+        total_pages = (total_reviews + page_size - 1) // page_size
+        start = (page - 1) * page_size
+        end = start + page_size
+        reviews_page = reviews[start:end]
+
+        serializer = ReviewSerializer(reviews_page, many=True, context={'request': request})
+        return Response({
+            'success': True,
+            'message': 'Lấy danh sách đánh giá thành công.',
+            'total_reviews': total_reviews,
+            'total_pages': total_pages,
+            'page': page,
+            'page_size': page_size,
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+    @action(detail=False, methods=['get'], url_path="count-review-by-filter") # API admin lấy tổng số lượng đánh giá theo bộ lọc
+    def count_review_by_filter(self, request, *args, **kwargs):
+        # - filter: 'day', 'month', 'year', 'all'
+        filter_type = request.query_params.get('filter', 'all')
+        reviews = Review.objects.all()
+        now_time = timezone.now()
+        if filter_type == 'day':
+            day_ago = now_time - timedelta(days=1)
+            reviews = reviews.filter(time__gte=day_ago)
+        elif filter_type == 'month':
+            month_ago = now_time - timedelta(days=30)
+            reviews = reviews.filter(time__gte=month_ago)
+        elif filter_type == 'year':
+            year_ago = now_time - timedelta(days=365)
+            reviews = reviews.filter(time__gte=year_ago)
+        # filter_type == 'all' thì không lọc theo thời gian
+        total_reviews = reviews.count()
+        return Response({
+            'success': True,
+            'filter': filter_type,
+            'message': 'Lấy tổng số lượng đánh giá thành công.',
+            'total_reviews': total_reviews
+        }, status=status.HTTP_200_OK)
+
 # API chủ bài đăng thống kê lượt đánh giá
 class OwnerStatAPIViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -1102,3 +1168,5 @@ class UserCountByDateAPIView(APIView):
             'day': day,
             'total_owner': count
         }, status=status.HTTP_200_OK)
+    
+
