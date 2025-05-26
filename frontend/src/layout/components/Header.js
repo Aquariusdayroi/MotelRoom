@@ -70,12 +70,14 @@ const Header = ({
 
     return (
         <div
-            className={`${styles.container} ${!showContent ? styles.headerOnly : ""
-                } ${isInitialized ? "initialized" : ""}`}
+            className={`${styles.container} ${
+                !showContent ? styles.headerOnly : ""
+            } ${isInitialized ? "initialized" : ""}`}
         >
             <header
-                className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""
-                    }`}
+                className={`${styles.header} ${
+                    isScrolled ? styles.headerScrolled : ""
+                }`}
             >
                 <div className={styles.headerContent}>
                     <div className={styles.logoWrapper}>
@@ -105,7 +107,9 @@ const Header = ({
                                     </Link>
                                 )}
                                 {role === "user" && (
-                                    <ButtonLanguage des="Cho thuê trọ qua Simi" />
+                                    <Link to="/add-post">
+                                        <ButtonLanguage des="Cho thuê trọ qua Simi" />
+                                    </Link>
                                 )}
                             </div>
                         )}
