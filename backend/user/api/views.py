@@ -711,6 +711,7 @@ class OwnerRequestAPIViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'])
     def my_request(self, request):
+        print('helo')
         try:
             req = request.user.ownerrequest
         except OwnerRequest.DoesNotExist:

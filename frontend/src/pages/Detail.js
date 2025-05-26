@@ -51,6 +51,7 @@ function Detail({ roomData = null, showAction = true, showReviews = true }) {
                 await axiosClient.put(`/rental_post/api/by-posts/${roomId}/review/`, { rating, comment });
             } else {
                 // create
+                console.log(rating, comment);
                 await axiosClient.post(`/rental_post/api/by-posts/${roomId}/review/`, { rating, comment });
             }
             // reload reviews

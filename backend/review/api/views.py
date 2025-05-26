@@ -201,6 +201,8 @@ class ReviewCreateOrUpdateAPIView(APIView):
         Tạo mới đánh giá cho bài đăng. Mỗi người chỉ được đánh giá 1 lần cho mỗi bài đăng.
         """
         rental_post = get_object_or_404(RentalPost, id=post_id)
+        print(request.data)
+        print(rental_post)
         # Kiểm tra đã có review chưa
         if Review.objects.filter(rental_post=rental_post, user=request.user).exists():
             return Response({
@@ -208,6 +210,8 @@ class ReviewCreateOrUpdateAPIView(APIView):
                 "message": "Bạn đã đánh giá bài đăng này rồi. Hãy sử dụng chức năng cập nhật để thay đổi đánh giá!"
             }, status=status.HTTP_400_BAD_REQUEST)
         serializer = ReviewSerializer(data=request.data, context={'request': request})
+        # print(serializer.errors)
+        print('helo')
         if serializer.is_valid():
             serializer.save(rental_post=rental_post, user=request.user)
             return Response({
@@ -215,6 +219,7 @@ class ReviewCreateOrUpdateAPIView(APIView):
                 "message": "Đánh giá đã được tạo thành công.",
                 "data": serializer.data
             }, status=status.HTTP_201_CREATED)
+        
         return Response({
             "success": False,
             "message": "Tạo đánh giá thất bại.",
