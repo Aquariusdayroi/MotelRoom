@@ -42,7 +42,7 @@ function Profile() {
     const [reviews, setReviews] = useState([]);
     const navigate = useNavigate();
     const handleBackToHome = () => {
-        navigate("/post");
+        navigate("/owner-manage/dashboard");
     };
 
     useEffect(() => {

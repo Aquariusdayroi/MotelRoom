@@ -4,7 +4,9 @@ import Chart from "react-apexcharts";
 import { getPostStatsByOwner } from "../../api/ownerApi/getPostStatsByOwner";
 import { getUserOwnerStats } from "../../api/adminApi/getUserOwnerStats";
 import InforCart from "./components/InforCart";
-
+import { getUserStatsByRole } from "../../api/adminApi/getUserStatsByRole";
+import { getUserCountByDate } from "../../api/adminApi/getUserCountByDate";
+import dayjs from "dayjs";
 const Statistical = () => {
     const [postCount, setPostCount] = useState(0);
     const [userCount, setUserCount] = useState(0);
@@ -12,6 +14,7 @@ const Statistical = () => {
     const [chartData, setChartData] = useState(null);
     const [userPie, setUserPie] = useState(null);
     const [accessChart, setAccessChart] = useState(null);
+    const [userBar, setUserBar] = useState(null);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -47,13 +50,13 @@ const Statistical = () => {
                     ],
                 });
 
-                setUserPie({
-                    series: [130, 110, 32],
-                    options: {
-                        labels: ["Người đăng trọ", "Người thuê", "Khác"],
-                        chart: { type: "donut" },
-                    },
-                });
+                // setUserPie({
+                //     series: [130, 110, 32],
+                //     options: {
+                //         labels: ["Người đăng trọ", "Người thuê", "Khác"],
+                //         chart: { type: "donut" },
+                //     },
+                // });
 
                 setAccessChart({
                     options: {
@@ -82,6 +85,71 @@ const Statistical = () => {
         };
 
         fetchStats();
+    }, []);
+
+    useEffect(() => {
+        const fetchUserStats = async () => {
+            try {
+                const stats = await getUserStatsByRole();
+
+                setUserPie({
+                    options: {
+                        labels: ["Admin", "Chủ trọ", "Người dùng"],
+                        legend: { position: "bottom" },
+                    },
+                    series: [stats.admin, stats.owner, stats.user],
+                });
+            } catch (error) {
+                console.error(
+                    "Không thể tải dữ liệu biểu đồ người dùng:",
+                    error
+                );
+            }
+        };
+
+        fetchUserStats();
+    }, []);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const today = dayjs();
+            const last7Days = Array.from({ length: 7 }, (_, i) =>
+                today.subtract(i, "day").format("YYYY-MM-DD")
+            ).reverse();
+
+            try {
+                const results = await Promise.all(
+                    last7Days.map((date) => getUserCountByDate(date))
+                );
+
+                setUserBar({
+                    options: {
+                        chart: { id: "user-bar" },
+                        xaxis: {
+                            categories: results.map((r) =>
+                                r?.date ? dayjs(r.date).format("DD/MM") : "N/A"
+                            ),
+                        },
+                        title: {
+                            text: "Lượt đăng ký 7 ngày gần nhất",
+                            align: "center",
+                        },
+                    },
+                    series: [
+                        {
+                            name: "Người đăng ký",
+                            data: results.map((r) =>
+                                typeof r?.count === "number" ? r.count : 0
+                            ),
+                        },
+                    ],
+                });
+            } catch (error) {
+                console.error("Lỗi khi tạo biểu đồ cột:", error);
+            }
+        };
+
+        fetchData();
     }, []);
 
     return (
@@ -126,13 +194,13 @@ const Statistical = () => {
                 </Col>
                 <Col md={6}>
                     <Card className="p-3 shadow-sm">
-                        <Card.Title>Thống kê người dùng theo tháng</Card.Title>
-                        {chartData?.options && chartData?.series && (
+                        <Card.Title>Thống kê lượt đăng ký theo ngày</Card.Title>
+                        {userBar?.options && userBar?.series && (
                             <Chart
-                                options={chartData.options}
-                                series={chartData.series}
+                                options={userBar.options}
+                                series={userBar.series}
                                 type="bar"
-                                width="100%"
+                                height={405}
                             />
                         )}
                     </Card>
