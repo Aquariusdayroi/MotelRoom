@@ -1,10 +1,12 @@
-import axios from 'axios';
-import queryString from 'query-string';
-import Cookies from 'js-cookie';
-import { logout } from '../authToken';
-import forceLogout from '../until/forceLogout';
+import axios from "axios";
+import queryString from "query-string";
+import Cookies from "js-cookie";
+import { logout } from "../authToken";
+import forceLogout from "../until/forceLogout";
 
-const baseURL = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api` : 'http://localhost:8000';
+const baseURL = process.env.REACT_APP_API_URL
+    ? `${process.env.REACT_APP_API_URL}/api`
+    : "http://localhost:8000";
 const axiosClient = axios.create({
     baseURL: baseURL,
     // headers: {
@@ -17,7 +19,7 @@ axiosClient.interceptors.request.use(async (config) => {
     if (config.skipAuth) {
         return config;
     }
-    const token = Cookies.get('authToken');
+    const token = Cookies.get("authToken");
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -33,7 +35,7 @@ axiosClient.interceptors.response.use(
     },
     (error) => {
         throw error;
-    },
+    }
 );
 
 axiosClient.interceptors.request.use(
@@ -42,7 +44,7 @@ axiosClient.interceptors.request.use(
     },
     (error) => {
         return Promise.reject(error);
-    },
+    }
 );
 
 axiosClient.interceptors.response.use(
@@ -50,9 +52,9 @@ axiosClient.interceptors.response.use(
         return response;
     },
     (error) => {
-        console.error('Error response:', error.response);
+        console.error("Error response:", error.response);
         return Promise.reject(error);
-    },
+    }
 );
 
 axiosClient.interceptors.response.use(
@@ -65,7 +67,7 @@ axiosClient.interceptors.response.use(
         }
 
         return Promise.reject(error);
-    },
+    }
 );
 
 export default axiosClient;

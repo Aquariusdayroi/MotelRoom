@@ -33,11 +33,11 @@ const AreaModal = ({
     useEffect(() => {
         if (open && currentLat && currentLng) {
             areaApi(currentLat, currentLng).then((results) => {
-                console.log("API Response:", results);
+                console.log("API Responsexxx:", results);
                 setApiResults(
                     results.map((item) => ({
                         id: item.id,
-                        name: item.address.description,
+                        name: item.address?.address_name,
                         description: item.title,
                         color: "#2196f3",
                         coordinates: {
