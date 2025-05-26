@@ -28,6 +28,42 @@ function Step1_AddressConfirm({ data, onNext, onBack }) {
         setAddress((prev) => ({ ...prev, [name]: value }));
     };
 
+    const reverseGeocode = async (lng, lat) => {
+        try {
+            const response = await fetch(
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`
+            );
+            const data = await response.json();
+
+            const main = data.features[0];
+            const context = main.context || [];
+
+            const getContext = (idFragment) =>
+                context.find((c) => c.id.includes(idFragment));
+
+            const street = main?.text || "";
+            const building = main.place_type.includes("poi") ? main.text : "";
+            const ward = getContext("locality")?.text || "";
+            const district = getContext("district")?.text || "";
+            const city = getContext("place")?.text || "";
+            const region = getContext("region")?.text || "";
+
+            const fullAddress = [street, ward, district, city || region]
+                .filter(Boolean)
+                .join(", ");
+
+            setAddress((prev) => ({
+                ...prev,
+                street,
+                building,
+                city: city || region || "",
+                detail: fullAddress,
+            }));
+        } catch (error) {
+            console.error("Reverse geocoding failed:", error);
+        }
+    };
+
     const handleLocate = () => {
         if (!navigator.geolocation) {
             alert("Trình duyệt không hỗ trợ định vị.");
@@ -35,12 +71,11 @@ function Step1_AddressConfirm({ data, onNext, onBack }) {
         }
 
         navigator.geolocation.getCurrentPosition(
-            (pos) => {
+            async (pos) => {
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
-                const detail = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 
-                setAddress((prev) => ({ ...prev, detail }));
+                console.log("📍 Tọa độ hiện tại:", lat, lng);
 
                 if (mapRef.current) {
                     mapRef.current.flyTo({ center: [lng, lat], zoom: 15 });
@@ -53,6 +88,8 @@ function Step1_AddressConfirm({ data, onNext, onBack }) {
                             .addTo(mapRef.current);
                     }
                 }
+
+                await reverseGeocode(lng, lat);
             },
             (err) => {
                 console.error("Lỗi định vị:", err);
@@ -69,6 +106,20 @@ function Step1_AddressConfirm({ data, onNext, onBack }) {
                 center: [106.7, 10.75],
                 zoom: 12,
             });
+
+            mapRef.current.on("click", async (e) => {
+                const { lng, lat } = e.lngLat;
+
+                if (markerRef.current) {
+                    markerRef.current.setLngLat([lng, lat]);
+                } else {
+                    markerRef.current = new mapboxgl.Marker()
+                        .setLngLat([lng, lat])
+                        .addTo(mapRef.current);
+                }
+
+                await reverseGeocode(lng, lat);
+            });
         }
 
         return () => {
@@ -78,6 +129,53 @@ function Step1_AddressConfirm({ data, onNext, onBack }) {
             }
         };
     }, []);
+
+    const forwardGeocode = async (query) => {
+        try {
+            const response = await fetch(
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+                    query
+                )}.json?access_token=${mapboxgl.accessToken}`
+            );
+            const data = await response.json();
+
+            if (data.features.length === 0) {
+                console.warn("Không tìm thấy địa chỉ:", query);
+                return;
+            }
+
+            const [lng, lat] = data.features[0].center;
+
+            if (mapRef.current) {
+                mapRef.current.flyTo({ center: [lng, lat], zoom: 15 });
+
+                if (markerRef.current) {
+                    markerRef.current.setLngLat([lng, lat]);
+                } else {
+                    markerRef.current = new mapboxgl.Marker()
+                        .setLngLat([lng, lat])
+                        .addTo(mapRef.current);
+                }
+            }
+
+            await reverseGeocode(lng, lat);
+        } catch (error) {
+            console.error("Lỗi forward geocoding:", error);
+        }
+    };
+
+    useEffect(() => {
+        const { street, city } = address;
+
+        if (!street || !city) return;
+
+        const timer = setTimeout(() => {
+            const query = `${street}, ${city}`;
+            forwardGeocode(query);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [address.street, address.city]);
 
     return (
         <div className="basic-info-form">
@@ -89,7 +187,7 @@ function Step1_AddressConfirm({ data, onNext, onBack }) {
                     <div
                         ref={mapContainerRef}
                         style={{
-                            height: "220px",
+                            height: "420px",
                             borderRadius: "8px",
                             border: "1px solid #ccc",
                         }}
