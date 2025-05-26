@@ -1,21 +1,20 @@
 import Comment from './Comment';
 import React, { useState } from 'react';
 import ReviewForm from './ReviewForm';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import Button from '@mui/material/Button';
-import { toast } from 'react-toastify';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 function Reviews({ data, myReview, onReviewSubmit, onReviewDelete }) {
     const [showAll, setShowAll] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
-    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     const initialCommentCount = 2;
 
     const displayReviews = myReview ? [myReview, ...data] : data;
+
+    const showSnackbar = (message, severity = 'success') => {
+        setSnackbar({ open: true, message, severity });
+    };
 
     return (
         <div className="my-3">
@@ -33,10 +32,24 @@ function Reviews({ data, myReview, onReviewSubmit, onReviewDelete }) {
             {!myReview && <ReviewForm myReview={null} onReviewSubmit={onReviewSubmit} />}
             {myReview && showEditForm && (
                 <div className="mb-2">
-                    <ReviewForm myReview={myReview} onReviewSubmit={async (data) => {
-                        await onReviewSubmit(data);
-                        setShowEditForm(false);
-                    }} onDelete={() => setOpenDeleteDialog(true)} />
+                    <ReviewForm
+                        myReview={myReview}
+                        onReviewSubmit={async (data) => {
+                            await onReviewSubmit(data);
+                            setShowEditForm(false);
+                        }}
+                        onDelete={async () => {
+                            if (window.confirm('Bạn có chắc muốn xóa đánh giá của mình?')) {
+                                try {
+                                    await onReviewDelete();
+                                    setShowEditForm(false);
+                                    showSnackbar('Xóa đánh giá thành công!', 'success');
+                                } catch (e) {
+                                    showSnackbar('Xóa đánh giá thất bại!', 'error');
+                                }
+                            }
+                        }}
+                    />
                     <button
                         className="btn btn-link p-0 mt-2"
                         onClick={() => setShowEditForm(false)}
@@ -59,39 +72,23 @@ function Reviews({ data, myReview, onReviewSubmit, onReviewDelete }) {
                     )}
                 </>
             )}
-            {/* Dialog xác nhận xóa đánh giá */}
-            <Dialog
-                open={openDeleteDialog}
-                onClose={() => setOpenDeleteDialog(false)}
+            {/* Snackbar thông báo */}
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={2000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-                <DialogTitle>Xác nhận xóa đánh giá</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Bạn có chắc chắn muốn xóa đánh giá của mình không? Hành động này không thể hoàn tác.
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenDeleteDialog(false)} color="primary">
-                        Hủy
-                    </Button>
-                    <Button
-                        onClick={async () => {
-                            try {
-                                await onReviewDelete();
-                                setShowEditForm(false);
-                                setOpenDeleteDialog(false);
-                                toast.success('Xóa đánh giá thành công!');
-                            } catch (e) {
-                                toast.error('Xóa đánh giá thất bại!');
-                            }
-                        }}
-                        color="error"
-                        variant="contained"
-                    >
-                        Xóa
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                <MuiAlert
+                    elevation={6}
+                    variant="filled"
+                    onClose={() => setSnackbar({ ...snackbar, open: false })}
+                    severity={snackbar.severity}
+                    sx={{ width: '100%' }}
+                >
+                    {snackbar.message}
+                </MuiAlert>
+            </Snackbar>
         </div>
     );
 }
