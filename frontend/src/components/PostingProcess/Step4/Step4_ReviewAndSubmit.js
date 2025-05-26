@@ -39,8 +39,8 @@ function Step4_ReviewAndSubmit({ data, onBack, onSubmit }) {
             district: 2,
             description: data.address.detail,
             address_name: data.address.detail,
-            latitude: 14.05,
-            longitude: 23.06,
+            latitude: data.address.latitude,
+            longitude: data.address.longitude,
         },
         total_occupancy: data.roomCount,
         acreage: data.area,
@@ -72,7 +72,7 @@ function Step4_ReviewAndSubmit({ data, onBack, onSubmit }) {
         has_fingerprint_lock: data.add_amenity.includes('Khóa vân tay'),
     };
 
-    // console.log(room);
+    // console.log("rom",room);
 
     return (
         <div>

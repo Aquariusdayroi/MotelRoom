@@ -37,7 +37,7 @@ function ContactCard({ price, onCall, onZalo, onMaps, isCall, isSmall = false })
                     onClick={onMaps}
                 >
                     <img src={mapsIcon} alt="Google Maps" />
-                    <span>Xem trên Google Maps</span>
+                    <span>Xem trên Simi</span>
                 </button>
             </div>
         </div>
