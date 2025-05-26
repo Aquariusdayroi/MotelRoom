@@ -3,13 +3,14 @@ import axiosClient from "../axiosClient";
 export const getPostStatsByOwner = async () => {
     try {
         const response = await axiosClient.get(
-            "/rental-post-admin/api/requests/stat_rental/"
+            "/rental-post-admin/api/requests/static-owner-rentalpost/"
         );
-        console.log(response);
+        console.log("cx", response);
 
         if (response.data?.success) {
             return {
                 totalOwner: response.data.total_owner,
+                total_rentalposts: response.data.total_rentalposts,
                 results: response.data.results,
             };
         } else {
