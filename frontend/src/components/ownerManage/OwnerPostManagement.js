@@ -38,19 +38,6 @@ const OwnerPostManagement = () => {
                 const rawRooms = response.data.results.data || [];
                 const formattedRooms = rawRooms.map((room) => ({
                     ...room,
-                    user: {
-                        fullname: room.fullname,
-                        avatar: room.avatar?.replace(
-                            "http://localhost:8000",
-                            ""
-                        ),
-                    },
-                    address: {
-                        id: room.address?.id,
-                        address_name: room.address?.address_name,
-                        city_name: room.address?.city_name,
-                        district_name: room.address?.district_name,
-                    },
                 }));
 
                 const responseData = {

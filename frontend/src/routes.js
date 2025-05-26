@@ -26,6 +26,8 @@ import HeaderWhite from "./layout/components/HeaderWhite";
 import OwnerManagement from './pages/OwnerManagement';
 import OwnerDashboard from './components/ownerManage/OwnerDashboard';
 import OwnerPostManagement from './components/ownerManage/OwnerPostManagement';
+import ForgotPassword from './components/authForm/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 export default function AppRoutes() {
     return (
         <Router>
@@ -181,6 +183,7 @@ function AnimatedRoutes() {
                         }
                     />
                 </Route>
+                <Route path="/reset-password/:uidb64/:token" element={<Layout useHeaderWhite={true}><ResetPassword /></Layout>} />
             </Routes>
         </AnimatePresence>
     );

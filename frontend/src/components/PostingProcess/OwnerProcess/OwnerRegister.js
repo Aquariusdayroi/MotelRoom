@@ -27,9 +27,15 @@ function OwnerRegister({ data: postData, onBack, onNext, onSubmit }) {
     const handleSubmitOwner = (data) => {
         const owner = {
             cccd: data.id_number,
-            // get path from image
             image_front_cccd: data.frontCCCD,
             image_back_cccd: data.backCCCD,
+            fullname: data.full_name,
+            phone_number: data.phone,
+            address_name: data.address,
+            district_name: JSON.parse(data.district).name,
+            city_name: JSON.parse(data.province).name,
+            avatar: data.avatar,
+            birthday: new Date(data.dob).toISOString(),
         };
 
         onSubmit(owner);

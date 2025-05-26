@@ -56,14 +56,14 @@ function SignInForm({ onSwitch }) {
         }
 
         try {
-            const names = fullname.trim().split(" ");
-            const firstName = names[0];
-            const lastName = names.slice(1).join(" ") || "";
+            // const names = fullname.trim().split(" ");
+            const names = fullname.trim();
+            // const firstName = names[0];
+            // const lastName = names.slice(1).join(" ") || "";
 
             const payload = {
                 email,
-                first_name: firstName,
-                last_name: lastName,
+                fullname: names,
                 password,
                 password2: confirmPassword,
             };

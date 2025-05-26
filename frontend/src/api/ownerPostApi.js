@@ -26,7 +26,7 @@ const ownerPostApi = {
 
     // Lấy thống kê tương tác của một bài đăng
     getPostInteractions: (postId) => {
-        return axiosClient.get(`/rental_post/api/by-posts/${postId}/reviews/static`);
+        return axiosClient.get(`/rental_post/api/by-posts/${postId}/reviews/static/`);
     },    // Cập nhật bài đăng
     update: (id, data) => {
         console.log('Sending PUT request to update post...');

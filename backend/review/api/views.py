@@ -4,9 +4,11 @@ from rest_framework import status
 from review.models import Review
 from rental_post.models import RentalPost
 from review.api.serializers import ReviewSerializer
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
+from django.utils import timezone
+from datetime import timedelta
 
 # API lấy review của người dùng hiện tại theo bài đăng
 class UserReviewAPIView(APIView):
