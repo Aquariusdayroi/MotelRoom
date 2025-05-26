@@ -2,8 +2,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout, get_user_model
 from django.utils import timezone
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 from django.utils.dateparse import parse_date
 from django.db.models import Count, Avg
+from django.http import HttpResponseRedirect
+from django.core.mail import send_mail
 
 #Rest frame work
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
@@ -31,6 +35,8 @@ from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYea
 import os
 from datetime import datetime, timedelta
 import time
+import json
+from backend import settings
 
 #Review
 from review.models import Review
@@ -478,7 +484,7 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     
     def retrieve(self, request, *args, **kwargs):
         # Lấy thông tin người dùng
-        serializer = self.get_serializer(self.get_object())
+        serializer = self.get_serializer(self.get_object(), context={'request': request})
         return Response({
             "success": True,
             "message": "Lấy thông tin người dùng thành công.",
@@ -488,14 +494,14 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', True)
         instance = self.get_object()  # Lấy đối tượng người dùng hiện tại
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(instance, data=request.data,  partial=partial)
         serializer.is_valid(raise_exception=True)
 
         # Tiến hành cập nhật đối tượng
         self.perform_update(serializer)
 
         # Trả về dữ liệu người dùng đã cập nhật, sử dụng UpdateUserSerializer để lấy thông tin địa chỉ
-        read_serializer = UpdateUserSerializer(instance, context=self.get_serializer_context())
+        read_serializer = UpdateUserSerializer(instance, context={'request': request})
 
         return Response({
             "success": True,
@@ -572,7 +578,7 @@ class VerifyEmailView(APIView):
             
             user.email_verified_at = datetime.now()
             user.save()
-            return Response({"success": True, "message": "Xác minh email thành công."})
+            return HttpResponseRedirect("http://localhost:3000/")
         else:
             return Response({"success": False, "message": "Liên kết xác minh không hợp lệ hoặc đã hết hạn."}, status=400)
 
@@ -585,6 +591,8 @@ class RegisterAPIView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
+        print(serializer.is_valid())
+        print(serializer)
         if not serializer.is_valid():
             return Response({
                 "success": False,
@@ -600,6 +608,65 @@ class RegisterAPIView(generics.CreateAPIView):
         }, status=status.HTTP_201_CREATED)
     
 
+#---------------------------------------------------------------------------------------------------#
+#Api quên mật khẩu
+class PasswordResetRequestAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'success': False, 'message': 'Vui lòng nhập email.'}, status=400)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'success': False, 'message': 'Email không tồn tại.'}, status=404)
+
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
+
+        html_message = f"""
+        <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản MotelRoom.</p>
+        <p>Nhấn vào nút bên dưới để đặt lại mật khẩu:</p>
+        <a href="{reset_url}" style="padding:10px 20px;background:#4CAF50;color:#fff;text-decoration:none;border-radius:5px;">Đặt lại mật khẩu</a>
+        <p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+        """
+
+        send_mail(
+            subject='Đặt lại mật khẩu MotelRoom',
+            message='Đặt lại mật khẩu MotelRoom',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        return Response({'success': True, 'message': 'Đã gửi email đặt lại mật khẩu.'})
+
+
+
+#---------------------------------------------------------------------------------------------------#
+#Api xác nhận đặt lại mật khẩu
+class PasswordResetConfirmAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, uidb64, token):
+        password = request.data.get('password')
+        password2 = request.data.get('password2')
+        if not password or not password2:
+            return Response({'success': False, 'message': 'Vui lòng nhập đầy đủ mật khẩu.'}, status=400)
+        if password != password2:
+            return Response({'success': False, 'message': 'Mật khẩu không khớp.'}, status=400)
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({'success': False, 'message': 'Liên kết không hợp lệ.'}, status=400)
+        if not default_token_generator.check_token(user, token):
+            return Response({'success': False, 'message': 'Token không hợp lệ hoặc đã hết hạn.'}, status=400)
+        user.set_password(password)
+        user.save()
+        return Response({'success': True, 'message': 'Đặt lại mật khẩu thành công.'})
 
 #---------------------------------------------------------------------------------------------------#
 #Api Đăng nhập bằng google 
@@ -622,11 +689,20 @@ class OwnerRequestAPIViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['post'], url_path='send-request')
-    def send_request(self, request):
-        
-        serializer = OwnerRequestSerializer(data=request.data, context={'request': request})
+    def send_request(self, request):        
+        image_files = request.FILES.getlist('images_rental_post')
+        images_data = [{'image': f} for f in image_files]
+        rental_post_data_str = request.data.get('rental_post_data')
+        try:
+            rental_post_data = json.loads(rental_post_data_str)
+        except Exception:
+            rental_post_data = {}
+
+        data = request.data.dict()
+        data['rental_post_data'] = rental_post_data
+        data['images_rental_post'] = images_data  
+        serializer = OwnerRequestSerializer(data=data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        
         serializer.save()
         return Response({
             'success': True,
@@ -745,7 +821,6 @@ class AdminStatsRentalPostAPIViewSet(viewsets.ModelViewSet):
     def stat(self, request, *args, **kwargs):
         # Thống kê số lượng bài đăng theo tiêu chí
         total_rentalposts = RentalPost.objects.count()
-        
         fields_param = request.query_params.get('fields')
         if not fields_param:
             return Response({
@@ -828,6 +903,72 @@ class AdminStatsRentalPostAPIViewSet(viewsets.ModelViewSet):
             "results": results
         }, status=status.HTTP_200_OK)
         
+
+    
+    @action(detail=False, methods=['get'], url_path="get-review-by-filter") # API  admin lấy danh sách review với các bộ lọc:
+    def get_review_by_filter(self, request, *args, **kwargs):
+        # - user_id: lọc theo user
+        # - post_id: lọc theo bài đăng
+        # - filter: 'month' (trong 1 tháng gần nhất) hoặc 'all' (tất cả)
+        user_id = request.query_params.get('user_id')
+        post_id = request.query_params.get('post_id')
+        filter_type = request.query_params.get('filter', 'all')
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 20))
+        reviews = Review.objects.all()
+
+        if user_id:
+            reviews = reviews.filter(user_id=user_id)
+        if post_id:
+            reviews = reviews.filter(rental_post_id=post_id)
+        if filter_type == 'month':
+            now_time = timezone.now()
+            month_ago = now_time - timedelta(days=30)
+            reviews = reviews.filter(time__gte=month_ago)
+
+        reviews = reviews.order_by('-time')
+        total_reviews = reviews.count()
+        total_pages = (total_reviews + page_size - 1) // page_size
+        start = (page - 1) * page_size
+        end = start + page_size
+        reviews_page = reviews[start:end]
+
+        serializer = ReviewSerializer(reviews_page, many=True, context={'request': request})
+        return Response({
+            'success': True,
+            'message': 'Lấy danh sách đánh giá thành công.',
+            'total_reviews': total_reviews,
+            'total_pages': total_pages,
+            'page': page,
+            'page_size': page_size,
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+    @action(detail=False, methods=['get'], url_path="count-review-by-filter") # API admin lấy tổng số lượng đánh giá theo bộ lọc
+    def count_review_by_filter(self, request, *args, **kwargs):
+        # - filter: 'day', 'month', 'year', 'all'
+        filter_type = request.query_params.get('filter', 'all')
+        reviews = Review.objects.all()
+        now_time = timezone.now()
+        if filter_type == 'day':
+            day_ago = now_time - timedelta(days=1)
+            reviews = reviews.filter(time__gte=day_ago)
+        elif filter_type == 'month':
+            month_ago = now_time - timedelta(days=30)
+            reviews = reviews.filter(time__gte=month_ago)
+        elif filter_type == 'year':
+            year_ago = now_time - timedelta(days=365)
+            reviews = reviews.filter(time__gte=year_ago)
+        # filter_type == 'all' thì không lọc theo thời gian
+        total_reviews = reviews.count()
+        return Response({
+            'success': True,
+            'filter': filter_type,
+            'message': 'Lấy tổng số lượng đánh giá thành công.',
+            'total_reviews': total_reviews
+        }, status=status.HTTP_200_OK)
+
 # API chủ bài đăng thống kê lượt đánh giá
 class OwnerStatAPIViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -899,7 +1040,7 @@ class UserDetailAPIView(generics.RetrieveAPIView):
         user_id = kwargs.get('user_id')
         try:
             user = self.get_queryset().get(id=user_id)
-            serializer = self.get_serializer(user)
+            serializer = self.get_serializer(user, context={'request': request})
             return Response({
                 "success": True,
                 "message": "Lấy thông tin người dùng thành công.",
@@ -925,7 +1066,7 @@ class MyLatestReviewsAPIView(APIView):
             reviews = Review.objects.filter(rental_post__user=user).exclude(user=user).order_by('-rating', '-time')[:10]
         else:
             reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
-        serializer = ReviewSerializer(reviews, many=True)
+        serializer = ReviewSerializer(reviews, many=True, context={'request': request})
         return Response({
             "success": True,
             "message": "Lấy danh sách review thành công.",
@@ -941,7 +1082,6 @@ class UserLatestReviewsAPIView(APIView):
 
     def get(self, request, user_id):
         """Lấy 10 review của người dùng khác"""
-        target_user = get_object_or_404(User, id=user_id)
         user = User.objects.filter(id=user_id).first()
         if user.role == 'owner':
         # Lấy các review của người khác viết cho bài đăng mà user là chủ
@@ -949,11 +1089,84 @@ class UserLatestReviewsAPIView(APIView):
         else:
             # Người thường: lấy review mà chính họ viết
             reviews = Review.objects.filter(user=user).order_by('-rating', '-time')[:10]
-        
+        updated_request = update_request_url(request)
         return Response({
             "success": True,
             "message": "Lấy danh sách review thành công.",
-            "reviews": ReviewSerializer(reviews, many=True).data
+            "reviews": ReviewSerializer(reviews, many=True, context={'request': updated_request}).data
         }, status=status.HTTP_200_OK)
-        
-# API thống kê số lượng người dùng đang đăng nhập
+
+# Thêm hostname
+def update_request_url(request):
+    if hasattr(settings, 'BASE_URL'):
+        request._current_scheme_host = settings.BASE_URL
+        print(request)
+    return request
+
+# API lấy số lượng owner theo ngày, tháng hoặc năm có tham số ?year=2023&month=10&day=1
+class OwnerCountByDateAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        year = request.query_params.get('year')
+        month = request.query_params.get('month')
+        day = request.query_params.get('day')
+
+        filters = {'role': 'owner'}
+
+        if year:
+            filters['created__year'] = year
+        if month:
+            filters['created__month'] = month
+        if day:
+            filters['created__day'] = day
+
+        if not year and not month and not day:
+            return Response({
+                'success': False,
+                'message': 'Thiếu tham số year, month hoặc day.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        count = User.objects.filter(**filters).count()
+        return Response({
+            'success': True,
+            'year': year,
+            'month': month,
+            'day': day,
+            'total_owner': count
+        }, status=status.HTTP_200_OK)
+
+# API lấy số lượng user theo ngày, tháng hoặc năm có tham số ?year=2023&month=10&day=1
+class UserCountByDateAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        year = request.query_params.get('year')
+        month = request.query_params.get('month')
+        day = request.query_params.get('day')
+
+        filters = {'role': 'user'}
+
+        if year:
+            filters['created__year'] = year
+        if month:
+            filters['created__month'] = month
+        if day:
+            filters['created__day'] = day
+
+        if not year and not month and not day:
+            return Response({
+                'success': False,
+                'message': 'Thiếu tham số year, month hoặc day.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        count = User.objects.filter(**filters).count()
+        return Response({
+            'success': True,
+            'year': year,
+            'month': month,
+            'day': day,
+            'total_owner': count
+        }, status=status.HTTP_200_OK)
+    
+

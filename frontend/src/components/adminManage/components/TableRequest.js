@@ -60,7 +60,7 @@ const TableRequest = () => {
 
         const commonClass = "badge px-3 py-2 rounded-pill cursor-pointer";
         switch (status) {
-            case "Từ chối":
+            case "rejected":
                 return (
                     <span
                         className={`${commonClass} bg-danger-subtle text-danger`}
@@ -69,7 +69,7 @@ const TableRequest = () => {
                         Từ chối
                     </span>
                 );
-            case "Chờ duyệt":
+            case "pending":
                 return (
                     <span
                         className={`${commonClass} bg-warning-subtle text-warning`}
@@ -78,7 +78,7 @@ const TableRequest = () => {
                         Chờ duyệt
                     </span>
                 );
-            case "Đã duyệt":
+            case "approved":
                 return (
                     <span
                         className={`${commonClass} bg-success-subtle text-success`}
@@ -93,10 +93,10 @@ const TableRequest = () => {
     };
 
     const renderActionButton = (req) => {
-        if (req.status === "Chờ duyệt") {
+        if (req.status === "pending") {
             return (
                 <button
-                    className="btn btn-success btn-sm px-3 w-50 text-white"
+                    className="btn btn-success btn-sm text-white"
                     onClick={() => {
                         setSelectedRequest(req);
                         setShowModal(true);
@@ -107,9 +107,7 @@ const TableRequest = () => {
             );
         }
         return (
-            <button className="btn btn-info btn-sm px-3 w-50 text-white">
-                Xem
-            </button>
+            <button className="btn btn-info btn-sm w-50 text-white">Xem</button>
         );
     };
 
@@ -167,6 +165,14 @@ const TableRequest = () => {
             </AnimatePresence>
         );
     };
+    const formatDate = (dateStr) => {
+        if (!dateStr) return "Chưa cập nhật";
+        const date = new Date(dateStr);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
     return (
         <div className="table-responsive rounded border">
             <table className="table table-hover align-middle mb-0">
@@ -203,8 +209,8 @@ const TableRequest = () => {
                             <td style={{ cursor: "pointer" }}>
                                 {renderStatusBadge(req.status)}
                             </td>
-                            <td>{req.createdAt}</td>
-                            <td>{req.approvedAt}</td>
+                            <td>{formatDate(req.created_at)}</td>
+                            <td>{formatDate(req.reviewed_at)}</td>
                             <td>{renderActionButton(req)}</td>
                         </tr>
                     ))}
@@ -258,7 +264,12 @@ const TableRequest = () => {
                         height: "100vh",
                         zIndex: 1055,
                     }}
-                    onClick={() => setShowModal(false)}
+                    onClick={() => {
+                        setShowModal(false);
+                        setStep("review"); // reset bước
+                        setSelectedId(null); // nếu muốn reset luôn ID
+                        setSelectedRequest(null); // nếu muốn reset request
+                    }}
                 >
                     <div
                         className="modal-dialog modal-xl modal-dialog-centered"
@@ -273,7 +284,12 @@ const TableRequest = () => {
                                 <button
                                     type="button"
                                     className="btn-close"
-                                    onClick={() => setShowModal(false)}
+                                    onClick={() => {
+                                        setShowModal(false);
+                                        setStep("review"); // reset bước
+                                        setSelectedId(null); // nếu muốn reset luôn ID
+                                        setSelectedRequest(null); // nếu muốn reset request
+                                    }}
                                 ></button>
                             </div>
                             <div className="modal-body">

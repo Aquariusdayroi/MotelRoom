@@ -8,6 +8,7 @@ env/
 venv/
 ENV/
 .venv/
+myenv/
 *.env
 
 # Django
@@ -23,4 +24,3 @@ db.sqlite3
 Thumbs.db
 
 images_rentalpost/
-# backend/

@@ -26,7 +26,7 @@ import SettingProfileModal from "../components/modal/SettingProfileModal";
 import ConfirmModal from "../components/modal/ComfirmModal";
 import {
     getMyProfile,
-    updateUserProfile,
+    updateUserProfileInfo,
 } from "../api/userApi/updateUserProfile";
 
 function Profile() {
@@ -42,7 +42,7 @@ function Profile() {
     const [reviews, setReviews] = useState([]);
     const navigate = useNavigate();
     const handleBackToHome = () => {
-        navigate("/post");
+        navigate("/owner-manage/dashboard");
     };
 
     useEffect(() => {
@@ -77,13 +77,17 @@ function Profile() {
     const [showAllReviews, setShowAllReviews] = useState(false);
 
     function prepareFormDataForAPI(data) {
-        let birthdayAPI = "";
+        let birthdayAPI = null;
 
-        if (data.birthday.includes("/")) {
-            const [day, month, year] = data.birthday.split("/");
-            birthdayAPI = `${year}-${month}-${day}T00:00:00Z`;
-        } else if (data.birthday.includes("T")) {
-            birthdayAPI = data.birthday;
+        if (data.birthday) {
+            if (data.birthday.includes("/")) {
+                const [day, month, year] = data.birthday.split("/");
+                birthdayAPI = `${year}-${month}-${day}T00:00:00Z`;
+            } else if (data.birthday.includes("T")) {
+                birthdayAPI = data.birthday;
+            } else if (/^\d{4}-\d{2}-\d{2}$/.test(data.birthday)) {
+                birthdayAPI = `${data.birthday}T00:00:00Z`;
+            }
         }
 
         return {
@@ -143,8 +147,10 @@ function Profile() {
                     setRooms(response.data.results);
                 } else if (role === "owner") {
                     // có api thì đổi lại
-                    // response = await axiosClient.get("/owner/api/my-posts/");
-                    // setRooms(response.data.results);
+                    response = await axiosClient.get(
+                        "/rental_post/api/my-posts/"
+                    );
+                    setRooms(response.data.results.data);
                 }
                 setLoading(false);
             } catch (err) {
@@ -234,7 +240,7 @@ function Profile() {
                                 <li className="mb-2 d-flex align-items-center">
                                     <SignpostSplitFill className="me-2 text-secondary" />
                                     <b>Tên đường:</b>
-                                    {userInfo?.address?.district ||
+                                    {userInfo?.address?.district_name ||
                                         "Chưa cập nhật"}
                                 </li>
                                 <li className="mb-2 d-flex align-items-center">
@@ -243,7 +249,8 @@ function Profile() {
                                         style={{ width: "1.2em" }}
                                     />
                                     <b>Thành phố:</b>
-                                    {userInfo?.address?.city || "Chưa cập nhật"}
+                                    {userInfo?.address?.city_name ||
+                                        "Chưa cập nhật"}
                                 </li>
                                 <li className="mb-2 d-flex align-items-center">
                                     <CalendarDate className="me-2 text-secondary" />
@@ -409,7 +416,9 @@ function Profile() {
                     try {
                         const payload = prepareFormDataForAPI(pendingFormData);
                         console.log(payload);
-                        const updatedUser = await updateUserProfile(payload);
+                        const updatedUser = await updateUserProfileInfo(
+                            payload
+                        );
 
                         console.log(payload);
                         if (updatedUser?.id) {

@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('my-posts/', views.RentalPostListCreateAPIView.as_view(), name='rentalpost-list-create'),
+    path('my-posts/top-views/', views.TopViewedPostsAPIView.as_view(), name='rentalpost-top5-views'),
     path('my-posts/<int:id>/', views.RentalPostDetailUpdateDeleteAPIView.as_view(), name='rentalpost-detail-update-delete'),
     path('my-posts/search/', views.MyRentalPostSearchKeyWordAPIView.as_view(), name='my-rentalpost-search'),
     path('', views.RentalPostListAPIView.as_view(), name= 'rentalpost-list'),

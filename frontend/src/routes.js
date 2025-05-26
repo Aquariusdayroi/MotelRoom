@@ -1,23 +1,37 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
-import Intro from './pages/Intro';
-import Home from './pages/Home';
-import Profile from './pages/Profile';
-import Login from './pages/Login';
-import Layout from './layout/Layout';
-import DetailSearch from './pages/DetailSearch';
-import Detail from './pages/Detail';
-import ProtectedRoute from './until/ProtectedRoute';
-import PostManagement from './pages/PostManagement';
-import Chat from './pages/Chat';
-import AdminManagement from './pages/AdminManagement';
-import AnimatedPage from './animations/AnimatedPage';
-import AuthenticManage from './components/adminManage/AuthenticManage';
-import AddPost from './pages/AddPost';
-
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    useLocation,
+    Navigate,
+} from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import Intro from "./pages/Intro";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import Login from "./pages/Login";
+import Layout from "./layout/Layout";
+import DetailSearch from "./pages/DetailSearch";
+import Detail from "./pages/Detail";
+import ProtectedRoute from "./until/ProtectedRoute";
+import PostManagement from "./pages/PostManagement";
+import Chat from "./pages/Chat";
+import AdminManagement from "./pages/AdminManagement";
+import AnimatedPage from "./animations/AnimatedPage";
+import AuthenticManage from "./components/adminManage/AuthenticManage";
+import AddPost from "./pages/AddPost";
+import ScrollToTop from "./until/ScrollToTop";
+import Statistical from "./components/adminManage/Statistical";
+import HeaderWhite from "./layout/components/HeaderWhite";
+import OwnerManagement from './pages/OwnerManagement';
+import OwnerDashboard from './components/ownerManage/OwnerDashboard';
+import OwnerPostManagement from './components/ownerManage/OwnerPostManagement';
+import ForgotPassword from './components/authForm/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 export default function AppRoutes() {
     return (
         <Router>
+            <ScrollToTop />
             <AnimatedRoutes />
         </Router>
     );
@@ -46,7 +60,14 @@ function AnimatedRoutes() {
                         </Layout>
                     }
                 />
-                <Route path="/login" element={<Login />} />
+                <Route
+                    path="/login"
+                    element={
+                        <Layout useHeaderWhite={true}>
+                            <Login />
+                        </Layout>
+                    }
+                />
                 <Route
                     path="/detail/:roomId"
                     element={
@@ -66,15 +87,32 @@ function AnimatedRoutes() {
                     }
                 />
                 <Route
-                    path="/post"
+                    path="/owner-manage"
                     element={
-                        <ProtectedRoute allowedRoles={["owner", "admin"]}>
+                        <ProtectedRoute allowedRoles={["owner"]}>
                             <Layout enableScroll={false} enableSearch={false}>
-                                <PostManagement />
+                                <OwnerManagement />
                             </Layout>
                         </ProtectedRoute>
                     }
-                />
+                >
+                    <Route
+                        path="dashboard"
+                        element={
+                            <AnimatedPage>
+                                <OwnerDashboard />
+                            </AnimatedPage>
+                        }
+                    />
+                    <Route
+                        path="posts"
+                        element={
+                            <AnimatedPage>
+                                <OwnerPostManagement />
+                            </AnimatedPage>
+                        }
+                    />
+                </Route>
                 <Route
                     path="/add-post"
                     element={
@@ -88,9 +126,9 @@ function AnimatedRoutes() {
                 <Route
                     path="/chat"
                     element={
-                        // <Layout enableScroll={false} enableSearch={false}>
-                        <Chat />
-                        // </Layout>
+                        <Layout useHeaderWhite={true}>
+                            <Chat />
+                        </Layout>
                     }
                 />
 
@@ -140,11 +178,12 @@ function AnimatedRoutes() {
                         path="statistical"
                         element={
                             <AnimatedPage>
-                                <div>Thống kê hệ thống</div>
+                                <Statistical />
                             </AnimatedPage>
                         }
                     />
                 </Route>
+                <Route path="/reset-password/:uidb64/:token" element={<Layout useHeaderWhite={true}><ResetPassword /></Layout>} />
             </Routes>
         </AnimatePresence>
     );

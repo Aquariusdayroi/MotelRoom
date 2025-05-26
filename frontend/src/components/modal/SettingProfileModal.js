@@ -40,8 +40,8 @@ const SettingProfileModal = ({ show, onHide, userInfo, onSave }) => {
                 email: userInfo.email || "",
                 phone: userInfo.phone_number || "",
                 address: userInfo.address?.address_name || "",
-                district: userInfo.address?.district || "",
-                city: userInfo.address?.city || "",
+                district: userInfo.address?.district_name || "",
+                city: userInfo.address?.city_name || "",
             });
         }
     }, [userInfo]);

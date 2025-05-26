@@ -13,9 +13,9 @@ function Comment({ comment }) {
     return (
         <div className="mb-4">
             <div className="d-flex align-items-center gap-2 mb-2">
-                <Avatar src={comment.user?.avatar} />
+                <Avatar src={comment.avatar} />
                 <div>
-                    <div className="fw-semibold">{comment.user}</div>
+                    <div className="fw-semibold">{comment.fullname}</div>
                     <Rating name="read-only" size="small" value={comment.rating} precision={0.5} readOnly />
                     <div className="text-muted lh-1" style={{ fontSize: '12px' }}>
                         {new Date(comment.time).toLocaleString('vi-VN', {

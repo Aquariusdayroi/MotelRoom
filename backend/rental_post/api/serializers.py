@@ -5,9 +5,12 @@ from district.models import District
 from district.api.serializers import DistrictSerializer
 from city.models import City
 from address.models import Address
-from address.api.serializers import AddressSerializer
+from address.api.serializers import AddressSerializer, AddressNestedSerializer
 from image.api.serializers import ImageSerializer
 from image.models import Image
+from backend import settings
+from django.core import validators
+import os
 
 from rest_framework import serializers
 from rental_post.models import RentalPost
@@ -34,7 +37,14 @@ class UserForRentalPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'fullname', 'avatar'] 
-
+        
+    def get_avatar(self, obj):
+        request = self.context.get('request')
+        if obj.avatar and request:
+            return request.build_absolute_uri(obj.avatar.url)
+        elif obj.avatar:
+            return obj.avatar.url
+        return None
 
 # class RentalPostSerializer(DynamicFieldsModelSerializer):
 #     address = AddressSerializer()
@@ -88,9 +98,10 @@ class UserForRentalPostSerializer(serializers.ModelSerializer):
 
 #         instance.save()
 #         return instance
+
 class RentalPostSerializer(DynamicFieldsModelSerializer):
     # CHỈ dùng AddressSerializer để đọc (read-only)
-    address = AddressSerializer(read_only=True)
+    address = AddressNestedSerializer(read_only=True)
     user = serializers.SerializerMethodField()
     fullname = serializers.CharField(source='user.fullname', read_only=True)
     avatar = serializers.ImageField(source='user.avatar', read_only=True)
@@ -110,7 +121,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
             'id', 'user', 'fullname', 'avatar', 'home_type', 'title', 'information_detail',
             'address', 'description', 'latitude', 'longitude',
             'city', 'district', 'total_occupancy', 'acreage', 'price',
-            'create_at', 'update_at',  'images', 'is_favorite', 'is_public',
+            'create_at', 'update_at',  'images', 'is_favorite', 'is_public', 'views',
 
             # Tiện nghi cơ bản
             'has_wifi',
@@ -136,7 +147,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
             'has_fingerprint_lock',
         ]
 
-        read_only_fields = ('user', 'create_at', 'update_at', 'address', 'images', 'is_favorite')
+        read_only_fields = ('user', 'create_at', 'update_at', 'address', 'is_favorite', 'views')
 
     def get_is_favorite(self, obj):
         favorite_ids = self.context.get('favorite_post_ids', set())
@@ -144,7 +155,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     
     def get_user(self, obj):
         if self.context.get("expand_user"):
-            return UserForRentalPostSerializer(obj.user).data
+            return UserForRentalPostSerializer(obj.user, context=self.context).data
         return obj.user.id
 
     def create(self, validated_data):
@@ -184,22 +195,55 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         return rental_post
 
     def update(self, instance, validated_data):
-        address = instance.address
-        if address:
-            for field in ['description', 'latitude', 'longitude', 'city', 'district']:
-                if field in validated_data:
-                    setattr(address, field, validated_data.pop(field))
-            address.save()
+        """
+        Cập nhật một instance với các validated data.  Chỉ cập nhật
+        các trường có trong validated_data.
+        """
+        
+        address_data = validated_data.pop('address', None) 
+        request = self.context.get('request')
+        new_images = request.FILES.getlist('images')
+        
+        if address_data is not None: 
+            address = instance.address
+            if address:
+                city_id = address_data.get('city', None)
+                district_id = address_data.get('district', None)
 
-        # Cập nhật các trường khác
+                try:
+                    if city_id is not None:
+                        city = City.objects.get(pk=city_id)
+                        address.city = city
+                    if district_id is not None:
+                        district = District.objects.get(pk=district_id)
+                        address.district = district
+                    address.save()
+                except City.DoesNotExist:
+                    raise serializers.ValidationError("Thành phố không tồn tại.")
+                except District.DoesNotExist:
+                    raise serializers.ValidationError("Quận/huyện không tồn tại.")
+            else:
+                address_serializer = AddressNestedSerializer(data=address_data)
+                if address_serializer.is_valid():
+                    new_address = address_serializer.save()
+                    instance.address = new_address
+
+        validated_data.pop('images', None)
+        if new_images is not None:
+            instance.image.all().delete()
+
+            for image_data in new_images:          
+                print(image_data)
+                Image.objects.create(rental_post=instance, image_url=image_data)
+
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+            if value == None: 
+                continue
+            else:
+                setattr(instance, attr, value)
+
         instance.save()
         return instance
-
-
-
-
 
 class RentalPostFavoriteSerializer(DynamicFieldsModelSerializer):
     address = AddressSerializer()

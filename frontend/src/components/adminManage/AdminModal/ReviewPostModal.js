@@ -9,12 +9,21 @@ const styles = {
 
 const ReviewPostModal = ({ request, onNext, onSuccess }) => {
     const [showRefuseModal, setShowRefuseModal] = useState(false);
+
     return (
         <div>
             <p>
                 Duyệt yêu cầu cho: <strong>{request?.fullname}</strong>
             </p>
-            <Detail showAction={false} showReviews={false} />
+            <Detail
+                showAction={false}
+                showReviews={false}
+                roomData={{
+                    ...request.rental_post_data,
+                    images: request.images_rental_post,
+                }}
+            />
+
             <div className="d-flex justify-content-end mt-3 align-items-center">
                 <ButtonPrimary
                     des="Từ chối"

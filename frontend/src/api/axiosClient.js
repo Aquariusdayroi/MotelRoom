@@ -9,9 +9,9 @@ const baseURL = process.env.REACT_APP_API_URL
     : "http://localhost:8000";
 const axiosClient = axios.create({
     baseURL: baseURL,
-    headers: {
-        "Content-Type": "application/json",
-    },
+    // headers: {
+    //     "Content-Type": "application/json",
+    // },
     paramsSerializer: (params) => queryString.stringify(params),
 });
 

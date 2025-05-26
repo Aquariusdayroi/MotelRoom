@@ -1,0 +1,213 @@
+.container {
+    background: #fff;
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.sidebar {
+    background-color: #f9fcfd;
+    padding: 1.5rem;
+    min-height: calc(100vh - 64px);
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.menuItem {
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: 500;
+    margin-bottom: 0.8rem;
+    width: 100%;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    color: #4a5568;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.menuItem:hover:not(.active) {
+    background-color: #e8f7fa;
+    color: #2ecdf2;
+}
+
+.active {
+    background-color: #2ecdf2;
+    color: white !important;
+}
+
+.statCard {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: left;
+    height: 100%;
+}
+
+.statIcon {
+    font-size: 2.2rem;
+    margin-right: 1rem;
+    color: #1a4e8a;
+    min-width: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.statNumber {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #1a4e8a;
+    line-height: 1.1;
+}
+
+.statLabel {
+    font-size: 1.1rem;
+    color: #1a4e8a;
+    font-weight: 400;
+    line-height: 1.2;
+}
+
+/* Adjusted the grid to ensure proper 3-column layout */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 24px 0;
+}
+
+.hostDashboard {
+    padding: 10px;
+    flex-grow: 1;
+}
+
+.searchInput {
+    max-width: 50rem;
+    border-radius: 10px;
+    height: 45px;
+    border: 1px solid #e0e0e0;
+    padding: 0 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.searchInput:focus {
+    border-color: #2ecdf2;
+    box-shadow: 0 0 0 2px rgba(46, 205, 242, 0.2);
+}
+
+.btnFind {
+    background-color: #2ecdf2;
+    border: none;
+    border-radius: 8px;
+    padding: 0 24px;
+    font-weight: 500;
+    height: 45px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.btnFind:hover,
+.btnCreatePost:hover {
+    background-color: #1aafd0;
+    transform: translateY(-1px);
+}
+
+.sortButton {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: white;
+    color: #4a5568;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    padding: 0 20px;
+    font-size: 1rem;
+}
+
+.sortButton:hover {
+    background-color: #f8f9fa;
+    border-color: #2ecdf2;
+}
+
+.arrow {
+    font-size: 0.8rem;
+    /* nhỏ hơn text một chút */
+}
+
+.btnCreatePost {
+    background-color: #2ecdf2;
+    border: none;
+    border-radius: 8px;
+    padding: 0 24px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    height: 45px;
+    font-size: 1rem;
+    color: white;
+    transition: all 0.3s ease;
+    gap: 8px;
+}
+
+.sortButton::after {
+    display: none !important;
+}
+
+.searchBarGroup {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 1rem;
+}
+
+.searchLeft {
+    flex: 1;
+    min-width: 0;
+    margin-right: 1rem;
+}
+
+.searchRight {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.hover-card {
+    display: block;
+    width: 100%;
+    transition: background 0.2s, box-shadow 0.2s, border 0.2s;
+    border-radius: 10px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    background: #fff;
+}
+
+.hover-card:hover {
+    background: #1aafd0;
+    box-shadow: 0 2px 8px rgba(26, 78, 138, 0.08);
+    border: 1.5px solid #1a4e8a;
+    cursor: pointer;
+}
+
+.hover-card:hover .fw-bold,
+.hover-card:hover .text-primary,
+.hover-card:hover .text-muted,
+.hover-card:hover small,
+.hover-card:hover div {
+    color: #fff !important;
+}
+
+.hover-card:hover .statIcon,
+.hover-card:hover svg {
+    color: #fff !important;
+}

@@ -9,15 +9,18 @@ import LoginForm from "../components/authForm/LoginForm";
 import SignInForm from "../components/authForm/SignInForm";
 import Footer from "../layout/components/Footer";
 import { images } from "../assets/images";
+import HeaderWhite from "../layout/components/HeaderWhite";
+import ForgotPassword from "../components/authForm/ForgotPassword";
 
 function Login() {
     const { register, handleSubmit } = useForm();
     const [showPassword, setShowPassword] = useState(false);
+    const [isLogin, setIsLogin] = useState(true);
+    const [isForgot, setIsForgot] = useState(false);
 
     const onSubmit = (data) => {
         console.log("Đăng nhập với:", data);
     };
-    const [isLogin, setIsLogin] = useState(true);
 
     const pageVariants = {
         initial: {
@@ -41,15 +44,21 @@ function Login() {
     };
     return (
         <div>
-            <header className={styles.header}>
-                <Link to="/home">
-                    <img src={images.logo} className={styles.logo} />
-                </Link>
-            </header>
             <div className={styles.container}>
                 <div className={styles.sectionForm}>
                     <AnimatePresence mode="wait">
-                        {isLogin ? (
+                        {isForgot ? (
+                            <motion.div
+                                key="forgot"
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                                variants={pageVariants}
+                                transition={pageTransition}
+                            >
+                                <ForgotPassword onBack={() => setIsForgot(false)} />
+                            </motion.div>
+                        ) : isLogin ? (
                             <motion.div
                                 key="login"
                                 initial="initial"
@@ -58,7 +67,7 @@ function Login() {
                                 variants={pageVariants}
                                 transition={pageTransition}
                             >
-                                <LoginForm onSwitch={() => setIsLogin(false)} />
+                                <LoginForm onSwitch={() => setIsLogin(false)} onForgot={() => setIsForgot(true)} />
                             </motion.div>
                         ) : (
                             <motion.div
