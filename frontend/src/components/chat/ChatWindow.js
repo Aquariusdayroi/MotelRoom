@@ -82,7 +82,7 @@ export default function ChatWindow({ token, conversation, socket }) {
       setMessages(msgs);
       setCurrentPage(1);
       setHasMoreMessages(res.data.next !== null); 
-      messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      messageEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       for (const msg of msgs) {
         if (msg.status === "sent") {  
           try {
@@ -246,10 +246,11 @@ export default function ChatWindow({ token, conversation, socket }) {
 
     useEffect(() => {
     if (shouldScrollRef.current) {
-        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });    
+        messageEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });    
     }
     }, [messages]);
 
+  const [showStatusIdx, setShowStatusIdx] = useState(null);
 
   return (
     <Box
@@ -358,6 +359,12 @@ export default function ChatWindow({ token, conversation, socket }) {
                       px: 2,
                       py: 1,
                       display: "inline-block",
+                      cursor: msg.sender === userInfo?.user_id ? "pointer" : "default",
+                    }}
+                    onClick={() => {
+                      if (msg.sender === userInfo?.user_id && messages.length - 1 !== idx) {
+                        setShowStatusIdx(showStatusIdx === idx ? null : idx);
+                      }
                     }}
                   >
                     <Typography
@@ -377,12 +384,47 @@ export default function ChatWindow({ token, conversation, socket }) {
                       pr: 1,
                     }}
                   >
-                    {msg.sender === userInfo?.user_id &&
-                    messages.length - 1 === idx
-                      ? msg.status === "read"
-                        ? "Đã xem"
-                        : "Đã gửi"
-                      : ""}
+                    {/* Chỉ hiển thị thời gian + trạng thái cho tin nhắn cuối cùng */}
+                    {messages.length - 1 === idx ? (
+                      <>
+                        {new Date(msg.create_at).toLocaleString("vi-VN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "2-digit",
+                        })}
+                        {msg.sender === userInfo?.user_id
+                          ? msg.status === "read"
+                            ? " • Đã xem"
+                            : " • Đã gửi"
+                          : ""}
+                      </>
+                    ) : (
+                      // Các tin nhắn khác chỉ hiển thị khi click vào bubble
+                      (msg.sender === userInfo?.user_id && showStatusIdx === idx) ? (
+                        <>
+                          {new Date(msg.create_at).toLocaleString("vi-VN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "2-digit",
+                          })}
+                          {msg.status === "read" ? " • Đã xem" : " • Đã gửi"}
+                        </>
+                      ) : (showStatusIdx === idx ? (
+                        <>
+                          {new Date(msg.create_at).toLocaleString("vi-VN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "2-digit",
+                          })}
+                        </>
+                      ) : "")
+                    )}
                   </Typography>
                 </Box>
               </ListItem>
