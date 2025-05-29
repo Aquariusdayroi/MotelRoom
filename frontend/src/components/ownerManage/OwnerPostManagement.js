@@ -45,7 +45,6 @@ const OwnerPostManagement = () => {
                     total_pages: Math.ceil(response.data.count / 9) || 1,
                 };
 
-                console.log("Data being set:", responseData);
                 setData(responseData);
             }
         } catch (error) {
