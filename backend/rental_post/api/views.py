@@ -2,9 +2,12 @@ from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics
+from user.api.serializers import UserSerializer
+from user.models import User
 from rental_post.models import RentalPost
 from .serializers import RentalPostSerializer, RentalPostFavoriteSerializer
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
@@ -600,4 +603,31 @@ class TopViewedPostsAPIView(APIView):
             "success": True,
             "top_viewed_posts": serializer.data
         }, status=status.HTTP_200_OK)
+        
+# API lấy thông tin người dùng của bài đăng theo ID
+class RentalPostUserInfoAPIView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]  # Bất kỳ ai
+
+    def get(self, request, *args, **kwargs):
+        rentalpost_id = kwargs.get('rentalpost_id')
+        if not rentalpost_id:
+            return Response({
+                "success": False,
+                "message": "ID bài đăng không được cung cấp."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            post = RentalPost.objects.get(id=rentalpost_id)
+            serializer = self.get_serializer(post.user, context={'request': request})
+            return Response({
+                "success": True,
+                "message": "Lấy thông tin người dùng thành công.",
+                "user": serializer.data
+            }, status=status.HTTP_200_OK)
+        except RentalPost.DoesNotExist:
+            return Response({
+                "success": False,
+                "message": "Bài đăng không tồn tại."
+            }, status=status.HTTP_404_NOT_FOUND)
 
