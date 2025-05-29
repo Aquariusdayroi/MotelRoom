@@ -40,6 +40,7 @@ function Profile() {
     const [pendingFormData, setPendingFormData] = useState(null);
     const handleCloseModal = () => setShowEditModal(false);
     const [reviews, setReviews] = useState([]);
+
     const navigate = useNavigate();
     const handleBackToHome = () => {
         navigate("/owner-manage/dashboard");
@@ -67,12 +68,23 @@ function Profile() {
     const [startIndex, setStartIndex] = useState(0);
     const itemsPerPage = 2;
     const [direction, setDirection] = useState(1);
+    const paginatedRooms = rooms.slice(startIndex, startIndex + itemsPerPage);
+    const handleNext = () => {
+        if (startIndex + itemsPerPage >= rooms.length) {
+            setStartIndex(0);
+        } else {
+            setStartIndex(startIndex + itemsPerPage);
+        }
+        setDirection(1);
+    };
+
     const handlePrev = () => {
-        setStartIndex((prev) =>
-            prev - itemsPerPage < 0
-                ? rooms.length - itemsPerPage
-                : prev - itemsPerPage
-        );
+        if (startIndex - itemsPerPage < 0) {
+            setStartIndex(Math.max(0, rooms.length - itemsPerPage));
+        } else {
+            setStartIndex(startIndex - itemsPerPage);
+        }
+        setDirection(-1);
     };
     const [showAllReviews, setShowAllReviews] = useState(false);
 
@@ -123,10 +135,6 @@ function Profile() {
                 ? reviews
                 : reviews.slice(0, 3)
             : [];
-
-    const handleNext = () => {
-        setStartIndex((prev) => (prev + itemsPerPage) % rooms.length);
-    };
 
     const formatDate = (dateStr) => {
         if (!dateStr) return "Chưa cập nhật";
@@ -184,7 +192,7 @@ function Profile() {
         <RoomProfile
             loading={loading}
             error={error}
-            rooms={rooms}
+            rooms={paginatedRooms}
             role={role}
             startIndex={startIndex}
             direction={direction}

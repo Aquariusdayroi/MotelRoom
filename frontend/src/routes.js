@@ -23,11 +23,20 @@ import AddPost from "./pages/AddPost";
 import ScrollToTop from "./until/ScrollToTop";
 import Statistical from "./components/adminManage/Statistical";
 import HeaderWhite from "./layout/components/HeaderWhite";
-import OwnerManagement from './pages/OwnerManagement';
-import OwnerDashboard from './components/ownerManage/OwnerDashboard';
-import OwnerPostManagement from './components/ownerManage/OwnerPostManagement';
-import ForgotPassword from './components/authForm/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
+import OwnerManagement from "./pages/OwnerManagement";
+import OwnerDashboard from "./components/ownerManage/OwnerDashboard";
+import OwnerPostManagement from "./components/ownerManage/OwnerPostManagement";
+import ForgotPassword from "./components/authForm/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import PostRules from "./pages/PostRules";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfUse from "./pages/TermsOfUse";
+import ComplaintResolution from "./pages/ComplaintResolution";
+import UserAgreement from "./pages/UserAgreement";
+import RentalCategoryRules from "./pages/RentalCategoryRules";
+import RoomRentalRules from "./pages/RoomRentalRules";
+import ApartmentRentalRules from "./pages/ApartmentRentalRules";
+import Policy from "./pages/Policy";
 export default function AppRoutes() {
     return (
         <Router>
@@ -86,6 +95,80 @@ function AnimatedRoutes() {
                         </ProtectedRoute>
                     }
                 />
+                {/* footer policy */}
+                <Route
+                    path="/post-rules"
+                    element={
+                        <Layout enableScroll={false} enableSearch={false}>
+                            <PostRules />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/privacy-policy"
+                    element={
+                        <Layout enableScroll={false} enableSearch={false}>
+                            <PrivacyPolicy />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/terms-of-use"
+                    element={
+                        <Layout enableScroll={false} enableSearch={false}>
+                            <TermsOfUse />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/complaint-resolution"
+                    element={
+                        <Layout enableScroll={false} enableSearch={false}>
+                            <ComplaintResolution />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/user-agreement"
+                    element={
+                        <Layout enableScroll={false} enableSearch={false}>
+                            <UserAgreement />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/rental-category-rules"
+                    element={
+                        <Layout enableScroll={false} enableSearch={false}>
+                            <RentalCategoryRules />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/room-rental-rules"
+                    element={
+                        <Layout enableScroll={false} enableSearch={false}>
+                            <RoomRentalRules />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/apartment-rental-rules"
+                    element={
+                        <Layout enableScroll={false} enableSearch={false}>
+                            <ApartmentRentalRules />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/policy"
+                    element={
+                        <Layout enableScroll={false} enableSearch={false}>
+                            <Policy />
+                        </Layout>
+                    }
+                />
+                {/* ====== */}
                 <Route
                     path="/owner-manage"
                     element={
@@ -183,7 +266,14 @@ function AnimatedRoutes() {
                         }
                     />
                 </Route>
-                <Route path="/reset-password/:uidb64/:token" element={<Layout useHeaderWhite={true}><ResetPassword /></Layout>} />
+                <Route
+                    path="/reset-password/:uidb64/:token"
+                    element={
+                        <Layout useHeaderWhite={true}>
+                            <ResetPassword />
+                        </Layout>
+                    }
+                />
             </Routes>
         </AnimatePresence>
     );
