@@ -45,10 +45,12 @@ class AddressNestedSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'address_name',
-            'district_name',       # input
-            'city_name',           # input
-            'district_name_display',  # output
-            'city_name_display',      # output
+            'district_name',       
+            'latitude',
+            'longitude',
+            'city_name',           
+            'district_name_display', 
+            'city_name_display',    
         ]
 
     def get_district_name_display(self, obj):

@@ -9,6 +9,7 @@ const styles = {
 
 const ReviewPostModal = ({ request, onNext, onSuccess }) => {
     const [showRefuseModal, setShowRefuseModal] = useState(false);
+
     return (
         <div>
             <p>

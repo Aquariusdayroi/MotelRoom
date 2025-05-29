@@ -2,7 +2,7 @@ from django.urls import path, include
 
 from .views import UserRetrieveUpdateDestroyAPIView, RegisterAPIView, GoogleLoginView, VerifyEmailView , UserDetailAPIView, OwnerRequestAdminAPIViewSet, OwnerCountByDateAPIView, UserCountByDateAPIView
 from .views import OwnerRequestAPIViewSet, OwnerRequestAPIViewSet, UserLatestReviewsAPIView, MyLatestReviewsAPIView
-from .views import CustomTokenObtainPairView, LogoutView, PasswordResetAPIView, PasswordResetConfirmAPIView
+from .views import CustomTokenObtainPairView, LogoutView, PasswordResetRequestAPIView, PasswordResetConfirmAPIView
 from rental_post.api.views import RentalPostFavoriteListAPIView
 
 from rest_framework.routers import DefaultRouter
@@ -28,7 +28,7 @@ urlpatterns = [
     path('user-info/my-reviews/', MyLatestReviewsAPIView.as_view(), name='my-reviews'), # api lấy danh sách đánh giá của người dùng hiện tại
     path('admin/owner-count/', OwnerCountByDateAPIView.as_view(), name='owner-count'), # api lấy số lượng owner đăng ký theo ngày tháng năm
     path('admin/user-count/', UserCountByDateAPIView.as_view(), name='user-count'), # api lấy số lượng user đăng ký theo ngày tháng năm
-    path('password-reset/', PasswordResetAPIView.as_view(), name='password-reset'), # api reset mật khẩu
-    path('password-reset-confirm/', PasswordResetConfirmAPIView.as_view(), name='password-reset-confirm'), # api xác nhận reset mật khẩu
+    path('password-reset/', PasswordResetRequestAPIView.as_view(), name='password-reset'), #api khôi phục mật khẩu
+    path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmAPIView.as_view(), name='password-reset-confirm'), #api xác nhận khôi phục mật khẩu
 ]
 

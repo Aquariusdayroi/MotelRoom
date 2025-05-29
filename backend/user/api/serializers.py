@@ -41,9 +41,10 @@ from django.conf import settings
 #Time delay
 import time
 
-#OTP
-import random
-from django.core.cache import cache
+
+
+
+
 
 #---------------------------------------------------------------------------------------------------#
 #Xác thực mail 
@@ -55,9 +56,62 @@ def send_verification_email(user, request):
         reverse('verify-email', kwargs={'uidb64': uid, 'token': token})
     )
 
+    html_message = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Xác minh Email</title>
+    <style>
+    .button {{
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 14px 28px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 20px 0;
+        cursor: pointer;
+        border-radius: 8px;
+    }}
+    .container {{
+        max-width: 500px;
+        margin: auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        font-family: Arial, sans-serif;
+    }}
+    .footer {{
+        margin-top: 30px;
+        font-size: 12px;
+        color: #888;
+        text-align: center;
+    }}
+    </style>
+</head>
+<body style="background: #f4f4f4;">
+    <div class="container">
+    <h2>Chào mừng bạn đến với MotelRoom!</h2>
+    <p>Cảm ơn bạn đã đăng ký tài khoản.<br>
+    Vui lòng nhấn vào nút bên dưới để xác minh email.</p>
+    <a href="{verify_url}" class="button">Xác minh Email</a>
+    <div class="footer">
+        Nếu bạn không thực hiện hành động này, vui lòng bỏ qua email này.<br>
+        &copy; 2024 MotelRoom
+    </div>
+    </div>
+</body>
+</html>
+"""
+
     send_mail(
         subject='Xác minh email tài khoản của bạn',
-        message=f'Vui lòng nhấn vào liên kết sau để xác minh email:\n{verify_url}',
+        message = 'Xác minh email tài khoản của bạn',
+        html_message=html_message,
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
         fail_silently=False,

@@ -119,14 +119,27 @@ const DetailSearch = () => {
         const room = displayRooms.find((r) => r.id === id);
         if (!room) return;
 
-        try {
-            const coords = await mapboxApi.fetchCoordinates(
-                room.address.description
-            );
+        const lat = parseFloat(room.address?.latitude);
+        const lng = parseFloat(room.address?.longitude);
+
+        if (!isNaN(lat) && !isNaN(lng)) {
             setSelectedRoomId(id);
-            setSelectedCoordinates(coords);
-        } catch (err) {
-            console.error("Lỗi khi lấy tọa độ:", err);
+            setSelectedCoordinates([lat, lng]);
+            console.log("Dùng tọa độ backend:", [lat, lng]);
+        } else {
+            const addressText =
+                room.address?.address_name ||
+                `${room.address?.district_name || ""}, ${
+                    room.address?.city_name || ""
+                }`;
+            try {
+                const coords = await mapboxApi.fetchCoordinates(addressText);
+                setSelectedRoomId(id);
+                setSelectedCoordinates(coords);
+                console.log("Lấy tọa độ từ Mapbox:", coords);
+            } catch (err) {
+                console.error("Lỗi khi lấy tọa độ:", err);
+            }
         }
     };
 
