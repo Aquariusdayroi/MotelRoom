@@ -391,6 +391,29 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+#---------------------------------------------------------------------------------------------------#
+# Gửi OPT Reset Password
+def send_OPT_Reset_Password(user, request):    
+    otp = cache.get('otp')
+    if not otp:
+        otp = random.randint(10000, 99999) 
+        cache.set('otp', otp, timeout=300)  
+    send_mail(
+        subject='Khôi phục mật khẩu tài khoản của bạn',
+        message=f'Mã OTP khôi phục mật khẩu của bạn là: \n{otp} \nMã có hiệu lực trong 5 phút, vui lòng không chia sẻ mã này với bất kỳ ai.',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )
 
-
-
+#---------------------------------------------------------------------------------------------------#
+# Xác thực OTP Reset Password
+def check_OTP_Reset_Password(user, otp):
+    cached_otp = cache.get('otp')
+    if not cached_otp:
+        raise ValidationError("Mã OTP đã hết hạn hoặc không hợp lệ.")
+    
+    if str(cached_otp) != str(otp):
+        raise ValidationError("Mã OTP không đúng.")
+    
+    return True

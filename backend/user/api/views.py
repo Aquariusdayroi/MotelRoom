@@ -25,7 +25,7 @@ from review.models import Review
 
 
 #Serializers
-from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer
+from .serializers import UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer, GoogleLoginSerializer, send_OPT_Reset_Password, check_OTP_Reset_Password
 from .serializers import OwnerRequestSerializer, UpdateUserSerializer, OwnerRequestAdminSerializer
 from rental_post.api.serializers import RentalPostSerializer
 from review.api.serializers import ReviewSerializer
@@ -1136,31 +1136,82 @@ class OwnerCountByDateAPIView(APIView):
             'total_owner': count
         }, status=status.HTTP_200_OK)
 
-# API lấy số lượng user theo ngày, tháng hoặc năm có tham số ?year=2023&month=10&day=1
+# API lấy số lượng user theo ngày, tháng hoặc năm với tham số ?group_by=day, month, year, nếu dữ liệu là tháng hoặc năm thì hiển thị từng năm và số người tương ứng
 class UserCountByDateAPIView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        year = request.query_params.get('year')
-        month = request.query_params.get('month')
-        day = request.query_params.get('day')
+        group_by = request.query_params.get('group_by', 'day')  # default = day
+        now = timezone.now()
 
-        filters = {'role': 'user'}
+        if group_by == 'day':
+            queryset = User.objects.filter(created__date=now.date())
+            count = queryset.count()
+            return Response({
+                'success': True,
+                'group_by': 'day',
+                'date': now.date(),
+                'total_user': count
+            }, status=status.HTTP_200_OK)
 
-        if year:
-            filters['created__year'] = year
-        if month:
-            filters['created__month'] = month
-        if day:
-            filters['created__day'] = day
+        elif group_by == 'month':
+            queryset = User.objects.annotate(month=TruncMonth('created')) \
+                                   .values('month') \
+                                   .annotate(count=Count('id')) \
+                                   .order_by('month')
+            return Response({
+                'success': True,
+                'group_by': 'month',
+                'data': [
+                    {
+                        'month': item['month'].strftime('%Y-%m'),
+                        'count': item['count']
+                    } for item in queryset
+                ]
+            }, status=status.HTTP_200_OK)
 
-        if not year and not month and not day:
+        elif group_by == 'year':
+            queryset = User.objects.annotate(year=TruncYear('created')) \
+                                   .values('year') \
+                                   .annotate(count=Count('id')) \
+                                   .order_by('year')
+            return Response({
+                'success': True,
+                'group_by': 'year',
+                'data': [
+                    {
+                        'year': item['year'].year,
+                        'count': item['count']
+                    } for item in queryset
+                ]
+            }, status=status.HTTP_200_OK)
+
+        else:
             return Response({
                 'success': False,
-                'message': 'Thiếu tham số year, month hoặc day.'
+                'message': 'Tham số group_by không hợp lệ. Sử dụng: day, month, year.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+# API gửi OTP khôi phục mật khẩu bằng email
+class PasswordResetAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({
+                'success': False,
+                'message': 'Email không được để trống.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        count = User.objects.filter(**filters).count()
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response({
+                'success': False,
+                'message': 'Không tìm thấy người dùng với email này.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        send_OPT_Reset_Password(user, request)
         return Response({
             'success': True,
             'year': year,
