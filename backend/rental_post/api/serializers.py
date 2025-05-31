@@ -199,11 +199,19 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         Cập nhật một instance với các validated data.  Chỉ cập nhật
         các trường có trong validated_data.
         """
-        
+        print(validated_data)
         address_data = validated_data.pop('address', None) 
         request = self.context.get('request')
-        new_images = request.FILES.getlist('images')
-        
+        if 'images' in request.FILES:
+            new_images = request.FILES.getlist('images')
+            validated_data.pop('images', None)
+            if new_images is not None:
+                instance.image.all().delete()
+                print("Deleting old images")
+                for image_data in new_images:          
+                    print(image_data)
+                    Image.objects.create(rental_post=instance, image_url=image_data)
+
         if address_data is not None: 
             address = instance.address
             if address:
@@ -227,14 +235,6 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
                 if address_serializer.is_valid():
                     new_address = address_serializer.save()
                     instance.address = new_address
-
-        validated_data.pop('images', None)
-        if new_images is not None:
-            instance.image.all().delete()
-
-            for image_data in new_images:          
-                print(image_data)
-                Image.objects.create(rental_post=instance, image_url=image_data)
 
         for attr, value in validated_data.items():
             if value == None: 
