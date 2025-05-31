@@ -207,9 +207,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
             validated_data.pop('images', None)
             if new_images is not None:
                 instance.image.all().delete()
-                print("Deleting old images")
                 for image_data in new_images:          
-                    print(image_data)
                     Image.objects.create(rental_post=instance, image_url=image_data)
 
         if address_data is not None: 
