@@ -103,8 +103,8 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     # CHỈ dùng AddressSerializer để đọc (read-only)
     address = AddressNestedSerializer(read_only=True)
     user = serializers.SerializerMethodField()
-    fullname = serializers.CharField(source='user.fullname', read_only=True)
-    avatar = serializers.ImageField(source='user.avatar', read_only=True)
+    # fullname = serializers.CharField(source='user.fullname', read_only=True)
+    # avatar = serializers.ImageField(source='user.avatar', read_only=True)
     images = ImageSerializer(source='image', many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
 
@@ -118,7 +118,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = RentalPost
         fields = [
-            'id', 'user', 'fullname', 'avatar', 'home_type', 'title', 'information_detail',
+            'id', 'user', 'home_type', 'title', 'information_detail',
             'address', 'description', 'latitude', 'longitude',
             'city', 'district', 'total_occupancy', 'acreage', 'price',
             'create_at', 'update_at',  'images', 'is_favorite', 'is_public', 'views',
@@ -199,9 +199,11 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         Cập nhật một instance với các validated data.  Chỉ cập nhật
         các trường có trong validated_data.
         """
+        print("Hihi")
         print(validated_data)
         address_data = validated_data.pop('address', None) 
         request = self.context.get('request')
+        print(request)
         if 'images' in request.FILES:
             new_images = request.FILES.getlist('images')
             validated_data.pop('images', None)

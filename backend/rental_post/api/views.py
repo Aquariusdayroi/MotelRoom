@@ -183,7 +183,7 @@ class RentalPostDetailUpdateDeleteAPIView(APIView):
     def get_serializer(self, *args, **kwargs):
         kwargs['context'] = self.get_serializer_context()
         kwargs['context']['expand_user'] = True
-        kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
+        # kwargs["fields"] = ['id', 'title', 'home_type', 'price', 'acreage','address', 'user', 'images', 'update_at', 'is_favorite']
         return self.serializer_class(*args, **kwargs)  
     
     def get(self, request, id):
