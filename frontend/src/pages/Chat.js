@@ -32,10 +32,15 @@ const Chat = () => {
                 console.log("Không có recenId trong URL");
                 return;
             }
+            const userTwoId = Number(recenId);
+            if (isNaN(userTwoId)) {
+                console.error("recenId không hợp lệ:", recenId);
+                return;
+            }
             try {
                 const response = await axiosClient.post(
                     `/chat/api/conversations/create/`,
-                    { user_two: recenId }
+                    { user_two: userTwoId }
                 );
                 console.log("Dữ liệu API:", response.data);
                 setSelectedConversation(response.data.data);

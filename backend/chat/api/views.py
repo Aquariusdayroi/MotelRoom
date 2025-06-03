@@ -33,12 +33,13 @@ class ConversationCreateView(APIView):
         user = request.user
         user_two_id = request.data.get("user_two")
     
-
-        if user_two_id is None:
-        
+        # Kiểm tra user_two_id phải là số nguyên
+        try:
+            user_two_id = int(user_two_id)
+        except (TypeError, ValueError):
             return Response({
                 "status": False,
-                "message": "Không có dữ liệu user_two truyền vào."
+                "message": "user_two phải là số nguyên hợp lệ."
             }, status=status.HTTP_400_BAD_REQUEST)
 
         if str(user.id) == str(user_two_id):
