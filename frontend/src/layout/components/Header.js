@@ -93,9 +93,9 @@ const Header = ({
                     <div className={styles.buttonGroup}>
                         {!isScrolled && (
                             <div className="d-flex items-center gap-2">
-                                {user && (
+                                {/* {user && (
                                     <ButtonLanguage des="Tiếng Việt" icon />
-                                )}
+                                )} */}
                                 {role === "owner" && (
                                     <Link to="/owner-manage">
                                         <ButtonLanguage des="Quản lý bài đăng" />
