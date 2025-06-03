@@ -1,0 +1,24 @@
+.uploadBox {
+    width: 120px;
+    aspect-ratio: 1/1;
+    border: 1.5px dashed #ccc;
+    border-radius: 12px;
+    background-color: #f2f2f2;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: border-color 0.2s ease-in-out;
+    color: #333;
+}
+
+.uploadBox:hover {
+    border-color: var(--primary-color);
+}
+
+.previewImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

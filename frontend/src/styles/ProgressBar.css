@@ -1,0 +1,99 @@
+.progress-bar-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
+.progress-bar {
+    padding: 10px;
+}
+
+.box-progress {
+    display: flex;
+    gap: 40px;
+}
+
+.step-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ccc;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 2px solid #ccc;
+    transition: all 0.3s;
+    z-index: 1;
+}
+
+.step-circle::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    background-color: transparent;
+    z-index: -1;
+}
+
+.step-circle.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.step-circle.active::before {
+    border-color: var(--primary-color);
+}
+
+.step-circle.completed {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.step-circle.completed::before {
+    border-color: var(--primary-color);
+}
+
+.step-line {
+    width: 80px;
+    height: 2px;
+    background-color: transparent;
+    border-top: 2px dotted #ccc;
+    position: absolute;
+    left: 80%;
+    top: 25%;
+    margin: 0;
+}
+
+.step-label {
+    color: #6c757d;
+    font-size: 14px;
+    margin-top: 16px;
+    width: 120px;
+    text-align: center;
+}
+
+.step-label.active-label {
+    color: #333;
+    font-weight: bold;
+}
+
+.step-label.completed-label {
+    color: var(--primary-color);
+}

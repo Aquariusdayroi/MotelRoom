@@ -21,19 +21,34 @@ from django.conf import settings
 
 from rest_framework.routers import DefaultRouter
 
-from user.api.views import UserListCreateAPIViewSet
-
+from user.api.views import AdminManagerUserAPIViewSet, OwnerRequestAdminAPIViewSet, AdminStatsRentalPostAPIViewSet, \
+                        OwnerStatAPIViewSet
 
 router_admin = DefaultRouter()
-router_admin.register(r'requests', UserListCreateAPIViewSet, basename='admin-request')
+router_admin.register(r'requests', AdminManagerUserAPIViewSet, basename='admin-request')
+
+router_admin_check_request = DefaultRouter()
+router_admin_check_request.register(r'requests', OwnerRequestAdminAPIViewSet, basename='owner-requests-admin')
+
+router_admin_rentalpost = DefaultRouter()
+router_admin_rentalpost.register(r'requests', AdminStatsRentalPostAPIViewSet, basename='rental-posts-admin')
+
+router_owner = DefaultRouter()
+router_owner.register(r'requests', OwnerStatAPIViewSet, basename='owner-manager')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('city/api/', include('city.api.urls')),
+    path('district/api/', include('district.api.urls')),
     path('user/api/', include('user.api.urls')), #api liên quan user 
     path('user-admin/api/', include(router_admin.urls)), # api admin quản lý người dùng
+    path('rental-post-admin/api/', include(router_admin_rentalpost.urls)), # api admin thống kê số lượng bài đăng
+    path('owner-requests-admin/', include(router_admin_check_request.urls)),  # api admin xem danh sách, duyệt hoặc từ chối yêu cầu
     path('rental_post/api/', include('rental_post.api.urls')), #api liên quan rental post
     path('rental_post/api/', include('review.api.urls')), #api liên quan review
+    path('owner/api/', include(router_owner.urls)), #api owner thống kê thông tin đến bài đăng
     path('images/api/', include('image.api.urls')), #api liên quan đến image
-    path('favorite/api/', include('favorite.api.url')),
+    path('favorite/api/', include('favorite.api.url')), #api liên quan đến yêu thích
+    path('chat/api/', include('chat.api.urls')), #api liên quan đến chat
 ] 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -105,5 +105,20 @@
 
 .reviewCard {
     width: 100%;
+}
 
+.buttonManage {
+    width: 164px;
+}
+.groupHover {
+    position: relative;
+}
+
+.hoverIcon {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.groupHover:hover .hoverIcon {
+    opacity: 1;
 }

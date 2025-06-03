@@ -6,8 +6,11 @@ const NotifyModal = ({
     onClose,
     title = "Thông báo",
     message = "",
+    type = "error",
 }) => {
     if (!isOpen) return null;
+
+    const isSuccess = type === "success";
 
     return (
         <div
@@ -19,7 +22,7 @@ const NotifyModal = ({
                     <div className="modal-header border-bottom-0">
                         <h5
                             className="modal-title fw-bold"
-                            style={{ color: "var(--text-primary-color)" }}
+                            style={{ color: isSuccess ? "#28a745" : "var(--text-primary-color)" }}
                         >
                             {title}
                         </h5>
@@ -32,7 +35,7 @@ const NotifyModal = ({
                     <div className="modal-body text-center py-4">
                         <div className="mb-4">
                             <i
-                                className="bi bi-exclamation-circle text-danger"
+                                className={`bi ${isSuccess ? "bi-check-circle text-success" : "bi-exclamation-circle text-danger"}`}
                                 style={{ fontSize: "3rem" }}
                             ></i>
                         </div>
@@ -46,7 +49,7 @@ const NotifyModal = ({
                     <div className="modal-footer border-top-0 justify-content-center">
                         <button
                             type="button"
-                            className="btn btn-danger px-4 py-2 rounded-5"
+                            className={`btn ${isSuccess ? "btn-success" : "btn-danger"} px-4 py-2 rounded-5`}
                             onClick={onClose}
                         >
                             Đóng

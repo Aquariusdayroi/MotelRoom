@@ -1,11 +1,11 @@
 // DetailSearch.js
 import styles from "../styles/DetailSearch.module.css";
-import RoomCard from "../components/RoomCard";
+import RoomCard from "../components/rooms/RoomCard";
 import { images } from "../assets/images";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import mapboxApi from "../api/mapboxApi";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
@@ -119,14 +119,27 @@ const DetailSearch = () => {
         const room = displayRooms.find((r) => r.id === id);
         if (!room) return;
 
-        try {
-            const coords = await mapboxApi.fetchCoordinates(
-                room.address.description
-            );
+        const lat = parseFloat(room.address?.latitude);
+        const lng = parseFloat(room.address?.longitude);
+
+        if (!isNaN(lat) && !isNaN(lng)) {
             setSelectedRoomId(id);
-            setSelectedCoordinates(coords);
-        } catch (err) {
-            console.error("Lỗi khi lấy tọa độ:", err);
+            setSelectedCoordinates([lat, lng]);
+            console.log("Dùng tọa độ backend:", [lat, lng]);
+        } else {
+            const addressText =
+                room.address?.address_name ||
+                `${room.address?.district_name || ""}, ${
+                    room.address?.city_name || ""
+                }`;
+            try {
+                const coords = await mapboxApi.fetchCoordinates(addressText);
+                setSelectedRoomId(id);
+                setSelectedCoordinates(coords);
+                console.log("Lấy tọa độ từ Mapbox:", coords);
+            } catch (err) {
+                console.error("Lỗi khi lấy tọa độ:", err);
+            }
         }
     };
 
@@ -163,7 +176,7 @@ const DetailSearch = () => {
     }, [rooms]);
 
     return (
-        <div className="d-flex">
+        <div className="d-flex mb-5">
             <div className={`${styles.container} col-md-8 pe-1`}>
                 <div className="pt-5 pb-2">
                     <div className="d-flex justify-content-between align-items-center">
@@ -198,31 +211,51 @@ const DetailSearch = () => {
                 </div>
 
                 {!message && (
-                    <div className="row g-2">
+                    <div className={`${styles.listRoom} row g-2`}>
                         {displayRooms.map((room) => (
                             <div key={room.id} className="col-md-4 pe-1">
-                                <RoomCard
+                                <Link
                                     key={room.id}
-                                    images={
-                                        room.images && room.images.length > 0
-                                            ? room.images
-                                            : [images.background]
-                                    }
-                                    title={room.title}
-                                    address={room.address}
-                                    user={room.user} // Truyền toàn bộ user object
-                                    price={room.price}
-                                    home_type={room.home_type}
-                                    acreage={room.acreage}
-                                    isNew={
-                                        new Date(room.update_at) >
-                                        Date.now() - 1000 * 60 * 60 * 24 * 7
-                                    }
-                                    onClick={() => setSelectedRoomId(room.id)}
-                                    onLocationClick={() =>
-                                        handleLocationClick(room.id)
-                                    }
-                                />
+                                    to={`/detail/${room.id}`}
+                                    className="text-decoration-none"
+                                    onClick={(e) => {
+                                        if (
+                                            e.target.closest(
+                                                `.${styles.location}`
+                                            )
+                                        ) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                >
+                                    <RoomCard
+                                        key={room.id}
+                                        id={room.id}
+                                        images={
+                                            room.images &&
+                                            room.images.length > 0
+                                                ? room.images
+                                                : [images.background]
+                                        }
+                                        title={room.title}
+                                        address={room.address}
+                                        user={room.user}
+                                        price={room.price}
+                                        home_type={room.home_type}
+                                        acreage={room.acreage}
+                                        isNew={
+                                            new Date(room.update_at) >
+                                            Date.now() - 1000 * 60 * 60 * 24 * 7
+                                        }
+                                        onClick={() =>
+                                            setSelectedRoomId(room.id)
+                                        }
+                                        onLocationClick={(e) => {
+                                            e.preventDefault();
+                                            handleLocationClick(room.id);
+                                        }}
+                                    />
+                                </Link>
                             </div>
                         ))}
                     </div>
@@ -238,10 +271,15 @@ const DetailSearch = () => {
                 )}
             </div>
 
-            <div className="col-md-4 ps-0">
+            <div className="col-md-4 ps-0 p-3">
                 <div
                     ref={mapContainerRef}
-                    style={{ height: "100vh", width: "100%" }}
+                    style={{
+                        height: "88vh",
+                        width: "100%",
+                        borderRadius: "10px",
+                        border: "1px solid #ccc",
+                    }}
                 />
             </div>
         </div>

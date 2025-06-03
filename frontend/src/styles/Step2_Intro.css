@@ -1,0 +1,29 @@
+.step-container {
+    max-width: 1200px;
+    margin: auto;
+    text-align: left;
+}
+
+.content-box {
+    margin-top: 40px;
+}
+
+.content-box h1,
+.content-box h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.content-box p {
+    margin-bottom: 30px;
+    font-size: 16px;
+    margin-bottom: 30px;
+    width: 600px;
+}
+
+.room-preview {
+    width: 500px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}

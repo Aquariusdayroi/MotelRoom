@@ -1,0 +1,104 @@
+.basic-info-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    display: flex;
+    width: 100%;
+    margin-bottom: 50px;
+    gap: 80px;
+}
+
+.box-content {
+    width: 100%;
+}
+
+.box-content h1,
+.box-content h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.box-content p {
+    margin-top: 20px;
+    width: 100%;
+    height: auto;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    /* margin-top: 50px; */
+    margin-bottom: 50px;
+}
+
+.back-btn {
+    background-color: #6d7677;
+    color: white;
+    border: none;
+    padding: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s;
+    outline: none;
+    margin: 0;
+}
+
+.back-btn:hover {
+    background-color: #5a6263;
+}
+
+.next-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s;
+    outline: none;
+    margin: 0;
+}
+
+.next-btn:hover {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.next-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.form-label {
+    font-weight: 600;
+}
+
+.form-control,
+.form-select {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: none;
+}

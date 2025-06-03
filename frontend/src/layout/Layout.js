@@ -1,13 +1,27 @@
 import Footer from "./components/Footer";
 import Header from "./components/Header";
+import HeaderWhite from "./components/HeaderWhite";
 
-const Layout = ({ children, enableScroll = true }) => {
+const Layout = ({
+    children,
+    enableScroll = true,
+    enableSearch = true,
+    footer = true,
+    useHeaderWhite = false,
+}) => {
     return (
         <>
-            <Header enableScroll={enableScroll} />
+            {!useHeaderWhite && (
+                <Header
+                    enableScroll={enableScroll}
+                    enableSearch={enableSearch}
+                />
+            )}
+            {useHeaderWhite && <HeaderWhite />}
             {children}
-            <Footer />
+            {footer && <Footer />}
         </>
     );
 };
+
 export default Layout;

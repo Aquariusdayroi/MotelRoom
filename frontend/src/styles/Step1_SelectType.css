@@ -1,0 +1,98 @@
+.title_1 {
+    text-align: left;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.type-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    justify-content: flex-start;
+    margin-bottom: 40px;
+}
+
+.type-button {
+    width: 160px;
+    height: 160px;
+    border-radius: 15px;
+    border: 1.5px solid #ccc;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+    margin: 0;
+    outline: none;
+}
+
+.type-button.active {
+    border-color: var(--primary-color);
+    background-color: #ddfaff;
+}
+
+.type-button .type-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.type-button .label {
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.basic-info {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.inputGroup {
+    display: flex;
+    align-items: flex-start;
+    font-size: 16px;
+}
+
+/* label {
+    height: 60px;
+    margin: 20px;
+} */
+
+.counter {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.counter span {
+    font-size: 18px;
+    width: 40px;
+    text-align: center;
+}
+
+.input-with-unit {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.input-with-unit input {
+    width: 200px;
+    padding: 10px;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    text-align: right;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-with-unit input:focus {
+    border-color: var(--primary-color);
+}

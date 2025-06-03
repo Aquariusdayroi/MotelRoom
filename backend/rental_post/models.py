@@ -2,7 +2,7 @@ from django.db import models
 from city.models import City
 from district.models import District
 from address.models import Address
-from user.models import User
+
 # Create your models here.
 class RentalPost(models.Model):
     HOME_TYPES = [
@@ -13,7 +13,7 @@ class RentalPost(models.Model):
     ]
 
     #ForeignKey
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rental_post')
+    user = models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='rental_post')
     home_type = models.CharField(max_length=20, choices=HOME_TYPES, default="phòng trọ")
     title = models.CharField(max_length=255)
 
@@ -25,40 +25,36 @@ class RentalPost(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=2)
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
+    views = models.PositiveIntegerField(default=0)
 
+    #Trường hiển thị
+    is_public = models.BooleanField(default=False)
 
-    #Trường nội thất liên quan đền phòng trọ
-    has_toilet = models.BooleanField(null=True)
-    private_rental = models.BooleanField(null=True)
-    has_washing = models.BooleanField(null=True)
-    curfew_time = models.BooleanField(null=True)
+    ##Trường nội thất liên quan đền phòng trọ
+    # Tiện nghi cơ bản
+    has_wifi = models.BooleanField(null=True)  # Wifi
+    has_tv = models.BooleanField(null=True)  # Tivi
+    has_kitchen = models.BooleanField(null=True)  # Bếp
+    has_washing_machine = models.BooleanField(null=True)  # Máy giặt
+    has_parking = models.BooleanField(null=True)  # Chỗ để xe
+    has_fridge = models.BooleanField(null=True)  # Tủ lạnh
+    has_air_conditioner = models.BooleanField(null=True)  # Máy lạnh
+    has_attic = models.BooleanField(null=True)  # Gác mái
+    has_water_heater = models.BooleanField(null=True)  # Máy nước nóng
+
+    # Tiện nghi thêm
+    has_dehumidifier = models.BooleanField(null=True)  # Máy hút ẩm
+    has_hot_tub = models.BooleanField(null=True)  # Bồn tắm nước nóng
+    has_balcony = models.BooleanField(null=True)  # Ban công
+    has_elevator = models.BooleanField(null=True)  # Thang máy
+    has_microwave = models.BooleanField(null=True)  # Lò vi sóng
+
+    # Tiện nghi an toàn
+    has_security_camera = models.BooleanField(null=True)  # Camera an ninh
+    has_first_aid_kit = models.BooleanField(null=True)  # Bộ sơ cứu
+    has_fingerprint_lock = models.BooleanField(null=True)  # Khóa vân tay
+
 
     def __str__(self):
         return self.title
 
-# class InteriorAmenities(models.Model):
-#     rentalpost = models.ForeignKey(RentalPost, on_delete=models.CASCADE, null=True, related_name='interior amenities')
-#     bed = models.BooleanField(default=False)
-#     cabinet = models.BooleanField(default=False)
-#     table = models.BooleanField(default=False)
-#     chair = models.BooleanField(default=False)
-#     air_conditioner = models.BooleanField(default=False)
-#     refrigerator = models.BooleanField(default=False)
-#     washing_machine = models.BooleanField(default=False)
-#     kitchen = models.BooleanField(default=False)
-#     water_heater = models.BooleanField(default=False)
-    
-# class GeneralAmenities(models.Model):
-#     wifi = models.BooleanField(default=False)
-#     parking = models.BooleanField(default=False)
-#     security = models.BooleanField(default=False)
-#     elevator = models.BooleanField(default=False)
-#     security_camenra = models.BooleanField(default=False)
-#     attic = models.BooleanField(default=False)
-#     free_time = models.BooleanField(default=False)
-#     window = models.BooleanField(default=False)
-#     no_shared_owner = models.BooleanField(default=False)
-#     fingerprint_lock = models.BooleanField(default=False)
-#     private_toilet = models.BooleanField(default=False)
-#     balcony = models.BooleanField(default=False)
-    

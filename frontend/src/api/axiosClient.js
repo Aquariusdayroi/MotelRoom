@@ -1,18 +1,19 @@
 import axios from "axios";
 import queryString from "query-string";
 import Cookies from "js-cookie";
+import { logout } from "../authToken";
+import forceLogout from "../until/forceLogout";
+
 const baseURL = process.env.REACT_APP_API_URL
     ? `${process.env.REACT_APP_API_URL}/api`
     : "http://localhost:8000";
 const axiosClient = axios.create({
     baseURL: baseURL,
-    headers: {
-        "Content-Type": "application/json",
-    },
+    // headers: {
+    //     "Content-Type": "application/json",
+    // },
     paramsSerializer: (params) => queryString.stringify(params),
 });
-console.log("Helllo\n");
-console.log(axiosClient.baseURL);
 
 axiosClient.interceptors.request.use(async (config) => {
     if (config.skipAuth) {
@@ -33,14 +34,12 @@ axiosClient.interceptors.response.use(
         return res;
     },
     (error) => {
-        console.error("Error response:", error.response);
         throw error;
     }
 );
 
 axiosClient.interceptors.request.use(
     (config) => {
-        console.log("Request:", config.url, config.params);
         return config;
     },
     (error) => {
@@ -50,11 +49,23 @@ axiosClient.interceptors.request.use(
 
 axiosClient.interceptors.response.use(
     (response) => {
-        console.log("Response:", response.data);
         return response;
     },
     (error) => {
         console.error("Error response:", error.response);
+        return Promise.reject(error);
+    }
+);
+
+axiosClient.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const status = error.response?.status;
+
+        if (status === 401 || status === 403) {
+            forceLogout();
+        }
+
         return Promise.reject(error);
     }
 );

@@ -6,6 +6,7 @@ import random
 from unidecode import unidecode
 from datetime import datetime
 import shutil
+import random
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 django.setup()
@@ -18,6 +19,7 @@ from rental_post.models import RentalPost
 from address.models import Address
 from django.contrib.auth import get_user_model
 from image.models import Image
+from review.models import Review
 import requests
 
 def AddDataCity(path: str, sheet_name: str) -> None:
@@ -56,6 +58,7 @@ def AddDataUser(path: str, sheet_name: str) -> None:
                 fullname = row["Họ tên"],
                 password = row["Password"], 
                 phone_number = row["Số điện thoại"],    
+                role = 'owner',
             )
     except Exception as e:
         print(f"Lỗi thêm dữ liệu user: {e}")
@@ -87,7 +90,31 @@ def AddDataRentalPost(path: str, sheet_name: str) -> None:
                 total_occupancy = 1,
                 acreage = row["Diện tích"],
                 price = row["Giá"],
-                create_at = row["Ngày đăng"]
+                create_at = row["Ngày đăng"],
+                is_public = True,
+
+                # Tiện nghi cơ bản
+                has_wifi=random.choice([True, False]),
+                has_tv=random.choice([True, False]),
+                has_kitchen=random.choice([True, False]),
+                has_washing_machine=random.choice([True, False]),
+                has_parking=random.choice([True, False]),
+                has_fridge=random.choice([True, False]),
+                has_air_conditioner=random.choice([True, False]),
+                has_attic=random.choice([True, False]),
+                has_water_heater=random.choice([True, False]),
+
+                # Tiện nghi thêm
+                has_dehumidifier=random.choice([True, False]),
+                has_hot_tub=random.choice([True, False]),
+                has_balcony=random.choice([True, False]),
+                has_elevator=random.choice([True, False]),
+                has_microwave=random.choice([True, False]),
+
+                # Tiện nghi an toàn
+                has_security_camera=random.choice([True, False]),
+                has_first_aid_kit=random.choice([True, False]),
+                has_fingerprint_lock=random.choice([True, False])
             )
     except Exception as e:
         print(f"Lỗi khi thêm dữ liệu bài đăng: {e}")
@@ -179,6 +206,38 @@ def AddLatitudeLongitude() -> None:
                 print(f"Không tìm thấy địa chỉ.{ address.description}")
                 
 
+def AddDataReview(path: str, sheet_name: str) -> None: 
+    df = pd.read_excel(path, sheet_name=sheet_name, header=0, index_col=False)
+    df = df.drop_duplicates()
+    User = get_user_model()
+# Đọc file Excel
+# df = pd.read_excel(file_path, sheet_name='Reviews')
+    Review.objects.all().delete()
+
+    for index, row in tqdm(df.iterrows(), total=len(df), desc= "thêm dữ liệu bài đăng"):
+        try:
+            # Lấy thông tin từ mỗi dòng
+            rental_post_id = row['rental_post_id']
+            user_email = row['user_email']
+            rating = float(row['rating'])
+            comment = row['comment']
+            time = datetime.strptime(str(row['time']), '%Y-%m-%d %H:%M:%S.%f')  
+            rental_post = RentalPost.objects.get(id=rental_post_id)
+            user, created = User.objects.get_or_create(email=user_email)
+            review = Review(
+                rental_post=rental_post,
+                user=user,
+                rating=rating,
+                comment=comment,
+                time=time
+            )
+            review.save()    
+        except RentalPost.DoesNotExist:
+            print(f"RentalPost with ID {rental_post_id} does not exist.")
+        except Exception as e:
+            print(f'Error inserting review: {e}')
+    
+
 if __name__ == "__main__":    
     AddDataCity("database.xlsx", "Sheet2")
     AddDataDistrict("database.xlsx", "Sheet1")
@@ -186,3 +245,6 @@ if __name__ == "__main__":
     AddDataRentalPost('processed_data2.xlsx', "Sheet1")
     AddDataImage('new_data.xlsx', 'Sheet1')
     AddLatitudeLongitude()
+    RentalPost.objects.all().update(is_public=True)
+    AddDataReview('dummy_reviews.xlsx', "Reviews")
+    

@@ -1,0 +1,42 @@
+body {
+    font-family: "Poppins", sans-serif;
+}
+
+.profile-box {
+    max-width: 450px;
+    width: 100%;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 10px 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+p {
+    margin: 0;
+    height: 25px;
+    width: 230px;
+}
+
+.content p {
+    text-align: center;
+}
+
+.contact-customer p {
+    text-align: left;
+}
+
+.recent-box {
+    padding-bottom: 525px;
+    margin-top: 30px;
+}
+
+.search-input::placeholder {
+    font-style: italic;
+}
+
+b {
+    font-size: 17px;
+    padding-right: 5px;
+    color: #363636;
+}

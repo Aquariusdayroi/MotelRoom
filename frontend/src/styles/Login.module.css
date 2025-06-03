@@ -82,12 +82,13 @@
 }
 
 .containerForm {
-    background: white;
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background: #fff;
     padding: 20px 40px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
 }
 
 .containerAccount span {
@@ -146,17 +147,96 @@
     padding: 5px 0px;
 }
 
-.header {
-    padding: 0 10vw;
-    height: 120px;
-    display: flex;
-    align-items: center;
-}
-
 .btnGoogle img {
     margin-right: 10px;
 }
 .buttonLoginForm {
     width: 100%;
-    justify-content: center !important;
+    background: #00cfff;
+    color: white;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    margin: 0;
+    transition: background 0.3s ease;
+    text-transform: uppercase;
+}
+
+.buttonLoginForm:hover {
+    background: #00b7e6;
+}
+
+.login_link {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+.login_link a {
+    color: #00bcd4;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+
+.input_group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 18px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.input_group input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    padding-left: 8px;
+}
+
+.input_group {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    padding: 5px;
+    width: 100%;
+    position: relative;
+}
+
+.input_group span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.input_group span img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    margin-left: 5px;
+}
+
+.input_group input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 10px;
+}
+
+.icon {
+    font-size: 18px;
 }

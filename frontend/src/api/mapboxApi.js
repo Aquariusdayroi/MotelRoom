@@ -11,6 +11,8 @@ const generateSessionToken = () => {
         }
     );
 };
+// console.log(generateSessionToken());
+
 
 // Hàm search suggestions
 const searchLocation = async (searchText) => {
@@ -26,10 +28,10 @@ const searchLocation = async (searchText) => {
             country: "VN",
             limit: "5",
             access_token: MAPBOX_TOKEN,
-            proximity: "106.629700,10.823100",
+            // proximity: "106.629700,10.823100",
             types: "address,poi,district,locality",
-            bbox: "106.360000,10.370000,107.030000,11.030000",
-            session_token: "47df658e-ba82-4884-a6be-fad82bba3fb2",
+            // bbox: "106.360000,10.370000,107.030000,11.030000",
+            session_token: "57a8db32-bae5-4fa9-8b70-bd12a740d3a6",
         };
         console.debug("Mapbox API request:", params);
 
@@ -76,7 +78,7 @@ const retrieveLocation = async (locationId) => {
             `https://api.mapbox.com/search/searchbox/v1/retrieve/${locationId}?` +
                 new URLSearchParams({
                     access_token: MAPBOX_TOKEN,
-                    session_token: "47df658e-ba82-4884-a6be-fad82bba3fb2",
+                    session_token: "57a8db32-bae5-4fa9-8b70-bd12a740d3a6",
                 })
         );
 
