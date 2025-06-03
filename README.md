@@ -56,9 +56,27 @@ npm install
 npm start
 ```
 ### 4. Setting key môi trường
-Ở frontend nếu bạn muốn dùng chức năng map hãy tạo file môi trường .env ở thư mục frontend và bổ sung key REACT_APP_MAPBOX_TOKEN= "YOUR KEY" được lấy từ trang web https://console.mapbox.com/
-Ở backend nếu bạn muốn dùng các chức năng của google hãy tạo file môi trường .env ở thư mục backend và bổ sung key EMAIL_HOST_USER="Your email"
+Để sử dụng đầy đủ các tính năng như bản đồ và gửi email, bạn cần cấu hình các biến môi trường cho **frontend** và **backend** như sau:
 
-EMAIL_HOST_PASSWORD= "Pass của dự án"
+#### 📍 Frontend (React - Mapbox)
+
+Nếu bạn muốn sử dụng tính năng bản đồ (Map), hãy tạo một file `.env` trong thư mục `frontend` và thêm dòng sau:
+
+```env
+REACT_APP_MAPBOX_TOKEN=your_mapbox_token
+````
+
+🔑 *Bạn có thể lấy token từ: [https://console.mapbox.com/](https://console.mapbox.com/)*
+
+---
+
+#### ✉️ Backend (Django - Email)
+
+Để sử dụng các chức năng gửi email (ví dụ: xác thực người dùng), hãy tạo file `.env` trong thư mục `backend` và thêm các biến sau:
+
+```env
+EMAIL_HOST_USER=your_email@example.com
+EMAIL_HOST_PASSWORD=your_email_password
 DEFAULT_FROM_EMAIL=${EMAIL_HOST_USER}
+```
 
