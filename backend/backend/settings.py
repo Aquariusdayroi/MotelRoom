@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from decouple import config
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -192,17 +193,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'khanhvn3103@gmail.com'                # Thay bằng Gmail của bạn
-EMAIL_HOST_PASSWORD = 'iobj pnjl wovw ppgv'          # Dán App Password (16 ký tự)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')               
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# from django.core.mail import send_mail
-# send_mail(
-#     'Test Email Khanh',
-#     'Đây là email test từ Phuong iu dau cua Manh',
-#     'khanhvn3103@gmail.com',
-#     ['pmanhh19@gmail.com'],  # Email người nhận
-# )
-
-# Frontend URL để click link xác thực → có thể là React route
 FRONTEND_URL = "http://localhost:3000"
