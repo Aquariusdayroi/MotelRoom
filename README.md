@@ -38,10 +38,10 @@ cd motelroom
 ### 2. Run backend
 Mở một cmd cho backend và thực hiện chạy các lệnh sau:
 ```bash
-cd backend
 python -m venv myenv
 myenv\Scripts\activate # Trên macos source myenv/bin/activate 
 pip install -r requirements.txt
+cd backend
 python manage.py makemigrations
 python manage.py migrate
 python scripts.py #Chạy script để thêm dữ liệu vào db 
