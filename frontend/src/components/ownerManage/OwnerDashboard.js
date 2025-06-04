@@ -105,9 +105,6 @@ const OwnerDashboard = () => {
                 const [postsResponse, topPostsResponse, conversationsResponse] =
                     await Promise.all(requests);
 
-                console.log("Posts Response:", postsResponse); // Debug log
-                console.log("Top Posts Response:", topPostsResponse); // Debug log
-
                 // Format the top posts to include full avatar URL
                 const formattedTopPosts = (
                     topPostsResponse.data?.top_viewed_posts || []
@@ -151,7 +148,7 @@ const OwnerDashboard = () => {
                 } else {
                     setError(
                         "Không thể tải dữ liệu: " +
-                            (error.response?.data?.message || error.message)
+                        (error.response?.data?.message || error.message)
                     );
                 }
                 console.error("Dashboard error:", error);
@@ -394,10 +391,10 @@ const OwnerDashboard = () => {
                                                 imageErrors[`${post.id}-${i}`]
                                                     ? fallbackImageUrl
                                                     : post.images?.[0]?.image_url?.startsWith(
-                                                          "http"
-                                                      )
-                                                    ? post.images[0].image_url
-                                                    : `http://localhost:8000${post.images?.[0]?.image_url}`
+                                                        "http"
+                                                    )
+                                                        ? post.images[0].image_url
+                                                        : `http://localhost:8000${post.images?.[0]?.image_url}`
                                             }
                                             style={{
                                                 width: "100%",
