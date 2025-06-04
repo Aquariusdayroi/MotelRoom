@@ -36,20 +36,9 @@ const OwnerPostManagement = () => {
 
             if (response?.data) {
                 const rawRooms = response.data.results.data || [];
-
-                console.log('🔍 Raw rooms from API:', rawRooms);
-
                 const formattedRooms = rawRooms.map(room => {
-                    // Log để debug từng room
-                    console.log(`🏠 Room ${room.id} images:`, {
-                        images: room.images,
-                        image: room.image,
-                        photos: room.photos
-                    });
-
                     return {
                         ...room,
-                        // Đảm bảo format đúng thông tin user và address
                         user: {
                             fullname: room.fullname || room.user?.fullname,
                             avatar: room.avatar?.replace('http://localhost:8000', '') || room.user?.avatar,
@@ -63,7 +52,6 @@ const OwnerPostManagement = () => {
                             city: room.city || room.address?.city,
                             district: room.district || room.address?.district
                         },
-                        // Giữ nguyên thông tin ảnh
                         images: room.images || [],
                         image: room.image,
                         photos: room.photos || []
@@ -74,8 +62,6 @@ const OwnerPostManagement = () => {
                     results: formattedRooms,
                     total_pages: Math.ceil(response.data.count / 9) || 1,
                 };
-
-                console.log('✅ Formatted data being set:', responseData);
                 setData(responseData);
             }
         } catch (error) {
@@ -174,9 +160,27 @@ const OwnerPostManagement = () => {
         setShowConfirmModal(true);
     };
 
-    const handleEdit = (post) => {
-        setSelectedPost(post);
-        setShowEditModal(true);
+    const handleEdit = async (post) => {
+        setLoading(true); // Bắt đầu loading khi chuẩn bị fetch dữ liệu chỉnh sửa
+        try {
+            // Fetch thông tin chi tiết bài đăng từ API
+            const response = await ownerPostApi.getById(post.id);
+            if (response?.data) {
+                console.log('🔍 Dữ liệu chi tiết bài đăng:', response.data.data);
+                // Cập nhật selectedPost với dữ liệu chi tiết từ API
+                setSelectedPost(response.data.data);
+                setShowEditModal(true); // Hiển thị modal sau khi lấy dữ liệu thành công
+            } else {
+                // Xử lý trường hợp không lấy được dữ liệu
+                console.error('Không lấy được dữ liệu chi tiết bài đăng:', response);
+                setError('Không thể tải thông tin bài đăng để chỉnh sửa.');
+            }
+        } catch (error) {
+            console.error('Lỗi khi lấy dữ liệu chi tiết bài đăng:', error);
+            setError('Đã xảy ra lỗi khi tải thông tin bài đăng.');
+        } finally {
+            setLoading(false); // Kết thúc loading
+        }
     };
     // Trong OwnerPostManagement.js - hàm handleUpdatePost
     const handleUpdatePost = async (updatedData) => {
@@ -188,13 +192,6 @@ const OwnerPostManagement = () => {
                 const response = await ownerPostApi.update(selectedPost.id, updatedData);
 
                 console.log('✅ Response từ API update:', response);
-                console.log('📷 Thông tin ảnh trong response:', {
-                    images: response?.data?.images,
-                    image: response?.data?.image,
-                    photos: response?.data?.photos
-                });
-
-                // Thay vì fetch lại toàn bộ, cập nhật trực tiếp item đã sửa
                 if (response?.data) {
                     setData(prevData => ({
                         ...prevData,
@@ -203,10 +200,7 @@ const OwnerPostManagement = () => {
                                 ? {
                                     ...item,
                                     ...response.data,
-                                    // Đảm bảo giữ nguyên thông tin ảnh gốc nếu API không trả về
                                     images: response.data.images || item.images,
-                                    image: response.data.image || item.image,
-                                    photos: response.data.photos || item.photos
                                 }
                                 : item
                         )
@@ -302,7 +296,8 @@ const OwnerPostManagement = () => {
                     </div>
                 </div>
             </motion.div>
-            <Pagination totalPages={data?.total_pages} />            <EditPostModal
+            <Pagination totalPages={data?.total_pages} />
+            <EditPostModal
                 show={showEditModal}
                 onHide={() => setShowEditModal(false)}
                 post={selectedPost}
