@@ -17,20 +17,21 @@ function ContactCard({ price, onCall, onZalo, onMaps, isCall, isSmall = false })
                     className={`${styles.call} d-flex align-items-center justify-content-center gap-2 rounded-5 w-100 m-0`}
                     onClick={() => {
                         if (!isCall) return;
-                        navigate(`/chat?recenId=${onCall}`);
+                        const userId = typeof onCall === 'object' && onCall !== null ? onCall.id : onCall;
+                        navigate(`/chat?recenId=${userId}`);
                     }}
                 >
                     <img src={callIcon} alt="Call" />
                     <span>Liên hệ chủ trọ</span>
                 </button>
-                <button
+                {/* <button
                     type="button"
                     className={`${styles.zalo} d-flex align-items-center justify-content-center gap-2 rounded-5 w-100 m-0`}
                     onClick={onZalo}
                 >
                     <img src={zaloIcon} alt="Zalo" />
                     <span>Liên hệ qua Zalo</span>
-                </button>
+                </button> */}
                 <button
                     type="button"
                     className={`${styles.maps} d-flex align-items-center justify-content-center gap-2 rounded-5 w-100 m-0`}
