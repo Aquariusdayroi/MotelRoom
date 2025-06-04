@@ -37,6 +37,7 @@ import RentalCategoryRules from "./pages/RentalCategoryRules";
 import RoomRentalRules from "./pages/RoomRentalRules";
 import ApartmentRentalRules from "./pages/ApartmentRentalRules";
 import Policy from "./pages/Policy";
+import ProfileOwner from "./pages/ProfileOwner";
 export default function AppRoutes() {
     return (
         <Router>
@@ -91,6 +92,16 @@ function AnimatedRoutes() {
                         <ProtectedRoute>
                             <Layout enableScroll={false} enableSearch={false}>
                                 <Profile />
+                            </Layout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/profile-owner/:postId"
+                    element={
+                        <ProtectedRoute>
+                            <Layout enableScroll={false} enableSearch={false}>
+                                <ProfileOwner />
                             </Layout>
                         </ProtectedRoute>
                     }

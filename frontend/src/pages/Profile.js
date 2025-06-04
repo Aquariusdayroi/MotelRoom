@@ -45,7 +45,13 @@ function Profile() {
     const handleBackToHome = () => {
         navigate("/owner-manage/dashboard");
     };
+    const [currentReviewPage, setCurrentReviewPage] = useState(1);
+    const reviewsPerPage = 3;
+    const indexOfLastReview = currentReviewPage * reviewsPerPage;
+    const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+    const currentReviews = reviews.slice(indexOfFirstReview, indexOfLastReview);
 
+    const totalPages = Math.ceil(reviews.length / reviewsPerPage);
     useEffect(() => {
         const fetchReviews = async () => {
             try {
@@ -115,6 +121,18 @@ function Profile() {
         };
     }
 
+    const goToNextReviewPage = () => {
+        if (currentReviewPage < totalPages) {
+            setCurrentReviewPage(currentReviewPage + 1);
+        }
+    };
+
+    const goToPrevReviewPage = () => {
+        if (currentReviewPage > 1) {
+            setCurrentReviewPage(currentReviewPage - 1);
+        }
+    };
+
     const handleOpenModal = async () => {
         try {
             const decoded = decodeJwtPayload(user);
@@ -154,7 +172,6 @@ function Profile() {
                     response = await axiosClient.get("/user/api/my-favorite/");
                     setRooms(response.data.results);
                 } else if (role === "owner") {
-                    // có api thì đổi lại
                     response = await axiosClient.get(
                         "/rental_post/api/my-posts/"
                     );
@@ -188,16 +205,19 @@ function Profile() {
         fetchUserInfo();
     }, [user]);
 
-    const renderContent = () => (
-        <RoomProfile
-            loading={loading}
-            error={error}
-            rooms={paginatedRooms}
-            role={role}
-            startIndex={startIndex}
-            direction={direction}
-        />
-    );
+    const renderContent = () => {
+        console.log("Paginated Rooms:", paginatedRooms);
+        return (
+            <RoomProfile
+                loading={loading}
+                error={error}
+                rooms={paginatedRooms}
+                role={role}
+                startIndex={startIndex}
+                direction={direction}
+            />
+        );
+    };
 
     return (
         <div>
@@ -348,6 +368,20 @@ function Profile() {
                         )}
                     </div>
                     {renderContent()}
+
+                    <div className="d-flex justify-content-center align-items-center gap-3 mb-4">
+                        <ButtonPrimary
+                            des={"Trang trước"}
+                            onClick={goToPrevReviewPage}
+                        />
+                        <span>
+                            Trang {currentReviewPage} / {totalPages}
+                        </span>
+                        <ButtonPrimary
+                            des={"Trang sau"}
+                            onClick={goToNextReviewPage}
+                        />
+                    </div>
                 </div>
             </div>
             <div
