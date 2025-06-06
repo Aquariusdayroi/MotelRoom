@@ -5,7 +5,14 @@ import { images } from "../assets/images";
 import { updateUserAvatar } from "../api/userApi/updateUserProfile";
 import { DotLoader } from "react-spinners";
 
-const UserCard = ({ name, avatar, start, totalComment, year }) => {
+const UserCard = ({
+    name,
+    avatar,
+    start,
+    totalComment,
+    year,
+    canEditAvatar = true,
+}) => {
     const [avatarPreview, setAvatarPreview] = useState(images.logo);
     const [loading, setLoading] = useState(false);
 
@@ -63,22 +70,26 @@ const UserCard = ({ name, avatar, start, totalComment, year }) => {
                         alt="Avatar"
                         className="img-fluid rounded-circle w-100 h-100 object-fit-cover"
                     />
-                    <div
-                        className="position-absolute bottom-0 start-50 translate-middle-x rounded-circle p-1"
-                        onClick={() =>
-                            document.getElementById("fileInput").click()
-                        }
-                        style={{ cursor: "pointer" }}
-                    >
-                        <FaCamera size={30} className="text-muted" />
-                    </div>
-                    <input
-                        id="fileInput"
-                        type="file"
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        onChange={handleFileChange}
-                    />
+                    {canEditAvatar && (
+                        <>
+                            <div
+                                className="position-absolute bottom-0 start-50 translate-middle-x rounded-circle p-1"
+                                onClick={() =>
+                                    document.getElementById("fileInput").click()
+                                }
+                                style={{ cursor: "pointer" }}
+                            >
+                                <FaCamera size={30} className="text-muted" />
+                            </div>
+                            <input
+                                id="fileInput"
+                                type="file"
+                                accept="image/*"
+                                style={{ display: "none" }}
+                                onChange={handleFileChange}
+                            />
+                        </>
+                    )}
                 </div>
                 <div className="mt-2 fw-semibold text-center small">{name}</div>
             </div>

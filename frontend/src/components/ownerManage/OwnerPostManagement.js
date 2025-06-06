@@ -182,7 +182,6 @@ const OwnerPostManagement = () => {
             setLoading(false); // Kết thúc loading
         }
     };
-    // Trong OwnerPostManagement.js - hàm handleUpdatePost
     const handleUpdatePost = async (updatedData) => {
         setConfirmMessage('Bạn có chắc chắn muốn cập nhật bài đăng này?');
         const updateAction = async () => {
@@ -218,6 +217,7 @@ const OwnerPostManagement = () => {
                 return false;
             }
         };
+
         setPendingAction(() => updateAction);
         setShowConfirmModal(true);
     };
