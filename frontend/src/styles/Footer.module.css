@@ -2,6 +2,7 @@
     height: 390px;
     background-color: #1e697a;
     width: 100%;
+    user-select: none;
 }
 
 .footer {
@@ -62,6 +63,12 @@
     align-items: center;
     height: 40px;
 }
+
+.footerRight > div > div:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .footerRight svg {
     margin-right: 4px;
 }

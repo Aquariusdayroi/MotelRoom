@@ -167,6 +167,7 @@ const OwnerPostManagement = () => {
         setSelectedPost(post);
         setShowEditModal(true);
     };
+
     const handleUpdatePost = async (updatedData) => {
         setConfirmMessage("Bạn có chắc chắn muốn cập nhật bài đăng này?");
         const updateAction = async () => {
@@ -183,6 +184,7 @@ const OwnerPostManagement = () => {
                 return false;
             }
         };
+
         setPendingAction(() => updateAction);
         setShowConfirmModal(true);
     };
