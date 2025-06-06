@@ -7,12 +7,11 @@ import { DotLoader } from "react-spinners";
 const LoginModal = () => {
     const menuItems = [
         { to: "/profile", label: "Tài khoản" },
-        { to: "/notifications", label: "Thông báo" },
+        // { to: "/notifications", label: "Thông báo" },
         { to: "/chat", label: "Tin nhắn" },
-        { to: "/favorites", label: "Yêu thích" },
         { to: "/add-post", label: "Đối tác" },
-        { to: "/room-search", label: "Tìm phòng" },
-        { to: "/terms", label: "Điều khoản" },
+        { to: "/detail-search", label: "Tìm phòng" },
+        { to: "/terms-of-use", label: "Điều khoản" },
         { to: "/policy", label: "Chính sách" },
         { to: "/contact", label: "Liên hệ" },
         { to: "#", label: "Đăng xuất" },

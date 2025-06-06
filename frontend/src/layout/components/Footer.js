@@ -1,6 +1,12 @@
 import styles from "../../styles/Footer.module.css";
 import { images } from "../../assets/images";
+import { useNavigate } from "react-router-dom";
 const Footer = () => {
+    const handleSocialClick = (url) => {
+        window.open(url, "_blank", "noopener,noreferrer");
+    };
+    const navigate = useNavigate();
+
     return (
         <div className={styles.container}>
             <footer className={styles.footer}>
@@ -16,6 +22,9 @@ const Footer = () => {
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 48 48"
+                            onClick={() =>
+                                handleSocialClick("https://www.facebook.com")
+                            }
                         >
                             <path
                                 fill="#3F51B5"
@@ -28,13 +37,74 @@ const Footer = () => {
                         </svg>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 50 50"
+                            x="0px"
+                            y="0px"
+                            width="180"
+                            height="180"
+                            viewBox="0 0 48 48"
+                            onClick={() =>
+                                handleSocialClick("https://www.instagram.com")
+                            }
                         >
-                            <path d="M 11 4 C 7.134 4 4 7.134 4 11 L 4 39 C 4 42.866 7.134 46 11 46 L 39 46 C 42.866 46 46 42.866 46 39 L 46 11 C 46 7.134 42.866 4 39 4 L 11 4 z M 13.085938 13 L 21.023438 13 L 26.660156 21.009766 L 33.5 13 L 36 13 L 27.789062 22.613281 L 37.914062 37 L 29.978516 37 L 23.4375 27.707031 L 15.5 37 L 13 37 L 22.308594 26.103516 L 13.085938 13 z M 16.914062 15 L 31.021484 35 L 34.085938 35 L 19.978516 15 L 16.914062 15 z"></path>
+                            <radialGradient
+                                id="yOrnnhliCrdS2gy~4tD8ma_Xy10Jcu1L2Su_gr1"
+                                cx="19.38"
+                                cy="42.035"
+                                r="44.899"
+                                gradientUnits="userSpaceOnUse"
+                            >
+                                <stop offset="0" stop-color="#fd5"></stop>
+                                <stop offset=".328" stop-color="#ff543f"></stop>
+                                <stop offset=".348" stop-color="#fc5245"></stop>
+                                <stop offset=".504" stop-color="#e64771"></stop>
+                                <stop offset=".643" stop-color="#d53e91"></stop>
+                                <stop offset=".761" stop-color="#cc39a4"></stop>
+                                <stop offset=".841" stop-color="#c837ab"></stop>
+                            </radialGradient>
+                            <path
+                                fill="url(#yOrnnhliCrdS2gy~4tD8ma_Xy10Jcu1L2Su_gr1)"
+                                d="M34.017,41.99l-20,0.019c-4.4,0.004-8.003-3.592-8.008-7.992l-0.019-20	c-0.004-4.4,3.592-8.003,7.992-8.008l20-0.019c4.4-0.004,8.003,3.592,8.008,7.992l0.019,20	C42.014,38.383,38.417,41.986,34.017,41.99z"
+                            ></path>
+                            <radialGradient
+                                id="yOrnnhliCrdS2gy~4tD8mb_Xy10Jcu1L2Su_gr2"
+                                cx="11.786"
+                                cy="5.54"
+                                r="29.813"
+                                gradientTransform="matrix(1 0 0 .6663 0 1.849)"
+                                gradientUnits="userSpaceOnUse"
+                            >
+                                <stop offset="0" stop-color="#4168c9"></stop>
+                                <stop
+                                    offset=".999"
+                                    stop-color="#4168c9"
+                                    stop-opacity="0"
+                                ></stop>
+                            </radialGradient>
+                            <path
+                                fill="url(#yOrnnhliCrdS2gy~4tD8mb_Xy10Jcu1L2Su_gr2)"
+                                d="M34.017,41.99l-20,0.019c-4.4,0.004-8.003-3.592-8.008-7.992l-0.019-20	c-0.004-4.4,3.592-8.003,7.992-8.008l20-0.019c4.4-0.004,8.003,3.592,8.008,7.992l0.019,20	C42.014,38.383,38.417,41.986,34.017,41.99z"
+                            ></path>
+                            <path
+                                fill="#fff"
+                                d="M24,31c-3.859,0-7-3.14-7-7s3.141-7,7-7s7,3.14,7,7S27.859,31,24,31z M24,19c-2.757,0-5,2.243-5,5	s2.243,5,5,5s5-2.243,5-5S26.757,19,24,19z"
+                            ></path>
+                            <circle
+                                cx="31.5"
+                                cy="16.5"
+                                r="1.5"
+                                fill="#fff"
+                            ></circle>
+                            <path
+                                fill="#fff"
+                                d="M30,37H18c-3.859,0-7-3.14-7-7V18c0-3.86,3.141-7,7-7h12c3.859,0,7,3.14,7,7v12	C37,33.86,33.859,37,30,37z M18,13c-2.757,0-5,2.243-5,5v12c0,2.757,2.243,5,5,5h12c2.757,0,5-2.243,5-5V18c0-2.757-2.243-5-5-5H18z"
+                            ></path>
                         </svg>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 48 48"
+                            onClick={() =>
+                                handleSocialClick("https://www.linkedin.com")
+                            }
                         >
                             <path
                                 fill="#0288D1"
@@ -50,19 +120,57 @@ const Footer = () => {
                 <div className={styles.footerRight}>
                     <div>
                         <h2>Quy định</h2>
-                        <div>Quy định đăng tin </div>
-                        <div>Chính sách bảo mật</div>
-                        <div>Điều khoản sử dụng</div>
-                        <div>Giải quyết kiếu nại</div>
-                        <div>Thỏa thuận người dùng</div>
+                        <div
+                            onClick={() => navigate("/post-rules")}
+                            style={{ cursor: "pointer" }}
+                        >
+                            Quy định đăng tin
+                        </div>
+                        <div
+                            onClick={() => navigate("/privacy-policy")}
+                            style={{ cursor: "pointer" }}
+                        >
+                            Chính sách bảo mật
+                        </div>
+                        <div
+                            onClick={() => navigate("/terms-of-use")}
+                            style={{ cursor: "pointer" }}
+                        >
+                            Điều khoản sử dụng
+                        </div>
+                        <div
+                            onClick={() => navigate("/complaint-resolution")}
+                            style={{ cursor: "pointer" }}
+                        >
+                            Giải quyết kiếu nại
+                        </div>
+                        <div
+                            onClick={() => navigate("/user-agreement")}
+                            style={{ cursor: "pointer" }}
+                        >
+                            Thỏa thuận người dùng
+                        </div>
                     </div>
                     <div>
                         <h2>Quy định danh mục cho thuê</h2>
-                        <div>Nhà cho thuê</div>
-                        <div>Phòng cho thuê</div>
-                        <div>Nhà chung cư cho thuê</div>
-                        <div>Ký túc xá</div>
-                        <div>Sleep box cho thuê</div>
+                        <div
+                            onClick={() => navigate("/rental-category-rules")}
+                            style={{ cursor: "pointer" }}
+                        >
+                            Nhà cho thuê
+                        </div>
+                        <div
+                            onClick={() => navigate("/room-rental-rules")}
+                            style={{ cursor: "pointer" }}
+                        >
+                            Phòng cho thuê
+                        </div>
+                        <div
+                            onClick={() => navigate("/apartment-rental-rules")}
+                            style={{ cursor: "pointer" }}
+                        >
+                            Nhà chung cư cho thuê
+                        </div>
                     </div>
                     <div>
                         <h2>Về Simi</h2>
