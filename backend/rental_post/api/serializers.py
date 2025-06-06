@@ -199,11 +199,9 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         Cập nhật một instance với các validated data.  Chỉ cập nhật
         các trường có trong validated_data.
         """
-        print("Hihi")
-        print(validated_data)
         address_data = validated_data.pop('address', None) 
         request = self.context.get('request')
-        print(request)
+
         if 'images' in request.FILES:
             new_images = request.FILES.getlist('images')
             validated_data.pop('images', None)
