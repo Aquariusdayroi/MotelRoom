@@ -103,8 +103,8 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     # CHỈ dùng AddressSerializer để đọc (read-only)
     address = AddressNestedSerializer(read_only=True)
     user = serializers.SerializerMethodField()
-    fullname = serializers.CharField(source='user.fullname', read_only=True)
-    avatar = serializers.ImageField(source='user.avatar', read_only=True)
+    # fullname = serializers.CharField(source='user.fullname', read_only=True)
+    # avatar = serializers.ImageField(source='user.avatar', read_only=True)
     images = ImageSerializer(source='image', many=True, read_only=True)
     is_favorite = serializers.SerializerMethodField()
 
@@ -118,7 +118,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = RentalPost
         fields = [
-            'id', 'user', 'fullname', 'avatar', 'home_type', 'title', 'information_detail',
+            'id', 'user', 'home_type', 'title', 'information_detail',
             'address', 'description', 'latitude', 'longitude',
             'city', 'district', 'total_occupancy', 'acreage', 'price',
             'create_at', 'update_at',  'images', 'is_favorite', 'is_public', 'views',
@@ -199,11 +199,17 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         Cập nhật một instance với các validated data.  Chỉ cập nhật
         các trường có trong validated_data.
         """
-        
         address_data = validated_data.pop('address', None) 
         request = self.context.get('request')
-        new_images = request.FILES.getlist('images')
-        
+
+        if 'images' in request.FILES:
+            new_images = request.FILES.getlist('images')
+            validated_data.pop('images', None)
+            if new_images is not None:
+                instance.image.all().delete()
+                for image_data in new_images:          
+                    Image.objects.create(rental_post=instance, image_url=image_data)
+
         if address_data is not None: 
             address = instance.address
             if address:
@@ -227,14 +233,6 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
                 if address_serializer.is_valid():
                     new_address = address_serializer.save()
                     instance.address = new_address
-
-        validated_data.pop('images', None)
-        if new_images is not None:
-            instance.image.all().delete()
-
-            for image_data in new_images:          
-                print(image_data)
-                Image.objects.create(rental_post=instance, image_url=image_data)
 
         for attr, value in validated_data.items():
             if value == None: 
