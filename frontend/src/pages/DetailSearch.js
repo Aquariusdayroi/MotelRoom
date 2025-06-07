@@ -133,7 +133,6 @@ const DetailSearch = () => {
         if (!isNaN(lat) && !isNaN(lng)) {
             setSelectedRoomId(id);
             setSelectedCoordinates([lat, lng]);
-            console.log("Dùng tọa độ backend:", [lat, lng]);
         } else {
             const addressText =
                 room.address?.address_name ||
@@ -144,7 +143,6 @@ const DetailSearch = () => {
                 const coords = await mapboxApi.fetchCoordinates(addressText);
                 setSelectedRoomId(id);
                 setSelectedCoordinates(coords);
-                console.log("Lấy tọa độ từ Mapbox:", coords);
             } catch (err) {
                 console.error("Lỗi khi lấy tọa độ:", err);
             }
@@ -159,7 +157,6 @@ const DetailSearch = () => {
                         location.state.searchParams
                     );
                     setDisplayRooms(data.results);
-                    console.log("Đã tải lại danh sách phòng:", data.results);
                 } catch (err) {
                     console.error("Lỗi khi tải lại danh sách phòng:", err);
                 }
@@ -176,12 +173,6 @@ const DetailSearch = () => {
             setDisplayRooms(rooms);
         }
     }, [rooms]);
-    console.log("rooms", rooms);
-
-    console.log(
-        "yêu thích",
-        rooms?.map((r) => r.is_favorite)
-    );
 
     const handleToggleFavorite = async (roomId, newFavoriteStatus) => {
         try {
@@ -190,21 +181,12 @@ const DetailSearch = () => {
             } else {
                 await deleteFavoritePost(roomId);
             }
-            console.log("Đang toggle:", roomId, "->", newFavoriteStatus);
-            console.log(
-                "Trước cập nhật:",
-                displayRooms.find((r) => r.id == roomId)
-            );
             const updatedRooms = displayRooms.map((room) =>
                 room.id === roomId
                     ? { ...room, is_favorite: newFavoriteStatus }
                     : room
             );
             setDisplayRooms(updatedRooms);
-            console.log(
-                "Sau cập nhật:",
-                updatedRooms.find((r) => r.id == roomId)
-            );
         } catch (error) {
             console.error("Lỗi cập nhật yêu thích:", error);
         }

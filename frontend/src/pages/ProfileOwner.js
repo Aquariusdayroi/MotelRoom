@@ -37,15 +37,12 @@ function ProfileOwner() {
             try {
                 setLoading(true);
                 const user = await getInfoOwner.getUserInfoByPostId(postId);
-                console.log("Thông tin chủ nhà:", user);
                 setUserInfo(user);
 
                 if (user?.id) {
                     const response = await axiosClient.get(
                         `/rental_post/api/by-user/${user.id}/`
                     );
-
-                    console.log("Response full:", response.data);
                     setRooms(response.data.results || []);
                 }
             } catch (err) {

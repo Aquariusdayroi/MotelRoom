@@ -38,6 +38,8 @@ import RoomRentalRules from "./pages/RoomRentalRules";
 import ApartmentRentalRules from "./pages/ApartmentRentalRules";
 import Policy from "./pages/Policy";
 import ProfileOwner from "./pages/ProfileOwner";
+import AccountManagement from "./components/adminManage/AccountManage";
+import ReviewManagement from "./components/adminManage/ReviewManage";
 export default function AppRoutes() {
     return (
         <Router>
@@ -256,7 +258,7 @@ function AnimatedRoutes() {
                         path="comment"
                         element={
                             <AnimatedPage>
-                                <div>Quản lý đánh giá</div>
+                                <ReviewManagement />
                             </AnimatedPage>
                         }
                     />
@@ -264,7 +266,7 @@ function AnimatedRoutes() {
                         path="account"
                         element={
                             <AnimatedPage>
-                                <div>Quản lý tài khoản</div>
+                                <AccountManagement />
                             </AnimatedPage>
                         }
                     />

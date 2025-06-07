@@ -13,7 +13,6 @@ const RoomProfile = ({
     startIndex,
     direction,
 }) => {
-    console.log("Rooms received:", rooms);
     const navigate = useNavigate();
 
     const handleCardClick = (roomId) => {

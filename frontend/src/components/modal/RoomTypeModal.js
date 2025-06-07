@@ -22,7 +22,6 @@ const RoomTypeModal = ({
             try {
                 const response = await roomTypeApi.getAll();
                 const data = response.data;
-                console.log(data);
                 // Extract unique home types and create roomTypes array
                 const uniqueHomeTypes = [
                     ...new Set(data.results.map((item) => item.home_type)),

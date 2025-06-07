@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { images } from "../../assets/images";
+import { Border } from "react-bootstrap-icons";
 
 const styles = {
     header: {
@@ -7,6 +8,7 @@ const styles = {
         height: "82px",
         display: "flex",
         alignItems: "center",
+        borderBottom: "1px solid #E5E5E5",
     },
     logo: {
         height: "57px",
