@@ -31,15 +31,13 @@ const ownerPostApi = {
         );
     }, // Cập nhật bài đăng
     update: (id, data) => {
-        console.log("Sending PUT request to update post...");
-        console.log("Request Data:", data);
-
-        return axiosClient
-            .put(`/rental_post/api/my-posts/${id}/`, data)
-            .then((response) => {
-                console.log("Response Data:", response.data);
+        return axiosClient.put(`/rental_post/api/my-posts/${id}/`, data)
+            .then(response => {
                 return response.data;
             });
+    },
+    getById: (postId) => {
+        return axiosClient.get(`/rental_post/api/${postId}/`);
     },
 };
 
