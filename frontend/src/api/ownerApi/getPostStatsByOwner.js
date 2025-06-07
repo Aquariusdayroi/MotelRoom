@@ -5,7 +5,6 @@ export const getPostStatsByOwner = async () => {
         const response = await axiosClient.get(
             "/rental-post-admin/api/requests/static-owner-rentalpost/"
         );
-        console.log("cx", response);
 
         if (response.data?.success) {
             return {

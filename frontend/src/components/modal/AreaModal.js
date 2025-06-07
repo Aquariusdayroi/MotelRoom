@@ -33,7 +33,6 @@ const AreaModal = ({
     useEffect(() => {
         if (open && currentLat && currentLng) {
             areaApi(currentLat, currentLng).then((results) => {
-                console.log("API Responsexxx:", results);
                 setApiResults(
                     results.map((item) => ({
                         id: item.id,
@@ -147,10 +146,6 @@ const AreaModal = ({
                         onClick={() => {
                             if (hasCoordinates(destination)) {
                                 // Trường hợp 1: Có tọa độ sẵn từ backend
-                                console.log(
-                                    "Using existing coordinates:",
-                                    destination.coordinates
-                                );
                                 onSelect({
                                     id: destination.id,
                                     name: destination.name,
@@ -165,10 +160,6 @@ const AreaModal = ({
                                 });
                             } else {
                                 // Trường hợp 2: Địa điểm người dùng nhập, cần search từ Mapbox
-                                console.log(
-                                    "Searching coordinates for:",
-                                    destination.name
-                                );
                                 onSelect({
                                     id: destination.id,
                                     name: destination.name,

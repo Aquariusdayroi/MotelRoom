@@ -195,7 +195,6 @@ function Profile() {
                 try {
                     const info = await getMyProfile();
                     setUserInfo(info);
-                    console.log(info);
                 } catch (error) {
                     console.error("Không thể lấy thông tin người dùng:", error);
                 }
@@ -206,7 +205,6 @@ function Profile() {
     }, [user]);
 
     const renderContent = () => {
-        console.log("Paginated Rooms:", paginatedRooms);
         return (
             <RoomProfile
                 loading={loading}
@@ -457,12 +455,10 @@ function Profile() {
                 onConfirm={async () => {
                     try {
                         const payload = prepareFormDataForAPI(pendingFormData);
-                        console.log(payload);
                         const updatedUser = await updateUserProfileInfo(
                             payload
                         );
 
-                        console.log(payload);
                         if (updatedUser?.id) {
                             setUserInfo(updatedUser);
                             setPendingFormData(null);
