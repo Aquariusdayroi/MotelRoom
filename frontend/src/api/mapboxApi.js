@@ -11,8 +11,6 @@ const generateSessionToken = () => {
         }
     );
 };
-// console.log(generateSessionToken());
-
 
 // Hàm search suggestions
 const searchLocation = async (searchText) => {

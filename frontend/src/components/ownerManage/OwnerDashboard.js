@@ -13,10 +13,8 @@ import { Link, useSearchParams } from "react-router-dom";
 const retryRequest = async (requestFn, maxRetries = 3, delay = 1000) => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            console.log(`Attempt ${attempt} for request`);
             return await requestFn();
         } catch (error) {
-            console.log(`Attempt ${attempt} failed:`, error.message);
             if (attempt === maxRetries) throw error;
             // Exponential backoff
             const waitTime = delay * Math.pow(2, attempt - 1);
@@ -148,7 +146,7 @@ const OwnerDashboard = () => {
                 } else {
                     setError(
                         "Không thể tải dữ liệu: " +
-                        (error.response?.data?.message || error.message)
+                            (error.response?.data?.message || error.message)
                     );
                 }
                 console.error("Dashboard error:", error);
@@ -391,10 +389,10 @@ const OwnerDashboard = () => {
                                                 imageErrors[`${post.id}-${i}`]
                                                     ? fallbackImageUrl
                                                     : post.images?.[0]?.image_url?.startsWith(
-                                                        "http"
-                                                    )
-                                                        ? post.images[0].image_url
-                                                        : `http://localhost:8000${post.images?.[0]?.image_url}`
+                                                          "http"
+                                                      )
+                                                    ? post.images[0].image_url
+                                                    : `http://localhost:8000${post.images?.[0]?.image_url}`
                                             }
                                             style={{
                                                 width: "100%",

@@ -93,14 +93,9 @@ const SearchBar = ({
 
     const handleAreaSelect = async (suggestion) => {
         if (!suggestion) return;
-        console.log("Selected suggestion:", suggestion);
 
         try {
             if (suggestion.coordinates) {
-                console.log(
-                    "Using existing coordinates:",
-                    suggestion.coordinates
-                );
                 setArea(suggestion.name);
                 setSelectedArea({
                     name: suggestion.name,
@@ -114,17 +109,12 @@ const SearchBar = ({
                     );
 
                     if (locationDetails && locationDetails.coordinates) {
-                        console.log(
-                            "Retrieved coordinates from Search API:",
-                            locationDetails.coordinates
-                        );
                         setArea(suggestion.name);
                         setSelectedArea({
                             name: suggestion.name,
                             ...locationDetails.coordinates,
                         });
                     } else {
-                        console.log("Falling back to Geocoding API");
                         const response = await fetch(
                             `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
                                 suggestion.name
@@ -324,12 +314,10 @@ const SearchBar = ({
         );
 
         if (Object.keys(finalParams).length <= 1) {
-            console.log("No search parameters provided");
             return;
         }
 
         try {
-            console.log("Sending search request with params:", finalParams);
             const response = await roomTypeApi.searchByType(finalParams);
 
             if (!response.data || !response.data.results) {
@@ -454,10 +442,6 @@ const SearchBar = ({
                 onSelect={(value) => {
                     const roomTypeValue = value.toString();
                     setRoomType(roomTypeValue);
-                    console.log(
-                        "Selected room type (processed):",
-                        roomTypeValue
-                    );
                 }}
             />
             <PriceModal

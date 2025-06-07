@@ -17,8 +17,6 @@ const Chat = () => {
     const fetchConversations = async () => {
         try {
             const res = await axiosClient.get("chat/api/conversations/list/");
-            console.log(res.data);
-            console.log("===");
             setConversations(res.data);
         } catch (err) {
             console.error("Lỗi khi lấy danh sách hội thoại:", err);
@@ -29,7 +27,6 @@ const Chat = () => {
     useEffect(() => {
         const fetchConversationData = async () => {
             if (!recenId) {
-                console.log("Không có recenId trong URL");
                 return;
             }
             const userTwoId = Number(recenId);
@@ -42,7 +39,6 @@ const Chat = () => {
                     `/chat/api/conversations/create/`,
                     { user_two: userTwoId }
                 );
-                console.log("Dữ liệu API:", response.data);
                 setSelectedConversation(response.data.data);
             } catch (error) {
                 console.error("Lỗi khi gọi API tạo cuộc trò chuyện", error);
@@ -57,7 +53,6 @@ const Chat = () => {
 
     useEffect(() => {
         if (!token) {
-            console.log("Không có token, không tạo kết nối WebSocket");
             return;
         }
         // Đóng kết nối cũ nếu tồn tại
@@ -85,9 +80,6 @@ const Chat = () => {
 
         const handleMessage = (event) => {
             const data = JSON.parse(event.data);
-            console.log("🔍 Dữ liệu WebSocket:", { data });
-            console.log("dữ liệu chat.js");
-            console.log(data.type);
             if (data.type === "chat_message" || data.type === "read_status") {
                 fetchConversations();
                 return;

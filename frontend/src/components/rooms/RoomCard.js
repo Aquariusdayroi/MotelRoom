@@ -30,7 +30,6 @@ const RoomCard = ({
     const [isTransitioning, setIsTransitioning] = useState(false);
     const menuRef = useRef(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    console.log("RoomCard props:", address.description);
 
     useEffect(() => {
         setIsFavorite(is_favorite);
