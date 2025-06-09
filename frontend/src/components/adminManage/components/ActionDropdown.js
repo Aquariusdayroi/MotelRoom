@@ -1,9 +1,9 @@
 import React from "react";
 import { Dropdown as BsDropdown } from "react-bootstrap";
 import { ThreeDotsVertical } from "react-bootstrap-icons";
-import '../../../styles/ActionDropdown.css'
+import '../../../styles/ActionDropdown.css';
 
-export default function ActionDropdown() {
+export default function ActionDropdown({ onWarn, onAssign }) {
   return (
     <BsDropdown align="end">
       <BsDropdown.Toggle
@@ -14,9 +14,9 @@ export default function ActionDropdown() {
         <ThreeDotsVertical size={18} />
       </BsDropdown.Toggle>
       <BsDropdown.Menu className="shadow-sm">
-        <BsDropdown.Item>Chi tiết</BsDropdown.Item>
-        <BsDropdown.Item>Xoá</BsDropdown.Item>
-        <BsDropdown.Item>Ẩn</BsDropdown.Item>
+        <BsDropdown.Item onClick={onAssign}>Phân quyền</BsDropdown.Item>
+        <BsDropdown.Item onClick={onWarn}>Gửi cảnh báo</BsDropdown.Item>
+        <BsDropdown.Item>Khoá tài khoản</BsDropdown.Item>
       </BsDropdown.Menu>
     </BsDropdown>
   );

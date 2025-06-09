@@ -20,6 +20,9 @@ import AdminManagement from "./pages/AdminManagement";
 import AnimatedPage from "./animations/AnimatedPage";
 import AuthenticManage from "./components/adminManage/AuthenticManage";
 import AddPost from "./pages/AddPost";
+import AccountManage from "./components/adminManage/AccountManage"
+import ReviewManage from "./components/adminManage/ReviewManage"
+import PostManage from "./components/adminManage/PostManage";
 import ScrollToTop from "./until/ScrollToTop";
 import Statistical from "./components/adminManage/Statistical";
 import HeaderWhite from "./layout/components/HeaderWhite";
@@ -247,24 +250,20 @@ function AnimatedRoutes() {
                     <Route
                         path="post"
                         element={
-                            <AnimatedPage>
-                                <div>Quản lý bài đăng</div>
-                            </AnimatedPage>
+                            <PostManage/>
                         }
                     />
                     <Route
                         path="comment"
                         element={
-                            <AnimatedPage>
-                                <div>Quản lý đánh giá</div>
-                            </AnimatedPage>
+                            <ReviewManage/>
                         }
                     />
                     <Route
                         path="account"
                         element={
                             <AnimatedPage>
-                                <div>Quản lý tài khoản</div>
+                                <AccountManage/>
                             </AnimatedPage>
                         }
                     />
