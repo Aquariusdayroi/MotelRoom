@@ -13,6 +13,7 @@
     width: 50%;
     background-color: #37c5e5;
     z-index: 100;
+    padding: 2% 1%;
 }
 
 .sectionLogo {
@@ -150,6 +151,7 @@
 .btnGoogle img {
     margin-right: 10px;
 }
+
 .buttonLoginForm {
     width: 100%;
     background: #00cfff;
@@ -239,4 +241,78 @@
 
 .icon {
     font-size: 18px;
+}
+
+
+@media screen and (max-width: 768px) {
+    .container {
+        flex-direction: column-reverse;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .sectionForm {
+        width: 100%;
+        padding: 2rem 1rem;
+        min-height: 70vh;
+        padding: 2%, 1%;
+    }
+
+    .sectionLogo {
+        width: 100%;
+        height: 30vh;
+    }
+
+    .logoOverlay img {
+        width: 150px;
+        margin-bottom: 10px;
+    }
+
+    .logoOverlay p {
+        font-size: 24px;
+    }
+
+    .containerForm {
+        padding: 15px 20px;
+        max-width: 100%;
+    }
+
+    .title {
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+
+    .input_group {
+        margin-bottom: 12px;
+    }
+
+    .input_group span {
+        width: 35px;
+        height: 35px;
+    }
+
+    .input_group input {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .buttonLoginForm {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .login_link {
+        font-size: 13px;
+        margin-top: 12px;
+    }
+
+    .btnGoogle {
+        height: 40px;
+        font-size: 16px;
+    }
+
+    .containerAccount {
+        width: 100%;
+        height: 40px;
+    }
 }

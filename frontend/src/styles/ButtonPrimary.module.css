@@ -46,3 +46,53 @@
     text-decoration: none;
     justify-content: end;
 }
+
+@media screen and (max-width: 1024px) {
+    .buttonPrimary {
+        height: 45px;
+        width: 100px;
+        font-size: 14px;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .buttonPrimaryInActive {
+        height: 45px;
+        font-size: 14px;
+        padding: 0.4rem 1.4rem;
+    }
+
+    .icon {
+        transform: scale(0.9);
+    }
+
+    button img {
+        width: 32px !important;
+        height: 32px !important;
+        margin-left: 4px !important;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .buttonPrimary {
+        height: 40px;
+        width: 90px;
+        font-size: 13px;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .buttonPrimaryInActive {
+        height: 40px;
+        font-size: 13px;
+        padding: 0.3rem 1rem;
+    }
+
+    .icon {
+        transform: scale(0.8);
+    }
+
+    button img {
+        width: 28px !important;
+        height: 28px !important;
+        margin-left: 3px !important;
+    }
+}

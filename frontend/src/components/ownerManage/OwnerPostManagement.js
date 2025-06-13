@@ -206,7 +206,6 @@ const OwnerPostManagement = () => {
                         )
                     }));
                 } else {
-                    // Fallback: fetch lại dữ liệu
                     await fetchRooms(page);
                 }
 
@@ -251,7 +250,8 @@ const OwnerPostManagement = () => {
                             <Button className={styles.btnFind} onClick={handleSearchClick}>
                                 Tìm
                             </Button>
-                        </div>                        <div className={`d-flex align-items-center ${styles.searchRight}`} style={{ gap: '10px' }}>
+                        </div>
+                        <div className={`d-flex align-items-center ${styles.searchRight}`} style={{ gap: '10px' }}>
                             <Dropdown>
                                 <Dropdown.Toggle
                                     variant="outline-secondary"

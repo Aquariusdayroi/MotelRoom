@@ -1,5 +1,5 @@
 import React from 'react';
-import { Col, Nav } from 'react-bootstrap';
+import { Col, Nav, Row } from 'react-bootstrap';
 import { FaChartLine, FaUsers } from 'react-icons/fa';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import styles from '../styles/OwnerManagement.module.css';
@@ -72,7 +72,7 @@ const OwnerManagement = () => {
     if (loading) return <div className="text-center p-5">Đang tải...</div>;
     if (error) return <div className="text-center text-danger p-5">{error}</div>;
     return (
-        <div className="d-flex">
+        <Row className={styles.ownerContainer}>
             <Col md={2} className={styles.sidebar}>
                 <Nav className="flex-column">
                     <Nav.Item>
@@ -101,7 +101,7 @@ const OwnerManagement = () => {
                 {/* Render nested routes */}
                 <Outlet />
             </Col>
-        </div>
+        </Row>
     );
 };
 

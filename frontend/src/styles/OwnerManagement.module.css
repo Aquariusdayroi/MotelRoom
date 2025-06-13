@@ -211,3 +211,150 @@
 .hover-card:hover svg {
     color: #fff !important;
 }
+
+@media screen and (max-width: 768px) {
+    .container {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .sidebar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        width: 100%;
+        min-height: auto;
+        padding: 8px;
+        background-color: #fff;
+        border-right: none;
+        border-bottom: 1px solid #e0e0e0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Hide scrollbar */
+    .sidebar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .sidebar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Convert vertical menu to horizontal */
+    :global(.flex-column) {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 10px;
+        padding: 4px;
+    }
+
+    :global(.nav-item) {
+        width: auto !important;
+        flex: 0 0 auto;
+    }
+
+    .menuItem {
+        padding: 8px 16px;
+        margin: 0;
+        width: auto;
+        min-width: max-content;
+        font-size: 0.9rem;
+        border-radius: 20px;
+        background-color: #f0f0f0;
+        display: inline-flex;
+        align-items: center;
+        color: #4a5568;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .menuItem svg {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        flex-shrink: 0;
+    }
+
+    .menuItem:hover:not(.active) {
+        background-color: #e8f7fa;
+    }
+
+    .active {
+        background-color: #2ecdf2;
+        color: white !important;
+    }
+
+    /* Content Area */
+    .hostDashboard {
+        width: 100%;
+        padding: 16px 8px;
+        margin-top: 0;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 12px 0;
+    }
+
+    /* Search Bar Responsive */
+    .searchBarGroup {
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px 8px;
+    }
+
+    .searchLeft {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .searchRight {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .searchInput {
+        max-width: 100%;
+    }
+
+    .btnFind,
+    .btnCreatePost,
+    .sortButton {
+        height: 40px;
+        font-size: 0.9rem;
+        padding: 0 16px;
+    }
+
+    /* Stats Cards */
+    .statCard {
+        padding: 12px;
+    }
+
+    .statIcon {
+        font-size: 1.8rem;
+        min-width: 2rem;
+    }
+
+    .statNumber {
+        font-size: 1.4rem;
+    }
+
+    .statLabel {
+        font-size: 1rem;
+    }
+
+    /* Hover Card */
+    .hover-card {
+        padding: 12px;
+    }
+}
