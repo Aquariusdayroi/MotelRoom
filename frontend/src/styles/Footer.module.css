@@ -69,6 +69,11 @@
     height: 40px;
 }
 
+.footerRight>div>div:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .footerRight svg {
     margin-right: 4px;
 }
