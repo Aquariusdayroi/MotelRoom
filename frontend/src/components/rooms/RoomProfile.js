@@ -28,7 +28,7 @@ const RoomProfile = ({
         );
     }
 
-    if (rooms.length === 0) {
+    if (!Array.isArray(rooms) || rooms.length === 0) {
         return (
             <div className="text-center">
                 <h6 className="text-muted">

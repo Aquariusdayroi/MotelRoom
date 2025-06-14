@@ -8,7 +8,6 @@ const roomTypeApi = {
 
     searchByType: async (params) => {
         try {
-            console.log("Đang gọi API với tham số:", params);
             const url = "/rental_post/api/search/";
             const response = await axiosClient.get(url, {
                 params: {

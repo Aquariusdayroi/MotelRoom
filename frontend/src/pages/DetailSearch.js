@@ -7,6 +7,14 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Link, useLocation } from "react-router-dom";
 import mapboxApi from "../api/mapboxApi";
+import {
+    addFavorite,
+    addFavoritePost,
+    deleteFavorite,
+    deleteFavoritePost,
+} from "../api/userApi/favoriteApi";
+import Cookies from "js-cookie";
+import searchApi from "../api/searchApi/searchApi ";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
@@ -125,7 +133,6 @@ const DetailSearch = () => {
         if (!isNaN(lat) && !isNaN(lng)) {
             setSelectedRoomId(id);
             setSelectedCoordinates([lat, lng]);
-            console.log("Dùng tọa độ backend:", [lat, lng]);
         } else {
             const addressText =
                 room.address?.address_name ||
@@ -136,7 +143,6 @@ const DetailSearch = () => {
                 const coords = await mapboxApi.fetchCoordinates(addressText);
                 setSelectedRoomId(id);
                 setSelectedCoordinates(coords);
-                console.log("Lấy tọa độ từ Mapbox:", coords);
             } catch (err) {
                 console.error("Lỗi khi lấy tọa độ:", err);
             }
@@ -144,36 +150,47 @@ const DetailSearch = () => {
     };
 
     useEffect(() => {
-        if (location.state) {
-            setDisplayRooms(location.state.rooms || []);
-            setSelectedRoomId(null);
-            setSelectedCoordinates(null);
-
-            if (
-                location.state.searchParams?.lat &&
-                location.state.searchParams?.lng
-            ) {
-                const newCenter = [
-                    location.state.searchParams.lng,
-                    location.state.searchParams.lat,
-                ];
-
-                if (mapRef.current) {
-                    mapRef.current.flyTo({
-                        center: newCenter,
-                        zoom: 14,
-                        essential: true,
-                    });
+        const fetchRooms = async () => {
+            if (location.state?.searchParams) {
+                try {
+                    const data = await searchApi.searchRooms(
+                        location.state.searchParams
+                    );
+                    setDisplayRooms(data.results);
+                } catch (err) {
+                    console.error("Lỗi khi tải lại danh sách phòng:", err);
                 }
+            } else if (rooms) {
+                setDisplayRooms(rooms);
             }
-        }
-    }, [location.state, timestamp]);
+        };
+
+        fetchRooms();
+    }, [timestamp]);
 
     useEffect(() => {
         if (rooms) {
             setDisplayRooms(rooms);
         }
     }, [rooms]);
+
+    const handleToggleFavorite = async (roomId, newFavoriteStatus) => {
+        try {
+            if (newFavoriteStatus) {
+                await addFavoritePost(roomId);
+            } else {
+                await deleteFavoritePost(roomId);
+            }
+            const updatedRooms = displayRooms.map((room) =>
+                room.id === roomId
+                    ? { ...room, is_favorite: newFavoriteStatus }
+                    : room
+            );
+            setDisplayRooms(updatedRooms);
+        } catch (error) {
+            console.error("Lỗi cập nhật yêu thích:", error);
+        }
+    };
 
     return (
         <div className="d-flex mb-5">
@@ -243,6 +260,13 @@ const DetailSearch = () => {
                                         price={room.price}
                                         home_type={room.home_type}
                                         acreage={room.acreage}
+                                        is_favorite={room.is_favorite}
+                                        onFavoriteToggle={() =>
+                                            handleToggleFavorite(
+                                                room.id,
+                                                !room.is_favorite
+                                            )
+                                        }
                                         isNew={
                                             new Date(room.update_at) >
                                             Date.now() - 1000 * 60 * 60 * 24 * 7
