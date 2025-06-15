@@ -86,7 +86,7 @@ function Detail({ roomData = null, showAction = true, showReviews = true }) {
                     />
                     {showReviews && (
                         <div className="row">
-                            <div className="col-6">
+                            <div className="col-lg-6 col-md-12">
                                 <Reviews data={reviews} myReview={myReview} onReviewSubmit={handleReviewSubmit} onReviewDelete={handleReviewDelete} />
                             </div>
                         </div>
