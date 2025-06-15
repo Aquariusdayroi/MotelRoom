@@ -8,7 +8,6 @@ export const getUserRegisterStats = async (groupBy = "all_year") => {
                 params: { group_by: groupBy },
             }
         );
-        console.log("cc", response);
 
         return response.data;
     } catch (error) {

@@ -2,6 +2,7 @@
     height: 390px;
     background-color: #1e697a;
     width: 100%;
+    user-select: none;
 }
 
 .footer {
@@ -69,7 +70,7 @@
     height: 40px;
 }
 
-.footerRight>div>div:hover {
+.footerRight > div > div:hover {
     text-decoration: underline;
     cursor: pointer;
 }

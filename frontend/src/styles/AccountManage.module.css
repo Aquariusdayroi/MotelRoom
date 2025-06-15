@@ -1,0 +1,123 @@
+.toolbar {
+  width: 100%;
+  gap: 16px;
+}
+
+.account-search-wrapper {
+  position: relative;
+  width: 100%;
+  height: 42px;
+}
+
+.account-search-wrapper {
+  position: relative;
+  width: 100%;
+  height: 42px;
+}
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  object-fit: contain;   
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+
+.account-search {
+  width: 100%;
+  height: 100%;
+  padding: 0 90px 0 42px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+
+.account-search:focus {
+  border-color: #ccc !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+
+.filter-wrapper {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  gap: 4px;
+  color: #666;
+  cursor: pointer;
+}
+
+.btn-create {
+  flex-shrink: 0;
+  border-radius: 10px;
+  padding: 6px 16px;
+  font-weight: 500;
+  font-size: 14px;
+  background-color: #0dcaf0;
+  border: none;
+  color: white;
+  height: 42px;
+}
+
+.btn-create:hover {
+  background-color: #31d2f2;
+}
+
+.account-table {
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+.account-table thead {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.account-table td,
+.account-table th {
+  vertical-align: middle;
+}
+
+.account-table tbody tr:hover {
+  background-color: #f8f9fc;
+  cursor: pointer;
+}
+
+.account-status {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.status-active {
+  background-color: #e6f4ea;
+  color: #2e7d32;
+}
+
+.status-locked {
+  background-color: #fff4e5;
+  color: #ed6c02;
+}
+
+.status-violate {
+  background-color: #fdecea;
+  color: #d32f2f;
+}
+
+.status-pending {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}

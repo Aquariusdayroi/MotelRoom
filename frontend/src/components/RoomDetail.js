@@ -218,9 +218,7 @@ function RoomDetail({
     let { user } = useContext(AuthToken);
     const [isFavorite, setIsFavorite] = useState(room.is_favorite);
     const [showMapModal, setShowMapModal] = useState(false);
-    useEffect(() => {
-        console.log("Room images:", room.images);
-    }, [room]);
+    useEffect(() => {}, [room]);
 
     const handleSetFavorite = async (e) => {
         e.preventDefault();
@@ -240,7 +238,7 @@ function RoomDetail({
 
     const rating =
         reviews?.reduce((acc, review) => acc + Number(review.rating), 0) /
-        reviews?.length || 0;
+            reviews?.length || 0;
 
     const basicInfo = {
         type: room?.home_type,

@@ -17,7 +17,7 @@ function SignUpForm({ onSwitch }) {
         email: "",
         password: "",
         confirmPassword: "",
-        agree: ""
+        agree: "",
     });
 
     const handleSubmit = (e) => {
@@ -27,20 +27,27 @@ function SignUpForm({ onSwitch }) {
             email: "",
             password: "",
             confirmPassword: "",
-            agree: ""
+            agree: "",
         };
 
         if (!name) newErrors.name = "Vui lòng nhập họ tên!";
-        else if (!nameRegex.test(name)) newErrors.name = "Tên phải có 2 từ viết hoa chữ cái đầu, không chứa số!";
+        else if (!nameRegex.test(name))
+            newErrors.name =
+                "Tên phải có 2 từ viết hoa chữ cái đầu, không chứa số!";
 
         if (!email) newErrors.email = "Vui lòng nhập email!";
-        else if (!emailRegex.test(email)) newErrors.email = "Email không đúng định dạng!";
+        else if (!emailRegex.test(email))
+            newErrors.email = "Email không đúng định dạng!";
 
         if (!password) newErrors.password = "Vui lòng nhập mật khẩu!";
-        else if (!passwordRegex.test(password)) newErrors.password = "Mật khẩu phải bắt đầu bằng chữ in hoa và ít nhất 8 ký tự!";
+        else if (!passwordRegex.test(password))
+            newErrors.password =
+                "Mật khẩu phải bắt đầu bằng chữ in hoa và ít nhất 8 ký tự!";
 
-        if (!confirmPassword) newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu!";
-        else if (password !== confirmPassword) newErrors.confirmPassword = "Mật khẩu nhập lại không khớp!";
+        if (!confirmPassword)
+            newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu!";
+        else if (password !== confirmPassword)
+            newErrors.confirmPassword = "Mật khẩu nhập lại không khớp!";
 
         if (!agree) newErrors.agree = "Bạn cần đồng ý với điều khoản!";
 
@@ -48,8 +55,6 @@ function SignUpForm({ onSwitch }) {
 
         const hasError = Object.values(newErrors).some((msg) => msg !== "");
         if (!hasError) {
-            console.log("Form hợp lệ!");
-            // Thực hiện gửi dữ liệu hoặc gọi API tại đây
         }
     };
 
@@ -93,10 +98,20 @@ function SignUpForm({ onSwitch }) {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className={styles.btnShowPassword}>
-                    {showPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
+                <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className={styles.btnShowPassword}
+                >
+                    {showPassword ? (
+                        <AiOutlineEye />
+                    ) : (
+                        <AiOutlineEyeInvisible />
+                    )}
                 </button>
-                {errors.password && <p className={styles.error}>{errors.password}</p>}
+                {errors.password && (
+                    <p className={styles.error}>{errors.password}</p>
+                )}
             </div>
 
             <div className={styles.input_group}>
@@ -107,22 +122,46 @@ function SignUpForm({ onSwitch }) {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                 />
-                <button type="button" onClick={() => setPreShowPassword(!preShowPassword)} className={styles.btnShowPassword}>
-                    {preShowPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
+                <button
+                    type="button"
+                    onClick={() => setPreShowPassword(!preShowPassword)}
+                    className={styles.btnShowPassword}
+                >
+                    {preShowPassword ? (
+                        <AiOutlineEye />
+                    ) : (
+                        <AiOutlineEyeInvisible />
+                    )}
                 </button>
-                {errors.confirmPassword && <p className={styles.error}>{errors.confirmPassword}</p>}
+                {errors.confirmPassword && (
+                    <p className={styles.error}>{errors.confirmPassword}</p>
+                )}
             </div>
 
             <label className={styles.checkbox}>
-                <input type="checkbox" checked={agree} onChange={() => setAgree(!agree)} /> Tôi đồng ý với điều khoản và chính sách của Simi
+                <input
+                    type="checkbox"
+                    checked={agree}
+                    onChange={() => setAgree(!agree)}
+                />{" "}
+                Tôi đồng ý với điều khoản và chính sách của Simi
             </label>
-            {errors.agree && <p className={styles.error} style={{ marginTop: "4px" }}>{errors.agree}</p>}
+            {errors.agree && (
+                <p className={styles.error} style={{ marginTop: "4px" }}>
+                    {errors.agree}
+                </p>
+            )}
 
-            <button type="submit" className={styles.btn_submit}>ĐĂNG KÝ</button>
+            <button type="submit" className={styles.btn_submit}>
+                ĐĂNG KÝ
+            </button>
 
             <div className="d-flex justify-content-center mt-3">
                 <p className={styles.login_link}>
-                    Đã có tài khoản? trở về <a href="#" onClick={onSwitch}>Đăng nhập</a>
+                    Đã có tài khoản? trở về{" "}
+                    <a href="#" onClick={onSwitch}>
+                        Đăng nhập
+                    </a>
                 </p>
             </div>
         </motion.form>

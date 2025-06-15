@@ -1,26 +1,26 @@
-import { useState } from 'react';
-import styles from '../../styles/SignIn.module.css';
-import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import authApi from '../../api/authApi';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import NotifyModal from '../modal/NotifyModal';
-import { DotLoader } from 'react-spinners';
-import ButtonPrimary from '../buttonUI/ButtonPrimary';
+import { useState } from "react";
+import styles from "../../styles/SignIn.module.css";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import authApi from "../../api/authApi";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import NotifyModal from "../modal/NotifyModal";
+import { DotLoader } from "react-spinners";
+import ButtonPrimary from "../buttonUI/ButtonPrimary";
 
 function SignInForm({ onSwitch }) {
-    const [email, setEmail] = useState('');
-    const [fullname, setFullname] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [email, setEmail] = useState("");
+    const [fullname, setFullname] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [preShowPassword, setPreShowPassword] = useState(false);
     const [agree, setAgree] = useState(false);
     const [errorMessages, setErrorMessages] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
-    const [modalMessage, setModalMessage] = useState('');
-    const [modalTitle, setModalTitle] = useState('Thông báo');
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalTitle, setModalTitle] = useState("Thông báo");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -28,24 +28,24 @@ function SignInForm({ onSwitch }) {
         setIsLoading(true);
 
         if (!agree) {
-            setModalTitle('Lỗi đăng ký');
-            setModalMessage('Bạn phải đồng ý với điều khoản và chính sách!');
+            setModalTitle("Lỗi đăng ký");
+            setModalMessage("Bạn phải đồng ý với điều khoản và chính sách!");
             setModalOpen(true);
             setIsLoading(false);
             return;
         }
 
         if (!email.trim() || !fullname.trim() || !password.trim()) {
-            setModalTitle('Lỗi đăng ký');
-            setModalMessage('Vui lòng nhập đầy đủ thông tin!');
+            setModalTitle("Lỗi đăng ký");
+            setModalMessage("Vui lòng nhập đầy đủ thông tin!");
             setModalOpen(true);
             setIsLoading(false);
             return;
         }
 
         if (password !== confirmPassword) {
-            setModalTitle('Lỗi đăng ký');
-            setModalMessage('Mật khẩu và xác nhận mật khẩu không khớp!');
+            setModalTitle("Lỗi đăng ký");
+            setModalMessage("Mật khẩu và xác nhận mật khẩu không khớp!");
             setModalOpen(true);
             setIsLoading(false);
             return;
@@ -64,64 +64,62 @@ function SignInForm({ onSwitch }) {
                 password2: confirmPassword,
             };
 
-            console.log('🔥 Payload gửi đi:', payload);
-
             const response = await authApi.register(payload);
-            console.log('Đăng ký thành công:', response.data);
 
-            toast.success('Đăng ký thành công! Đang chuyển hướng...');
+            toast.success("Đăng ký thành công! Đang chuyển hướng...");
 
-            setModalTitle('Thành công');
-            setModalMessage('Hãy kiểm tra email xác nhận đăng ký');
+            setModalTitle("Thành công");
+            setModalMessage("Hãy kiểm tra email xác nhận đăng ký");
             setModalOpen(true);
 
             setTimeout(() => {
                 onSwitch();
             }, 2400);
         } catch (error) {
-            console.log('Error response:', error.response); // Thêm log để debug
-
             const errors = error.response?.data?.errors;
-            let errorMessage = '';
+            let errorMessage = "";
 
             if (errors) {
                 // Kiểm tra lỗi last_name
-                if (errors.last_name && errors.last_name.includes('This field may not be blank.')) {
-                    errorMessage += "Họ và tên phải có đầy đủ họ và tên. Ví dụ 'Nguyễn Văn A'. ";
+                if (
+                    errors.last_name &&
+                    errors.last_name.includes("This field may not be blank.")
+                ) {
+                    errorMessage +=
+                        "Họ và tên phải có đầy đủ họ và tên. Ví dụ 'Nguyễn Văn A'. ";
                 }
 
                 // Kiểm tra lỗi password
                 if (errors.password) {
-                    if (errors.password.includes('This password is too common.')) {
-                        errorMessage += 'Mật khẩu quá phổ biến. ';
+                    if (
+                        errors.password.includes("This password is too common.")
+                    ) {
+                        errorMessage += "Mật khẩu quá phổ biến. ";
                     }
-                    if (errors.password.includes('This password is entirely numeric')) {
-                        errorMessage += 'Mật khẩu phải chứa cả chữ và số. ';
+                    if (
+                        errors.password.includes(
+                            "This password is entirely numeric"
+                        )
+                    ) {
+                        errorMessage += "Mật khẩu phải chứa cả chữ và số. ";
                     }
                 }
 
                 // Nếu có lỗi email
                 if (errors.email) {
-                    errorMessage += errors.email.join('. ');
+                    errorMessage += errors.email.join(". ");
                 }
             }
 
             // Nếu không có errorMessage cụ thể, sử dụng message mặc định
             if (!errorMessage) {
-                errorMessage = 'Đăng ký thất bại. Vui lòng thử lại.';
+                errorMessage = "Đăng ký thất bại. Vui lòng thử lại.";
             }
 
             // Set modal state
-            setModalTitle('Lỗi đăng ký');
+            setModalTitle("Lỗi đăng ký");
             setModalMessage(errorMessage.trim());
             setModalOpen(true);
-
-            // Log để debug
-            console.log('Modal states:', {
-                isOpen: modalOpen,
-                title: modalTitle,
-                message: modalMessage,
-            });
         } finally {
             setIsLoading(false);
         }
@@ -134,21 +132,27 @@ function SignInForm({ onSwitch }) {
                     <div
                         className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
                         style={{
-                            background: 'rgba(255,255,255,0.8)',
+                            background: "rgba(255,255,255,0.8)",
                             zIndex: 1000,
-                            position: 'fixed',
+                            position: "fixed",
                             top: 0,
                             left: 0,
                         }}
                     >
-                        <DotLoader color="var(--primary-color)" size={50} aria-label="Loading Spinner" />
+                        <DotLoader
+                            color="var(--primary-color)"
+                            size={50}
+                            aria-label="Loading Spinner"
+                        />
                     </div>
                 )}
                 <h2 className={styles.title}>Đăng ký</h2>
 
                 {/* Input Email */}
                 <div className={styles.input_group}>
-                    <span className="material-symbols-outlined">account_circle</span>
+                    <span className="material-symbols-outlined">
+                        account_circle
+                    </span>
                     <input
                         type="email"
                         placeholder="Email của bạn"
@@ -174,7 +178,7 @@ function SignInForm({ onSwitch }) {
                 <div className={styles.input_group}>
                     <span className="material-symbols-outlined">lock</span>
                     <input
-                        type={showPassword ? 'text' : 'password'}
+                        type={showPassword ? "text" : "password"}
                         placeholder="Mật khẩu"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -185,10 +189,16 @@ function SignInForm({ onSwitch }) {
                         onClick={() => setShowPassword(!showPassword)}
                         className={styles.btnShowPassword}
                     >
-                        {showPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
+                        {showPassword ? (
+                            <AiOutlineEye />
+                        ) : (
+                            <AiOutlineEyeInvisible />
+                        )}
                     </button>
                     {errorMessages.password && (
-                        <p style={{ color: 'red', fontSize: '0.875rem' }}>{errorMessages.password}</p>
+                        <p style={{ color: "red", fontSize: "0.875rem" }}>
+                            {errorMessages.password}
+                        </p>
                     )}
                 </div>
 
@@ -196,7 +206,7 @@ function SignInForm({ onSwitch }) {
                 <div className={styles.input_group}>
                     <span className="material-symbols-outlined">lock</span>
                     <input
-                        type={preShowPassword ? 'text' : 'password'}
+                        type={preShowPassword ? "text" : "password"}
                         placeholder="Nhập lại mật khẩu"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -207,16 +217,26 @@ function SignInForm({ onSwitch }) {
                         onClick={() => setPreShowPassword(!preShowPassword)}
                         className={styles.btnShowPassword}
                     >
-                        {preShowPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
+                        {preShowPassword ? (
+                            <AiOutlineEye />
+                        ) : (
+                            <AiOutlineEyeInvisible />
+                        )}
                     </button>
                     {errorMessages.password2 && (
-                        <p style={{ color: 'red', fontSize: '0.875rem' }}>{errorMessages.password2}</p>
+                        <p style={{ color: "red", fontSize: "0.875rem" }}>
+                            {errorMessages.password2}
+                        </p>
                     )}
                 </div>
 
                 {/* Checkbox Đồng ý điều khoản */}
                 <label className={styles.checkbox}>
-                    <input type="checkbox" checked={agree} onChange={() => setAgree(!agree)} />
+                    <input
+                        type="checkbox"
+                        checked={agree}
+                        onChange={() => setAgree(!agree)}
+                    />
                     Tôi đồng ý với điều khoản và chính sách của Simi
                 </label>
 
@@ -224,13 +244,13 @@ function SignInForm({ onSwitch }) {
                 <ButtonPrimary
                     type="submit"
                     className={styles.btn_submit}
-                    des={isLoading ? 'Đang xử lý...' : 'ĐĂNG KÝ'}
+                    des={isLoading ? "Đang xử lý..." : "ĐĂNG KÝ"}
                     style={{ opacity: isLoading ? 0.7 : 1 }}
                 />
 
                 {/* Link chuyển về Login */}
                 <div className={styles.login_link}>
-                    Đã có tài khoản? trở về{' '}
+                    Đã có tài khoản? trở về{" "}
                     <a href="#" onClick={onSwitch}>
                         Đăng nhập
                     </a>

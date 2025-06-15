@@ -14,7 +14,6 @@ export const useOwnerRequestCount = (token) => {
                 const response = await axiosClient.get(
                     "/user/api/admin/owner-requests/list-request/"
                 );
-                console.log("cc", response);
 
                 if (response.data && response.data.requests) {
                     setCount(response.data.requests.length);
@@ -100,7 +99,6 @@ export const rejectOwnerRequest = async (requestId, reason) => {
         `/user/api/admin/owner-requests/${requestId}/reject/`,
         { reason }
     );
-    console.log(response.data);
 
     return response.data;
 };
