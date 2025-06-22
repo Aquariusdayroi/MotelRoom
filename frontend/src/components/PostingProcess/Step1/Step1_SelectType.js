@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../../../styles/Step1_Intro.css";
 import "../../../styles/Step1_SelectType.css";
+import "../../../styles/Step1_Reponsive.css"
 import ProgressBar from "../ProgressBar";
 
 import home from "../../../assets/img/home.png";

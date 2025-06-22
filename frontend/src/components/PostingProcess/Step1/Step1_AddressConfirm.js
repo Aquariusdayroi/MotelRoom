@@ -3,6 +3,7 @@ import ProgressBar from "../ProgressBar";
 import send from "../../../assets/img/send.png";
 import "../../../styles/Step1_AddressConfirm.css";
 import "../../../styles/Step1_Intro.css";
+import "../../../styles/Step1_Reponsive.css"
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 

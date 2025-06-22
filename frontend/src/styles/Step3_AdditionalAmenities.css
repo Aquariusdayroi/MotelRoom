@@ -60,3 +60,43 @@
     border-color: var(--primary-color);
     background-color: #ddfaff;
 }
+
+/* === Responsive cho iPad (max-width: 1024px) === */
+@media (max-width: 1024px) {
+    .additional-amenities-grid,
+    .additional-safety-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .additional-amenity-item img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .additional-amenity-item span {
+        font-size: 14px;
+    }
+}
+
+/* === Responsive cho Mobile (max-width: 600px) === */
+@media (max-width: 600px) {
+    .additional-amenities-grid,
+    .additional-safety-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .additional-amenity-item {
+        height: 120px;
+        padding: 15px;
+    }
+
+    .additional-amenity-item img {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 10px;
+    }
+
+    .additional-amenity-item span {
+        font-size: 13px;
+    }
+}

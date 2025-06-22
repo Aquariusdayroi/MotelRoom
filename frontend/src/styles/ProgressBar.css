@@ -3,24 +3,31 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    margin-top: 50px;
-    margin-bottom: 50px;
+    margin: 50px 0;
 }
 
 .progress-bar {
     padding: 10px;
+    width: 100%;
+    max-width: 900px;
 }
 
 .box-progress {
     display: flex;
-    gap: 40px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    gap: 0;
+    width: 100%;
 }
 
 .step-container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex: 1;
     position: relative;
+    text-align: center;
 }
 
 .step-circle {
@@ -33,9 +40,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
     border: 2px solid #ccc;
-    transition: all 0.3s;
+    position: relative;
     z-index: 1;
 }
 
@@ -52,41 +58,35 @@
     z-index: -1;
 }
 
-.step-circle.active {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.step-circle.active::before {
-    border-color: var(--primary-color);
-}
-
+.step-circle.active,
 .step-circle.completed {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
 }
 
+.step-circle.active::before,
 .step-circle.completed::before {
     border-color: var(--primary-color);
 }
 
-.step-line {
-    width: 80px;
-    height: 2px;
-    background-color: transparent;
-    border-top: 2px dotted #ccc;
+/* ----- Đường nối giữa các bước ----- */
+.step-container:not(:last-child)::after {
+    content: '';
     position: absolute;
-    left: 80%;
-    top: 25%;
-    margin: 0;
+    top: 20px; 
+    left: 50%;
+    right: -50%;
+    height: 2px;
+    border-top: 2px dotted #ccc;
+    z-index: 0;
 }
 
 .step-label {
     color: #6c757d;
     font-size: 14px;
-    margin-top: 16px;
-    width: 120px;
-    text-align: center;
+    margin-top: 12px;
+    width: 100%;
+    max-width: 120px;
 }
 
 .step-label.active-label {
@@ -96,4 +96,35 @@
 
 .step-label.completed-label {
     color: var(--primary-color);
+}
+
+/* -------------------------- */
+/* 📱 Responsive chỉnh sửa lại */
+/* -------------------------- */
+@media screen and (max-width: 768px) {
+  .box-progress {
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .step-container {
+    margin-bottom: 70px; /* cách giữa các bước */
+  }
+
+  .step-container:last-child {
+    margin-bottom: 0;
+  }
+
+  .step-container:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 70px; 
+    left: 50%;
+    width: 2px;
+    height: 60px; 
+    border-left: 2px dotted #ccc;
+    z-index: 0;
+    transform: translateX(-50%);
+  }
 }

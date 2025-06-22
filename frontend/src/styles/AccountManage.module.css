@@ -121,3 +121,89 @@
   background-color: #e3f2fd;
   color: #1976d2;
 }
+
+/* Máy tính bảng - max-width 768px */
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .account-search-wrapper {
+    width: 100%;
+    height: 42px;
+  }
+  
+  .btn-create {
+    font-size: 12px;
+    padding: 4px 10px;
+    height: 32px;
+    border-radius: 6px;
+  }
+  
+  .account-table {
+    font-size: 13px;
+    overflow-x: scroll;
+    display: block;
+  }
+}
+
+/* Điện thoại - max-width 480px */
+@media (max-width: 480px) {
+  .account-search-wrapper {
+    height: 36px;
+  }
+  
+  .account-search {
+    padding: 0 60px 0 42px;
+    font-size: 13px;
+    border-radius: 15px;
+  }
+  
+  .filter-wrapper {
+    font-size: 13px;
+  }
+  
+  .btn-create {
+    width: 150px;
+    font-size: 12px;
+    padding: 4px 10px;
+    height: 32px;
+    border-radius: 6px;
+  }
+  
+  .account-table thead {
+    display: none;
+  }
+  
+  .account-table tbody tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+  
+  .account-table tbody tr td {
+    display: block;
+    text-align: left;
+    padding: 5px 0;
+    border: none;
+  }
+  
+  .account-table tbody tr td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+    color: #666;
+  }
+  
+  .account-table tbody tr td:nth-child(1)::before { content:'Tên người dùng:' }
+  .account-table tbody tr td:nth-child(2)::before { content:'Email:' }
+  .account-table tbody tr td:nth-child(3)::before { content:'Vai trò:' }
+  .account-table tbody tr td:nth-child(4)::before { content:'Trạng thái:' }
+  .account-table tbody tr td:nth-child(5)::before { content:'Thao tác:' }
+}

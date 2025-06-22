@@ -212,3 +212,63 @@
     color: #fff !important;
 }
 
+@media (max-width: 992px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .searchBarGroup {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .searchLeft,
+    .searchRight {
+        flex-direction: column;
+        width: 100%;
+        margin: 0;
+        gap: 0.5rem;
+    }
+
+    .searchLeft .form-control,
+    .btnFind,
+    .sortButton,
+    .btnCreatePost {
+        width: 100%;
+    }
+
+    .sortButton,
+    .btnCreatePost {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .searchRight {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 576px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .searchInput {
+        width: 100%;
+    }
+
+    .btnFind,
+    .sortButton,
+    .btnCreatePost {
+        font-size: 0.9rem;
+        height: 40px;
+        width: 100%;
+    }
+
+    .arrow {
+        display: none;
+    }
+}
+

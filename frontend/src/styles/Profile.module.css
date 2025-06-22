@@ -122,3 +122,60 @@
 .groupHover:hover .hoverIcon {
     opacity: 1;
 }
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+    .profileContainer {
+        flex-direction: column;
+        padding: 0 5%;
+    }
+    .profileContent,
+    .rentalSection {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    .sliderWrapper {
+        height: 400px;
+    }
+    .motionWrapper {
+        flex-direction: column;
+        gap: 20px;
+        position: relative;
+        width: 100%;
+    }
+    .cardWrapper {
+        width: 100%;
+        flex: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 10px;
+    }
+    .menuList {
+        padding: 5px;
+    }
+    .profileContainer {
+        padding: 0 2%;
+    }
+    .sliderWrapper {
+        height: 250px;
+    }
+    .motionWrapper {
+        gap: 10px;
+    }
+    .cardWrapper {
+        width: 100%;
+    }
+    .buttonManage {
+        width: 100%;
+    }
+    .reviewWrapper {
+        padding: 0;
+    }
+}

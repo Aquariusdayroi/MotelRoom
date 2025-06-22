@@ -15,38 +15,60 @@ const AdminManagement = () => {
     if (location.pathname === "/admin-manage") {
         return <Navigate to="/admin-manage/authentic" replace />;
     }
+
     return (
         <div style={{ padding: "0 10vw" }}>
             <style>
                 {`
-                    .custom-tab-link {
-                        color: #272727 !important;
-                        transition: color 0.3s ease;
-                        border-radius: 6px;
-                        padding: 8px 12px;
-                        text-decoration: none;
+                .custom-tab-link {
+                    color: #272727 !important;
+                    transition: color 0.3s ease;
+                    border-radius: 6px;
+                    padding: 8px 12px;
+                    text-decoration: none;
+                    white-space: nowrap;
+                }
+
+                .custom-tab-link.active {
+                    color: white !important;
+                    background-color: var(--primary-color, #0d6efd) !important;
+                }
+
+                @media (max-width: 991.98px) {
+                    .admin-sidebar {
+                        flex-direction: row !important;
+                        overflow-x: auto;
+                        white-space: nowrap;
+                        padding: 10px 16px !important;
+                        border-right: none !important;
+                        border-bottom: 1px solid #ccc;
+                        min-height: auto !important;
                     }
 
-                    .custom-tab-link.active {
-                        color: white !important;
-                        background-color: var(--primary-color, #0d6efd) !important;
+                    .admin-sidebar .nav-item {
+                        flex-shrink: 0;
                     }
-                `}
+
+                    .admin-sidebar .custom-tab-link {
+                        display: flex;
+                        align-items: center;
+                        padding: 8px 10px;
+                        font-size: 0.9rem;
+                    }
+
+                    .admin-content {
+                        padding-top: 1rem;
+                    }
+                }
+            `}
             </style>
 
             <Row>
                 <Col
                     md={3}
-                    className="border-end d-flex flex-column align-items-start"
-                    style={{
-                        minHeight: "100vh",
-                        paddingTop: "60px",
-                    }}
+                    className="admin-sidebar border-end d-flex flex-column align-items-start"
                 >
-                    <Nav
-                        className="flex-column w-100 px-5"
-                        style={{ gap: "20px" }}
-                    >
+                    <Nav className="flex-column w-100 px-5" style={{ gap: "20px" }}>
                         <Nav.Item>
                             <NavLink
                                 to="authentic"
@@ -114,7 +136,7 @@ const AdminManagement = () => {
                         </Nav.Item>
                     </Nav>
                 </Col>
-                <Col md={9}>
+                <Col md={9} className="admin-content">
                     <Outlet />
                 </Col>
             </Row>

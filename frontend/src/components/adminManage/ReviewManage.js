@@ -15,6 +15,7 @@ import avt from '../../assets/img/avt-dat.png';
 import favorite from '../../assets/img/favorite.png';
 import like from '../../assets/img/like-red.png';
 import Dropdown from '../../components/adminManage/components/ActionDropdown';
+import "../../styles/ReviewManage.css"
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 

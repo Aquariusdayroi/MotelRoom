@@ -3,6 +3,7 @@ import RoomDetail from "../../RoomDetail";
 import ProgressBar from "../ProgressBar";
 import { AuthToken } from "../../../authToken";
 import { getMyProfile } from "../../../api/userApi/updateUserProfile";
+import "../../../styles/Step4_ReviewAndSubmit.css"
 
 function Step4_ReviewAndSubmit({ data, onBack, onSubmit }) {
     const { user } = useContext(AuthToken);
@@ -72,40 +73,34 @@ function Step4_ReviewAndSubmit({ data, onBack, onSubmit }) {
         has_fingerprint_lock: data.add_amenity.includes("Khóa vân tay"),
     };
 
-    return (
-        <div>
-            <ProgressBar currentStep={4} />
-            <div className="mb-5">
-                <h4 className="text-center fw-bold">Xem trước bài viết</h4>
-                <p className="text-center w-100 text-muted">
-                    Xem lại bài đăng của bạn để đảm bảo không có sai sót hay
-                    nhầm lẫn. Nếu bạn thấy hài lòng với bài đăng này, hãy nhấn
-                    nút "Hoàn thành" để gửi bài đăng của bạn.
-                </p>
-            </div>
-            <RoomDetail
-                room={room}
-                isCall={false}
-                showAction={false}
-                isSmall={true}
-            />
-            <div className="d-flex aling-items-center justify-content-between my-5">
-                <button className="back-btn" onClick={() => onBack({})}>
-                    <span
-                        style={{
-                            transform: "rotate(180deg)",
-                            display: "inline-block",
-                        }}
-                    >
-                        ➔
-                    </span>{" "}
-                    Quay lại
-                </button>
-                <button className="next-btn" onClick={() => onSubmit(room)}>
-                    Hoàn thành
-                </button>
-            </div>
+        return (
+    <div className="step4-review-container">
+        <ProgressBar currentStep={4} />
+        <div className="step4-review-header">
+        <h4>Xem trước bài viết</h4>
+        <p>
+            Xem lại bài đăng của bạn để đảm bảo không có sai sót hay nhầm lẫn.
+            Nếu bạn thấy hài lòng với bài đăng này, hãy nhấn nút "Hoàn thành"
+            để gửi bài đăng của bạn.
+        </p>
         </div>
+
+        <RoomDetail
+        room={room}
+        isCall={false}
+        showAction={false}
+        isSmall={true}
+        />
+
+        <div className="step4-review-buttons">
+        <button className="back-btn" onClick={() => onBack({})}>
+            <span style={{ transform: "rotate(180deg)", display: "inline-block" }}>➔</span> Quay lại
+        </button>
+        <button className="next-btn" onClick={() => onSubmit(room)}>
+            Hoàn thành
+        </button>
+        </div>
+    </div>
     );
 }
 

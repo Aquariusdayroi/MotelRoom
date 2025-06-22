@@ -157,7 +157,7 @@ function SignInForm({ onSwitch }) {
                         type="email"
                         placeholder="Email của bạn"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => setEmail                             (e.target.value)}
                         required
                     />
                 </div>

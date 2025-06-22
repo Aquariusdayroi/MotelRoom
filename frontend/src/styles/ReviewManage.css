@@ -1,0 +1,160 @@
+/* General styling for cards and layout */
+.card {
+  border-radius: 8px;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Header section */
+h2,
+h4 {
+  font-weight: bold;
+}
+
+h5 {
+  font-weight: 600;
+}
+
+/* Stat cards */
+.text-muted {
+  color: #6c757d;
+}
+
+.text-warning {
+  color: #ffc107;
+}
+
+/* Chart Section */
+.chart-container {
+  width: 100%;
+}
+
+/* Reviews Table */
+.recent-review-table th {
+  padding-left: 0;
+  padding-right: 0;
+  font-weight: normal;
+}
+
+.recent-review-table td {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Review Input Search Bar */
+input.form-control {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* Flexbox adjustments */
+.d-flex {
+  display: flex;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+/* User Reviews Section */
+.review-comment {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  max-height: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* User liked icon */
+img {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+img:hover {
+  transform: scale(1.1);
+}
+
+/* Flexbox for mobile review cards */
+@media (max-width: 768px) {
+  /* Adjust for single column on small screens */
+
+  .d-flex {
+    display: block; /* Display flex as block for stacking on smaller screens */
+  }
+
+  /* Adjust Grid Layout for Reviews */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+
+  /* Review actions (like button) */
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .d-flex.justify-content-between .text-center {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  /* Adjust input and filter icon */
+  input.form-control {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Adjust avatar size */
+  .avatar-img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .search-container {
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  /* Adjust cards in the reviews section */
+  .shadow-sm {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 768px) {
+  /* iPad layout */
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .d-flex.justify-content-between .text-center {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+
+/* Styles for the Chart section on mobile */
+@media (max-width: 768px) {
+  .chart-container {
+    width: 100%;
+    height: 250px; /* Adjust chart height on mobile */
+  }
+}
+
+@media (max-width: 768px) {
+  .btnCreatePost {
+    width: 100%; /* Ensure the button takes full width on mobile */
+    font-size: 1rem;
+  }
+}

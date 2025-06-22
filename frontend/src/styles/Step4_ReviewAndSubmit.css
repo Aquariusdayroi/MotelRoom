@@ -1,0 +1,112 @@
+/* Container tổng thể */
+.step4-review-container {
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Phần tiêu đề và mô tả */
+.step4-review-header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.step4-review-header h4 {
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.step4-review-header p {
+  color: #666;
+  font-size: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Nút điều hướng */
+.step4-review-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 40px 0;
+  gap: 10px;
+}
+
+.back-btn,
+.next-btn {
+  background-color: #6d7677;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.3s;
+}
+
+.back-btn:hover {
+  background-color: #555;
+}
+
+.next-btn {
+  background-color: #17a2b8;
+}
+
+.next-btn:hover {
+  background-color: #138496;
+}
+
+.next-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Responsive cho iPad */
+@media (max-width: 1024px) {
+  .step4-review-container {
+    padding: 15px;
+  }
+
+  .step4-review-header h4 {
+    font-size: 20px;
+  }
+
+  .step4-review-header p {
+    font-size: 15px;
+  }
+
+  .back-btn,
+  .next-btn {
+    font-size: 15px;
+    padding: 8px 16px;
+  }
+}
+
+/* Responsive cho Mobile */
+@media (max-width: 600px) {
+  .step4-review-container {
+    padding: 10px;
+  }
+
+  .step4-review-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .back-btn,
+  .next-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .step4-review-header h4 {
+    font-size: 18px;
+  }
+
+  .step4-review-header p {
+    font-size: 14px;
+  }
+}

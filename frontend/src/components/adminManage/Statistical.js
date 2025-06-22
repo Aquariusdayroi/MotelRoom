@@ -7,6 +7,8 @@ import InforCart from "./components/InforCart";
 import { getUserStatsByRole } from "../../api/adminApi/getUserStatsByRole";
 import { getUserCountByDate } from "../../api/adminApi/getUserCountByDate";
 import dayjs from "dayjs";
+import "../../styles/Statistical.css"
+
 const Statistical = () => {
     const [postCount, setPostCount] = useState(0);
     const [userCount, setUserCount] = useState(0);
@@ -31,14 +33,8 @@ const Statistical = () => {
                         chart: { id: "user-bar" },
                         xaxis: {
                             categories: [
-                                "Tháng 1",
-                                "Tháng 2",
-                                "Tháng 3",
-                                "Tháng 4",
-                                "Tháng 5",
-                                "Tháng 6",
-                                "Tháng 7",
-                                "Tháng 8",
+                                "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4",
+                                "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8",
                             ],
                         },
                     },
@@ -50,31 +46,20 @@ const Statistical = () => {
                     ],
                 });
 
-                // setUserPie({
-                //     series: [130, 110, 32],
-                //     options: {
-                //         labels: ["Người đăng trọ", "Người thuê", "Khác"],
-                //         chart: { type: "donut" },
-                //     },
-                // });
-
                 setAccessChart({
                     options: {
                         chart: { id: "access-line" },
                         xaxis: {
-                            categories: Array.from(
-                                { length: 30 },
-                                (_, i) => i + 1
-                            ),
+                            categories: Array.from({ length: 30 }, (_, i) => i + 1),
                         },
                     },
                     series: [
                         {
                             name: "Lượt truy cập",
                             data: [
-                                12, 18, 22, 25, 28, 19, 23, 30, 18, 25, 26, 32,
-                                35, 38, 29, 24, 22, 30, 28, 26, 25, 20, 27, 30,
-                                26, 31, 29, 27, 33, 28,
+                                12, 18, 22, 25, 28, 19, 23, 30, 18, 25,
+                                26, 32, 35, 38, 29, 24, 22, 30, 28, 26,
+                                25, 20, 27, 30, 26, 31, 29, 27, 33, 28,
                             ],
                         },
                     ],
@@ -100,10 +85,7 @@ const Statistical = () => {
                     series: [stats.admin, stats.owner, stats.user],
                 });
             } catch (error) {
-                console.error(
-                    "Không thể tải dữ liệu biểu đồ người dùng:",
-                    error
-                );
+                console.error("Không thể tải dữ liệu biểu đồ người dùng:", error);
             }
         };
 
@@ -154,22 +136,23 @@ const Statistical = () => {
 
     return (
         <Container className="pt-3">
-            <Row className="mb-4">
-                <Col md={4}>
+            {/* Row thống kê tổng quan */}
+            <Row className="g-4 mb-4">
+                <Col xs={12} sm={6} md={4}>
                     <InforCart
                         title="Tổng số bài đăng trọ"
                         totalUser={postCount}
                         colorIndex={0}
                     />
                 </Col>
-                <Col md={4}>
+                <Col xs={12} sm={6} md={4}>
                     <InforCart
                         title="Tổng số tài khoản người dùng"
                         totalUser={userCount}
                         colorIndex={1}
                     />
                 </Col>
-                <Col md={4}>
+                <Col xs={12} sm={6} md={4}>
                     <InforCart
                         title="Tổng lượt truy cập"
                         totalUser="12145"
@@ -178,9 +161,10 @@ const Statistical = () => {
                 </Col>
             </Row>
 
-            <Row className="mb-4">
-                <Col md={6}>
-                    <Card className="p-3 shadow-sm">
+            {/* Row 2 biểu đồ: Donut + Bar */}
+            <Row className="g-4 mb-4">
+                <Col xs={12} md={6}>
+                    <Card className="p-3 shadow-sm h-100">
                         <Card.Title>Thống kê người dùng</Card.Title>
                         {userPie?.options && userPie?.series && (
                             <Chart
@@ -192,23 +176,24 @@ const Statistical = () => {
                         )}
                     </Card>
                 </Col>
-                <Col md={6}>
-                    <Card className="p-3 shadow-sm">
+                <Col xs={12} md={6}>
+                    <Card className="p-3 shadow-sm h-100">
                         <Card.Title>Thống kê lượt đăng ký theo ngày</Card.Title>
                         {userBar?.options && userBar?.series && (
                             <Chart
                                 options={userBar.options}
                                 series={userBar.series}
                                 type="bar"
-                                height={405}
+                                height={400}
                             />
                         )}
                     </Card>
                 </Col>
             </Row>
 
-            <Row>
-                <Col md={12}>
+            {/* Row biểu đồ line */}
+            <Row className="g-4 mb-4">
+                <Col xs={12}>
                     <Card className="p-3 shadow-sm">
                         <Card.Title>Thống kê lượt truy cập</Card.Title>
                         {accessChart?.options && accessChart?.series && (
@@ -217,6 +202,7 @@ const Statistical = () => {
                                 series={accessChart.series}
                                 type="line"
                                 width="100%"
+                                height={400}
                             />
                         )}
                     </Card>

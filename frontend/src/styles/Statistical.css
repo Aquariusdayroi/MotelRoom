@@ -1,0 +1,11 @@
+/* styles/Statistical.css */
+@media (max-width: 576px) {
+  .apexcharts-legend {
+    font-size: 12px !important;
+  }
+
+  .card-title {
+    font-size: 1rem;
+    text-align: center;
+  }
+}

@@ -1,0 +1,105 @@
+@media screen and (max-width: 1024px) {
+  .content {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .basic-info {
+    flex-direction: column;
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .input-with-unit input {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .type-options {
+    justify-content: center;
+  }
+
+  .type-button {
+    width: 120px;
+    height: 120px;
+  }
+
+  .type-button .type-icon {
+    font-size: 36px;
+  }
+
+  .type-button .label {
+    font-size: 14px;
+  }
+
+  .buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .next-btn,
+  .back-btn {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .address-section {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .map-container {
+    width: 100%;
+    height: auto;
+  }
+
+  .address-inputs {
+    width: 100%;
+  }
+
+  .search-box {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .search-box input {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .address-inputs input {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+
+  .search-box {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .search-box {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .search-box input {
+    padding: 10px;
+  }
+
+  .address-section {
+    gap: 20px;
+  }
+
+  .map-container {
+    box-shadow: none;
+  }
+}

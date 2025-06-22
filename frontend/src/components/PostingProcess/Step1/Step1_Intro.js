@@ -1,5 +1,6 @@
 import room from '../../../assets/img/room.png';
 import '../../../styles/Step1_Intro.css';
+import "../../../styles/Step1_Reponsive.css"
 import ProgressBar from '../ProgressBar';
 
 function Step1_Intro({ onNext }) {
