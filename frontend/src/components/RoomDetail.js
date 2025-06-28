@@ -267,7 +267,7 @@ function RoomDetail({
 
     return (
         <div style={{ padding: `0 ${!isSmall ? "0" : "160px"}` }}>
-            <div className="d-flex align-items-center justify-content-between mb-2">
+            <div className="d-block d-md-flex align-items-center justify-content-between mb-2">
                 <h3 className={styles.title}>{room?.title}</h3>
                 {showAction && (
                     <div
@@ -307,10 +307,8 @@ function RoomDetail({
             />
 
             <div className="row mt-4">
-                <div className="col-7">
-                    <div className={styles.address}>
-                        {room?.address?.address_name}
-                    </div>
+                <div className="col-lg-7 col-md-12">
+                    <div className={styles.address}>{room?.address?.address_name}</div>
                     <div className="text-muted d-flex align-items-center gap-1 mb-4">
                         <StarIcon className="text-warning" />
                         {reviews?.length ? (

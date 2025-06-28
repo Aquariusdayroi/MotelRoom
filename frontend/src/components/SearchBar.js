@@ -53,7 +53,14 @@ const SearchBar = ({
         setPriceFromAnchorEl(null);
         setPriceToAnchorEl(null);
     };
-
+    const handleSearchButtonClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsExpanded(!isExpanded);
+        if (onExpandChange) {
+            onExpandChange(!isExpanded);
+        }
+    };
     const handleOpenModal = (event) => {
         closeAllModals();
         setAnchorEl(event.currentTarget);
@@ -118,8 +125,7 @@ const SearchBar = ({
                         const response = await fetch(
                             `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
                                 suggestion.name
-                            )}.json?access_token=${
-                                process.env.REACT_APP_MAPBOX_TOKEN
+                            )}.json?access_token=${process.env.REACT_APP_MAPBOX_TOKEN
                             }`
                         );
                         const data = await response.json();
@@ -354,15 +360,13 @@ const SearchBar = ({
     return (
         <div
             ref={searchRef}
-            className={`${styles.search} ${
-                inHeader ? styles.searchInHeader : ""
-            } ${inHeader && isExpanded ? styles.expanded : ""}`}
+            className={`${styles.search} ${inHeader ? styles.searchInHeader : ""
+                } ${inHeader && isExpanded ? styles.expanded : ""}`}
         >
             <div className={styles.container}>
                 <div
-                    className={`${styles.groupBtn} ${
-                        inHeader && !isExpanded ? styles.headerGroupBtn : ""
-                    }`}
+                    className={`${styles.groupBtn} ${inHeader && !isExpanded ? styles.headerGroupBtn : ""
+                        } ${isExpanded ? styles.expanded : ""}`} // Thêm điều kiện này
                 >
                     <ItemSearch
                         className={styles.title}
@@ -420,7 +424,13 @@ const SearchBar = ({
                         <ButtonPrimary
                             icon={<Search size={30} />}
                             className={styles.searchButton}
-                            onClick={handleSearch}
+                            onClick={(e) => {
+                                if (!isExpanded) {
+                                    handleSearchButtonClick(e);
+                                } else {
+                                    handleSearch();
+                                }
+                            }}
                         />
                     </div>
                 </div>

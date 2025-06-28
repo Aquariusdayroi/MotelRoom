@@ -10,10 +10,12 @@
     transition: all 0.3s ease;
     height: 580px;
 }
+
 .container.headerOnly {
     height: 80px;
     border-radius: 0;
 }
+
 .logo {
     height: 57px !important;
     height: auto;
@@ -21,13 +23,16 @@
     position: relative;
     z-index: 10005;
 }
+
 .buttonGroup {
     display: flex;
     align-items: center;
 }
+
 .buttonGroup a {
     text-decoration: none;
 }
+
 .header {
     position: fixed;
     top: 0;
@@ -61,6 +66,7 @@
     letter-spacing: 0.1em;
     font-family: var(--font-primary);
 }
+
 .description {
     font-size: 1rem;
     padding-top: 18px;
@@ -72,6 +78,7 @@
     font-family: var(--font-primary);
     padding-bottom: 22px;
 }
+
 .headerContent {
     display: flex;
     justify-content: space-between;
@@ -79,9 +86,124 @@
     gap: 20px;
     align-items: center;
 }
+
 .headerScrolled .headerContent {
     justify-content: space-between;
 }
+
 .buttonAvatar {
     padding: 14px;
+}
+
+/* ...existing code... */
+
+/* ...existing code... */
+
+@media screen and (max-width: 1024px) {
+    .container {
+        height: 480px;
+    }
+
+    .header {
+        padding: 0 3vw;
+        height: 70px;
+    }
+
+    .logo {
+        height: 45px !important;
+    }
+
+    .headerContent {
+        gap: 15px;
+    }
+
+    .buttonGroup {
+        gap: 8px;
+    }
+
+    .content {
+        padding: 0 5vw;
+        padding-top: 70px;
+    }
+
+    .title {
+        font-size: 2.5rem;
+        padding-top: 3rem;
+    }
+
+    .description {
+        width: 500px;
+        font-size: 0.95rem;
+        padding-top: 15px;
+        padding-bottom: 18px;
+    }
+
+    .container.headerOnly {
+        height: 70px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .container {
+        height: auto;
+        min-height: 350px;
+        border-radius: 0;
+        padding: 0.5rem;
+    }
+
+    .header {
+        padding: 0;
+        height: 50px;
+        margin-bottom: 0.5rem;
+    }
+
+    .headerContent {
+        gap: 4px;
+        padding: 0 8px;
+    }
+
+    .logo {
+        height: 30px !important;
+    }
+
+    .buttonGroup {
+        gap: 4px;
+    }
+
+    .buttonGroup a button {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+
+    .buttonAvatar {
+        padding: 4px;
+        margin-left: 0;
+    }
+
+    .content {
+        padding: 0 1rem;
+        margin-top: 50px;
+    }
+
+    .title {
+        font-size: 1.5rem;
+        padding-top: 1rem;
+    }
+
+    .description {
+        width: 100%;
+        font-size: 0.85rem;
+        padding: 8px 0;
+        line-height: 1.1rem;
+    }
+
+    .headerScrolled .headerContent {
+        padding: 0 8px;
+        gap: 4px;
+    }
+
+    .container.headerOnly {
+        height: 50px;
+        min-height: 50px;
+    }
 }

@@ -237,7 +237,6 @@ const OwnerPostManagement = () => {
                         ),
                     }));
                 } else {
-                    // Fallback: fetch lại dữ liệu
                     await fetchRooms(page);
                 }
 

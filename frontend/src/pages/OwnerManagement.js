@@ -1,8 +1,8 @@
-import React from "react";
-import { Col, Nav } from "react-bootstrap";
-import { FaChartLine, FaUsers } from "react-icons/fa";
-import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import styles from "../styles/OwnerManagement.module.css";
+import React from 'react';
+import { Col, Nav, Row } from 'react-bootstrap';
+import { FaChartLine, FaUsers } from 'react-icons/fa';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import styles from '../styles/OwnerManagement.module.css';
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
@@ -158,7 +158,7 @@ const OwnerManagement = () => {
     if (error)
         return <div className="text-center text-danger p-5">{error}</div>;
     return (
-        <div className="d-flex">
+        <Row className={styles.ownerContainer}>
             <Col md={2} className={styles.sidebar}>
                 <Nav className="flex-column">
                     <Nav.Item>
@@ -191,7 +191,7 @@ const OwnerManagement = () => {
                 {/* Render nested routes */}
                 <Outlet />
             </Col>
-        </div>
+        </Row>
     );
 };
 
