@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django.utils import timezone
 from datetime import timedelta
+from notification.api.views import create_notification
 
 # API lấy review của người dùng hiện tại theo bài đăng
 class UserReviewAPIView(APIView):
@@ -122,6 +123,17 @@ class ReviewListCreateAPIView(APIView):
         serializer = ReviewSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save(rental_post=rental_post, user=request.user)
+            create_notification(
+                user=rental_post.user,
+                actor=request.user,
+                title="Đánh giá mới từ người dùng",
+                message=f"{request.user.fullname} đã đánh giá bài đăng của bạn.",
+                data={
+                    "type": "review",
+                    "review_id": serializer.data['id'],
+                    "post_id": rental_post.id
+                }
+            )
             return Response({
                 "success": True,
                 "message": "Đánh giá đã được tạo thành công.",
@@ -284,4 +296,4 @@ class ReviewCreateOrUpdateAPIView(APIView):
         return Response({
             "success": True,
             "message": "Xóa đánh giá thành công."
-        }, status=status.HTTP_204_NO_CONTENT)
+        }, status=status.HTTP_200_OK)

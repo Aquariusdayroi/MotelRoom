@@ -14,12 +14,14 @@ from django.core.cache import cache
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 import backend.settings as settings
+import json
 
 from django.db.models import F, FloatField
 from django.db.models.expressions import ExpressionWrapper
 from django.db.models.functions import ACos, Cos, Radians, Sin
 
 from favorite.models import Favorite
+from notification.api.views import create_notification
 
 # Custom pagination class với page_size được xác định trực tiếp
 class CustomRentalPostPaginationOwnerList(PageNumberPagination):
@@ -346,13 +348,37 @@ class RentalPostListAPIView(ListAPIView):
             self.paginator.page_size = 20
         return super().paginate_queryset(queryset)
 
+    # def get_queryset(self):
+    #     cache_key = f"rentalpost_list_user_{self.request.user.id if self.request.user.is_authenticated else 'anon'}"
+    #     queryset = cache.get(cache_key)
+    #     if queryset is None:
+    #         queryset = RentalPost.objects.prefetch_related('image')
+    #         cache.set(cache_key, queryset, timeout=60*10)  # 10 phút
+    #     return queryset
     def get_queryset(self):
-        cache_key = f"rentalpost_list_user_{self.request.user.id if self.request.user.is_authenticated else 'anon'}"
-        queryset = cache.get(cache_key)
-        if queryset is None:
-            queryset = RentalPost.objects.prefetch_related('image')
-            cache.set(cache_key, queryset, timeout=60*10)  # 10 phút
-        return queryset
+        base_queryset = RentalPost.objects.prefetch_related('image')
+
+        order_by = self.request.query_params.get('order_by', 'newest')
+
+        if order_by == 'newest':
+            base_queryset = base_queryset.order_by('-create_at')
+        elif order_by == 'oldest':
+            base_queryset = base_queryset.order_by('create_at')
+        elif order_by == 'price_asc':
+            base_queryset = base_queryset.order_by('price')
+        elif order_by == 'price_desc':
+            base_queryset = base_queryset.order_by('-price')
+        elif order_by == 'views':
+            base_queryset = base_queryset.order_by('-views')
+        elif order_by == 'acreage_asc':
+            base_queryset = base_queryset.order_by('acreage')
+        elif order_by == 'acreage_desc':
+            base_queryset = base_queryset.order_by('-acreage')
+        else:
+            base_queryset = base_queryset.order_by('-create_at')
+
+        return base_queryset
+
     
 
     def get_serializer_context(self):
@@ -629,4 +655,59 @@ class RentalPostUserInfoAPIView(generics.RetrieveAPIView):
                 "success": False,
                 "message": "Bài đăng không tồn tại."
             }, status=status.HTTP_404_NOT_FOUND)
+
+# API Admin xóa bài đăng theo ID
+class RentalPostAdminDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def delete(self, request, id):
+        """Xóa bài đăng"""
+        if request.user.role != 'admin':
+            return Response({
+                "success": False,
+                "message": "Bạn phải là Admin để xóa bài đăng."
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        if request.data.get('reason') is None:
+            return Response({
+                "success": False,
+                "message": "Lý do xóa bài đăng cần được cung cấp."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            post = RentalPost.objects.get(id=id)
+        except RentalPost.DoesNotExist:
+            return Response({
+                "success": False,
+                "message": "Không tìm thấy bài đăng."
+            }, status=status.HTTP_404_NOT_FOUND)     
+        
+        rental_post_dict = RentalPostSerializer(post, context={'request': request}).data
+        rental_post_data_str = json.dumps(rental_post_dict, ensure_ascii=False)
+        try:
+            rental_post_data = json.loads(rental_post_data_str)
+        except Exception:
+            rental_post_data = {}
+        
+        create_notification(
+            user=post.user,
+            actor=request.user,
+            title="Bài đăng của bạn bị gỡ xuống",
+            message=f"Bài đăng '{post.title}' của bạn đã bị xóa bởi quản trị viên.",
+            data={
+                "type": "rental_post_deleted",
+                "reason": request.data.get('reason', 'Không rõ'),
+                "rental_post_data": rental_post_data,
+            }
+        )
+
+        post.delete()
+        # Xóa cache liên quan đến bài đăng này
+        cache_key = f'rental_posts_cache_page_{id}_{request.user.id}'
+        cache.delete(cache_key)
+
+        return Response({
+            "success": True,
+            "message": "Bài đăng đã được xóa."
+        }, status=status.HTTP_200_OK)
 

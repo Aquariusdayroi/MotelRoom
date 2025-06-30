@@ -11,5 +11,6 @@ urlpatterns = [
     path('by-user/<int:user_id>/', views.RentalPostListByUserAPIView.as_view(), name= 'rentalpost-by-user'),
     path('search/', views.RentalPostSearchAPIView.as_view(), name= 'rentalpost-search'),
     path('<int:rentalpost_id>/user-info/', views.RentalPostUserInfoAPIView.as_view(), name='rentalpost-user-info'),
+    path('<int:id>/delete/', views.RentalPostAdminDeleteAPIView.as_view(), name='rentalpost-delete'),
     # path('my')
 ]
