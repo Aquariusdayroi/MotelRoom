@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from .views import UserRetrieveUpdateDestroyAPIView, RegisterAPIView, GoogleLoginView, VerifyEmailView , UserDetailAPIView, OwnerRequestAdminAPIViewSet, OwnerCountByDateAPIView, UserCountByDateAPIView
+from .views import UserNotificationAPIView, UserRetrieveUpdateDestroyAPIView, RegisterAPIView, GoogleLoginView, UserWarningAPIView, VerifyEmailView , UserDetailAPIView, OwnerRequestAdminAPIViewSet, OwnerCountByDateAPIView, UserCountByDateAPIView, UserRoleUpdateAPIView
 from .views import OwnerRequestAPIViewSet, OwnerRequestAPIViewSet, UserLatestReviewsAPIView, MyLatestReviewsAPIView
 from .views import CustomTokenObtainPairView, LogoutView, PasswordResetRequestAPIView, PasswordResetConfirmAPIView
 from rental_post.api.views import RentalPostFavoriteListAPIView
@@ -30,5 +30,8 @@ urlpatterns = [
     path('admin/user-count/', UserCountByDateAPIView.as_view(), name='user-count'), # api lấy số lượng user đăng ký theo ngày tháng năm
     path('password-reset/', PasswordResetRequestAPIView.as_view(), name='password-reset'), #api khôi phục mật khẩu
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmAPIView.as_view(), name='password-reset-confirm'), #api xác nhận khôi phục mật khẩu
+    path('create-notification/', UserNotificationAPIView.as_view(), name='create-notification'), # api tạo thông báo cho người dùng
+    path('<int:user_id>/create-warning/', UserWarningAPIView.as_view(), name='create-warning'), # api tạo cảnh báo cho người dùng
+    path('role-change/<int:user_id>/', UserRoleUpdateAPIView.as_view(), name='role-change'), # api thay đổi quyền của người dùng
 ]
 

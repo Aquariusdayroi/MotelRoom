@@ -148,7 +148,7 @@ class RentalPostSerializer(DynamicFieldsModelSerializer):
         ]
 
         read_only_fields = ('user', 'create_at', 'update_at', 'address', 'is_favorite', 'views')
-
+        
     def get_is_favorite(self, obj):
         favorite_ids = self.context.get('favorite_post_ids', set())
         return obj.id in favorite_ids

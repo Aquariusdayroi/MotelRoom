@@ -50,5 +50,6 @@ urlpatterns = [
     path('images/api/', include('image.api.urls')), #api liên quan đến image
     path('favorite/api/', include('favorite.api.url')), #api liên quan đến yêu thích
     path('chat/api/', include('chat.api.urls')), #api liên quan đến chat
+    path('notification/api/', include('notification.api.urls')), #api liên quan đến thông báo
 ] 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

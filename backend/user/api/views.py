@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.utils.dateparse import parse_date
-from django.db.models import Count, Avg
+from django.db.models import Count, Avg, Q
 from django.http import HttpResponseRedirect
 from django.core.mail import send_mail
 
@@ -52,6 +52,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import get_user_model
 
+from notification.api.views import create_notification
 
 #---------------------------------------------------------------------------------------------------#
 # Api admin lấy danh sách user
@@ -777,6 +778,16 @@ class OwnerRequestAdminAPIViewSet(viewsets.ViewSet):
         owner_request.status = 'approved'
         owner_request.reviewed_at = timezone.now()
         owner_request.save()
+        create_notification(
+            user=user,
+            actor=request.user,
+            title="Chào mừng bạn trở thành chủ trọ!",
+            message=f"Yêu cầu của bạn đã được duyệt, từ nay bạn có thể đăng bài đăng!",
+            data={
+                'type': 'owner_request_approved',
+                'request_id': owner_request.id
+            }
+        )
 
         return Response({
             'success': True,
@@ -804,6 +815,16 @@ class OwnerRequestAdminAPIViewSet(viewsets.ViewSet):
         owner_request.rejection_reason = reason
         owner_request.reviewed_at = timezone.now()
         owner_request.save()
+        create_notification(
+            user=owner_request.user,
+            actor=request.user,
+            title="Yêu cầu đăng ký chủ trọ bị từ chối",
+            message=f"Yêu cầu của bạn đã bị từ chối: {reason}.",
+            data={
+                'type': 'owner_request_rejected',
+                'request_id': owner_request.id
+            }
+        )
 
         return Response({
             'success': True,
@@ -1220,4 +1241,118 @@ class PasswordResetAPIView(APIView):
             'total_owner': count
         }, status=status.HTTP_200_OK)
     
+# API phân quyền người dùng làm owner hay user
+class UserRoleUpdateAPIView(APIView):
+    permission_classes = [IsAdminUser]
 
+    def post(self, request, user_id):
+        """Cập nhật vai trò người dùng"""
+        role = request.data.get('role')
+        if role not in ['owner', 'user']:
+            return Response({
+                'success': False,
+                'message': 'Vai trò không hợp lệ! Chỉ chấp nhận owner hoặc user.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Không tìm thấy người dùng.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        user.role = role
+        user.save()
+        return Response({
+            'success': True,
+            'message': 'Cập nhật vai trò người dùng thành công.',
+            'data': {
+                'id': user.id,
+                'email': user.email,
+                'role': user.role
+            }
+        }, status=status.HTTP_200_OK)
+        
+# API admin gửi cảnh báo đến người dùng
+class UserWarningAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, user_id):
+        """Gửi cảnh báo đến người dùng"""
+        message = request.data.get('message')
+        if not message:
+            return Response({
+                'success': False,
+                'message': 'Nội dung cảnh báo không được để trống.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Không tìm thấy người dùng.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        create_notification(
+            user=user,
+            actor=request.user,
+            title="Cảnh báo",
+            message=message,
+            data={
+                'type': 'user_warning',
+                'user_id': user.id
+            }
+        )
+
+        return Response({
+            'success': True,
+            'message': 'Cảnh báo đã được gửi đến người dùng.'
+        }, status=status.HTTP_200_OK)
+        
+# API admin gửi thông báo đến tất cả người dùng hoặc chỉ rõ user hay owner
+class UserNotificationAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        """Gửi thông báo đến tất cả người dùng hoặc chỉ rõ user hay owner"""
+        title = request.data.get('title')
+        message = request.data.get('message')
+        if not title or not message:
+            return Response({
+                'success': False,
+                'message': 'Tiêu đề và nội dung thông báo không được để trống.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        type = request.data.get('type', 'all')
+        if type not in ['all', 'user', 'owner']:
+            return Response({
+                'success': False,   
+                'message': 'Tham số type không hợp lệ. Chỉ chấp nhận all, user hoặc owner.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        if type == 'owner':
+            users = User.objects.filter(role='owner')
+        elif type == 'user':
+            users = User.objects.filter(role='user')
+        else:
+            users = User.objects.all()
+        for user in users:
+            if user.role == 'admin':
+                continue
+            create_notification(
+                user=user,
+                actor=request.user,
+                title=title,
+                message=message,
+                data={
+                    'type': 'admin_notification',
+                    'title': title
+                }
+            )
+
+        return Response({
+            'success': True,
+            'message': 'Thông báo đã được gửi đến người dùng.'
+        }, status=status.HTTP_200_OK)
+        
